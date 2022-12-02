@@ -8,6 +8,8 @@
 - These files will only be uploaded after the leaderboard is filled.
 - I will not be accepting pull requests, This is just a place for me to document my code
 
+- Files named `Data.txt` are not included because they contain data that is locked behind auth on the website. If you want to access it, go to the representive day on the website.
+
 ## Advent of code Information
 
 <https://adventofcode.com/2021/about>
