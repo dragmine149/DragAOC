@@ -1,10 +1,10 @@
 import time
+import helper
+
+data = helper.main()
 
 st = time.time()
 
-data = []
-with open("data.txt", "r", encoding="utf-8") as f:
-    data = f.readlines()
 
 Complety = 0
 index = 0
