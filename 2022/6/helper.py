@@ -8,10 +8,11 @@ def setup():
     parser = argparse.ArgumentParser(description="AOC helper",
                                      add_help=True,
                                      allow_abbrev=True)
+    parser.add_argument("Limit", type=int, default=4)
     parser.add_argument("Other", type=int, choices=[
                         1, 2], default=1, nargs="?")
     args = parser.parse_args()
-    return args.Other
+    return args.Limit, args.Other
 
 
 def read(mode=1):
@@ -21,7 +22,8 @@ def read(mode=1):
 
 
 def main():
-    return read(setup())
+    limit, mode = setup()
+    return limit, read(mode)
 
 
 def output(day: int):
