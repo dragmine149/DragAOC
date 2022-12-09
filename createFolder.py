@@ -3,9 +3,13 @@ import shutil
 
 year = input("Please enter the current year: ")
 
+try:
+    os.makedirs(f"{year}")
+except FileExistsError:
+    print("Year already created")
+
 for i in range(25):
     try:
-        os.makedirs(f"{year}/{i + 1}")
-        shutil.copy('helper.py', f"{year}/{i + 1}/helper.py")
+        shutil.copytree("templates", f"{year}/{i + 1}")
     except FileExistsError:
-        pass
+        print("Day already exists")

@@ -8,8 +8,8 @@ def setup():
     parser = argparse.ArgumentParser(description="AOC helper",
                                      add_help=True,
                                      allow_abbrev=True)
-    parser.add_argument("Other", type=int, choices=[
-                        1, 2], default=1, nargs="?")
+    parser.add_argument("-o", "--Other", type=int, choices=[
+        1, 2], default=1, help="TO read the true data or to read the example data")
     args = parser.parse_args()
     return args.Other
 
@@ -21,7 +21,9 @@ def read(mode=1):
 
 
 def main():
-    return read(setup())
+    # supports multiple command line args
+    other = setup()
+    return read(other)
 
 
 def output(day: int):
