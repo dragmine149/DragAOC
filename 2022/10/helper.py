@@ -15,7 +15,7 @@ def setup():
 
 
 def read(mode=1):
-    path = "data.txt" if mode == 1 else "data.txt2"
+    path = "data.txt" if mode == 1 else f"data.txt{mode}"
     with open(path, "r", encoding="utf-8") as f:
         return f.readlines()
 

@@ -2,6 +2,7 @@ import os
 import ipdb
 import helper
 
+
 class Visulasation:
     def __init__(self) -> None:
         self.indent = 0
@@ -109,18 +110,32 @@ class CommandProcessor:
 
 #     return size
 
-def GetDirectorySize(directory: dict) -> int:
-    dirSize = 0
-    for item in directory:
-        iType = directory.get(item)
-        if isinstance(iType, dict): ## If another directory
-            sizes[item] = GetDirectorySize(iType)
-            dirSize += sizes[item]
-            continue
 
-        dirSize += int(iType)
+def GetSizes(directory: dict) -> int:
+    dirSize = 0
+    # loop through all items in directory
+    for item in directory:
+        # Get type and info
+        tpe = directory.get(item)
+        if isinstance(tpe, str):
+            # If string, must be a file
+            # if int(tpe) <= 100_000:
+            #     sizes[item] = int(tpe)
+                # print(f"Added {item} w/ {tpe}")
+
+            dirSize += int(tpe)
+        else:
+            # Get size of directory if directory
+            drSize = GetSizes(tpe)
+            dirSize += drSize
+            # add to list if above 100k
+            if drSize <= 100_000:
+                sizes[item] = drSize
+                print(f"Added dir {item} w/ {drSize}")
+            # add to overall
 
     return dirSize
+
 
 if __name__ == "__main__":
     fdata, vs = helper.main()
@@ -128,20 +143,17 @@ if __name__ == "__main__":
     [cp.process(line) for line in fdata]
 
     sizes = {}
-    rootSize = GetDirectorySize(cp.files)
+    rootSize = GetSizes(cp.files)
 
     SumTotalSizes = 0
     TotalSizes = {}
     for dirInfo in sizes:
         size = sizes.get(dirInfo)
-        if size <= 100_000:
-        # if size == 100_000:
-        # if size >= 100_000:
-        # if True:
-            TotalSizes[dirInfo] = size
-            SumTotalSizes += size
+        SumTotalSizes += size
 
     helper.output(7)
     # print(f"Directories + sizes: {TotalSizes}")
     print(f"Sum of sizes: {SumTotalSizes:,} ({SumTotalSizes})")
     print(f"Root size: {rootSize:,} ({rootSize})")
+    # print(f"Files: {cp.files}")
+    # print(f"Files count: {len(cp.files)}")
