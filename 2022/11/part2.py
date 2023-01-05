@@ -137,8 +137,6 @@ class main:
             for index, _ in enumerate(monkey.Items):
                 # Thanks redit
                 d, m = divmod(monkey.Items[index], self.__getMonkeyDiv())
-                # if m == 0:
-                #     monkey.Items[index] = d
                 monkey.Items[index] = m
 
     def __Finish(self):
