@@ -1,0 +1,82 @@
+[gd_scene load_steps=2 format=3 uid="uid://cspywo42sosl0"]
+
+[ext_resource type="Script" path="res://Scripts/day_1.gd" id="1_lc780"]
+
+[node name="Day1" type="Node2D"]
+script = ExtResource("1_lc780")
+selected_part = 1
+
+[node name="Line" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+theme_override_font_sizes/font_size = 50
+text = "Line:"
+metadata/_edit_use_anchors_ = true
+
+[node name="Lowest" type="Label" parent="."]
+offset_top = 69.0
+offset_right = 186.0
+offset_bottom = 138.0
+theme_override_font_sizes/font_size = 50
+text = "Lowest:"
+metadata/_edit_use_anchors_ = true
+
+[node name="Highest" type="Label" parent="."]
+offset_top = 138.0
+offset_right = 199.0
+offset_bottom = 207.0
+theme_override_font_sizes/font_size = 50
+text = "Highest:"
+metadata/_edit_use_anchors_ = true
+
+[node name="List" type="Label" parent="."]
+offset_top = 207.0
+offset_right = 99.0
+offset_bottom = 276.0
+theme_override_font_sizes/font_size = 50
+text = "List:"
+metadata/_edit_use_anchors_ = true
+
+[node name="Result" type="Label" parent="."]
+offset_top = 276.0
+offset_right = 165.0
+offset_bottom = 345.0
+theme_override_font_sizes/font_size = 50
+text = "Result:"
+metadata/_edit_use_anchors_ = true
+
+[node name="Invalid" type="Label" parent="."]
+offset_top = 345.0
+offset_right = 165.0
+offset_bottom = 414.0
+theme_override_font_sizes/font_size = 50
+text = "Invalid:"
+metadata/_edit_use_anchors_ = true
+
+[node name="Index" type="Label" parent="."]
+offset_top = 414.0
+offset_right = 176.0
+offset_bottom = 483.0
+theme_override_font_sizes/font_size = 50
+text = "Index:"
+metadata/_edit_use_anchors_ = true
+
+[node name="Start" type="Button" parent="."]
+offset_left = 283.0
+offset_top = 507.0
+offset_right = 409.0
+offset_bottom = 584.0
+theme_override_font_sizes/font_size = 50
+text = "Start"
+
+[node name="Next" type="Button" parent="."]
+offset_left = 412.0
+offset_top = 507.0
+offset_right = 538.0
+offset_bottom = 584.0
+theme_override_font_sizes/font_size = 50
+text = "Next
+"
+
+[connection signal="pressed" from="Start" to="." method="_on_start_pressed"]
+[connection signal="pressed" from="Next" to="." method="_on_next_pressed"]

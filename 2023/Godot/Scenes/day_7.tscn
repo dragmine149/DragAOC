@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://b2l6cna0xry33"]
+
+[ext_resource type="Script" path="res://Scripts/day_7.gd" id="1_ncxb7"]
+
+[node name="Day7" type="Node2D"]
+script = ExtResource("1_ncxb7")
+data = 1

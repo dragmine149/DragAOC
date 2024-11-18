@@ -1,0 +1,60 @@
+[gd_scene load_steps=2 format=3 uid="uid://17ay2l4suu5i"]
+
+[ext_resource type="Script" path="res://Scripts/day_4.gd" id="1_vhcdf"]
+
+[node name="Day4" type="Node2D"]
+script = ExtResource("1_vhcdf")
+part = 1
+
+[node name="GameInfo" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+theme_override_font_sizes/font_size = 50
+text = "Info:"
+
+[node name="Winnings" type="Label" parent="."]
+offset_top = 69.0
+offset_right = 237.0
+offset_bottom = 138.0
+theme_override_font_sizes/font_size = 50
+text = "Winnings:"
+
+[node name="Numbers" type="Label" parent="."]
+offset_top = 138.0
+offset_right = 239.0
+offset_bottom = 207.0
+theme_override_font_sizes/font_size = 50
+text = "Numbers:"
+
+[node name="Score" type="Label" parent="."]
+offset_top = 207.0
+offset_right = 148.0
+offset_bottom = 276.0
+theme_override_font_sizes/font_size = 50
+text = "Score:"
+
+[node name="Result" type="Label" parent="."]
+offset_top = 276.0
+offset_right = 165.0
+offset_bottom = 345.0
+theme_override_font_sizes/font_size = 50
+text = "Result:"
+
+[node name="Start" type="Button" parent="."]
+offset_left = 307.0
+offset_top = 480.0
+offset_right = 433.0
+offset_bottom = 557.0
+theme_override_font_sizes/font_size = 50
+text = "Start"
+
+[node name="Next" type="Button" parent="."]
+offset_left = 437.0
+offset_top = 480.0
+offset_right = 561.0
+offset_bottom = 557.0
+theme_override_font_sizes/font_size = 50
+text = "Next"
+
+[connection signal="pressed" from="Start" to="." method="start"]
+[connection signal="pressed" from="Next" to="." method="next"]

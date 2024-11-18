@@ -1,0 +1,56 @@
+[gd_scene load_steps=2 format=3 uid="uid://c8eqn5o8cb7nu"]
+
+[ext_resource type="Script" path="res://Scripts/day_2.gd" id="1_hbuqr"]
+
+[node name="Day2" type="Node2D"]
+script = ExtResource("1_hbuqr")
+part = 1
+
+[node name="Game" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+theme_override_font_sizes/font_size = 50
+
+[node name="ID" type="Label" parent="."]
+offset_top = 69.0
+offset_right = 40.0
+offset_bottom = 138.0
+theme_override_font_sizes/font_size = 50
+
+[node name="Cubes" type="Label" parent="."]
+offset_top = 138.0
+offset_right = 40.0
+offset_bottom = 207.0
+theme_override_font_sizes/font_size = 50
+
+[node name="Allowed" type="Label" parent="."]
+offset_top = 207.0
+offset_right = 40.0
+offset_bottom = 276.0
+theme_override_font_sizes/font_size = 50
+
+[node name="Result" type="Label" parent="."]
+offset_top = 276.0
+offset_right = 40.0
+offset_bottom = 345.0
+theme_override_font_sizes/font_size = 50
+
+[node name="Start" type="Button" parent="."]
+offset_left = 242.0
+offset_top = 481.0
+offset_right = 368.0
+offset_bottom = 558.0
+theme_override_font_sizes/font_size = 50
+text = "Start"
+
+[node name="Next" type="Button" parent="."]
+offset_left = 371.0
+offset_top = 482.0
+offset_right = 495.0
+offset_bottom = 559.0
+theme_override_font_sizes/font_size = 50
+text = "Next
+"
+
+[connection signal="pressed" from="Start" to="." method="start"]
+[connection signal="pressed" from="Next" to="." method="next"]

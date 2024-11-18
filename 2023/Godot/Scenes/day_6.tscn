@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=3 uid="uid://b1vpm8ff84vt6"]
+
+[ext_resource type="Script" path="res://Scripts/day_6.gd" id="1_270re"]
+
+[node name="Day6" type="Node2D"]
+script = ExtResource("1_270re")
+part = 1
+
+[node name="Start" type="Button" parent="."]
+offset_left = 411.0
+offset_top = 444.0
+offset_right = 537.0
+offset_bottom = 521.0
+theme_override_font_sizes/font_size = 50
+text = "Start"
+
+[connection signal="pressed" from="Start" to="." method="start"]
