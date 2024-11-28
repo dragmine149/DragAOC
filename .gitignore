@@ -7,4 +7,5 @@ data.txt
 2023/Godot/Data/Day5/Default.txt
 2023/Godot/Data/Day6/Default.txt
 2023/Godot/Data/Day7/Default.txt
-
+**/target/**
+input
