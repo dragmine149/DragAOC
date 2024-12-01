@@ -58,7 +58,7 @@ fn part2(input: &str) -> u64 {
     }
 
     let mut list_c: Vec<u64> = Vec::new();
-    let mut list_d: Vec<u64> = Vec::new();
+    // let list_d: Vec<u64> = Vec::new();
 
     for value in list_a.iter() {
         let mut count: u64 = 0;
@@ -70,13 +70,20 @@ fn part2(input: &str) -> u64 {
             }
         }
         list_c.push(count);
-        list_d.push(count * value);
+        // list_d.push(count * value);
     }
+
+    list_a
+        .iter()
+        .enumerate()
+        .map(|(index, value)| value * list_c[index])
+        .sum()
 
     // println!("{:#?}", list_c);
     // println!("{:#?}", list_d);
 
-    list_d.iter().sum()
+    // list_d.iter().sum()
+    // list_c.iter().sum()
 }
 
 #[cfg(test)]
