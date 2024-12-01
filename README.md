@@ -12,4 +12,4 @@
 
 ## Advent of code Information
 
-<https://adventofcode.com/2023/about>
+<https://adventofcode.com/about>
