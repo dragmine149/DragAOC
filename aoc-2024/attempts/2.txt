@@ -1,2 +1,6 @@
 # Part 1
 526 - Correct
+
+# Part 2
+552 - Too low
+566 - Correct
