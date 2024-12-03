@@ -1,62 +1,67 @@
-use aoc_runner_derive::{aoc, aoc_generator};
+use aoc_runner_derive::aoc;
 use regex::Regex;
 
-fn parse_regex(input: &str, skip: bool) -> Vec<Vec<Vec<u64>>> {
-    // Regex used: https://regex101.com/r/PHC6Mr/2
-    let regex = Regex::new(r"mul\((?P<num1>\d*),(?P<num2>\d*)\)").unwrap();
+fn parse_regex(input: &str, skip: bool) -> u64 {
+    // Regex used: https://regex101.com/r/PHC6Mr/5
+    let regex = Regex::new(
+        r"(?P<multi>mul\((?P<num1>\d*),(?P<num2>\d*)\))|(?P<do>do\(\))|(?P<dont>don't\(\))",
+    )
+    .unwrap();
 
-    let result = input
-        .lines()
-        .map(|x| {
-            let reg_result = regex.captures_iter(x);
-            let mut calculations: Vec<Vec<u64>> = vec![];
-            for mat in reg_result {
-                let num_1 = mat
-                    .name("num1")
-                    .expect("Failed to find first number in match")
-                    .as_str()
-                    .parse::<u64>()
-                    .expect("Failed to parse number from regex num1 match");
-                let num_2 = mat
-                    .name("num2")
-                    .expect("Failed to find second number in match")
-                    .as_str()
-                    .parse::<u64>()
-                    .expect("Failed to parse number from regex num2 match");
+    let result = regex.captures_iter(input);
+    let mut calculation: u64 = 0;
+    let mut is_skipping: bool = false;
+    for mat in result {
+        // println!("{:#?}", mat);
+        if !mat.name("do").is_none() && skip {
+            // println!("Stop Skipping");
+            is_skipping = false;
+            continue;
+        }
+        if !mat.name("dont").is_none() && skip {
+            // println!("Started Skipping");
+            is_skipping = true;
+            continue;
+        }
 
-                calculations.push(vec![num_1, num_2]);
-            }
-            calculations
-        })
-        .collect();
-    // println!("{:#?}", result);
+        if !skip && (!mat.name("do").is_none() || !mat.name("dont").is_none()) {
+            continue;
+        }
 
-    result
+        if is_skipping {
+            continue;
+        }
+
+        let num_1 = mat
+            .name("num1")
+            .expect("Failed to find first number in match")
+            .as_str()
+            .parse::<u64>()
+            .expect("Failed to parse number from regex num1 match");
+        let num_2 = mat
+            .name("num2")
+            .expect("Failed to find second number in match")
+            .as_str()
+            .parse::<u64>()
+            .expect("Failed to parse number from regex num2 match");
+
+        // println!("{:#?}", vec![num_1, num_2]);
+
+        calculation += num_1 * num_2;
+    }
+
+    calculation
 }
 
 #[aoc(day3, part1)]
 fn part1(input: &str) -> u64 {
-    let regex_result = parse_regex(input, false);
-    let result = regex_result
-        .iter()
-        .map(|line| {
-            line.iter()
-                .map(|calc| {
-                    calc.get(0).expect("Failed to get num 1")
-                        * calc.get(1).expect("Failed to get num 2")
-                })
-                .sum::<u64>()
-        })
-        .sum::<u64>();
-    // println!("{:#?}", result);
-
-    result
+    parse_regex(input, false)
 }
 
-// #[aoc(day3, part2)]
-// fn part2(input: &Vec<Vec<u32>>) -> u32 {
-//     todo!();
-// }
+#[aoc(day3, part2)]
+fn part2(input: &str) -> u64 {
+    parse_regex(input, true)
+}
 
 #[cfg(test)]
 mod tests {
@@ -72,8 +77,8 @@ mod tests {
         assert_eq!(part1(EXAMPLE_1), 161);
     }
 
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse(EXAMPLE_2)), 48);
-    // }
+    #[test]
+    fn part2_example() {
+        assert_eq!(part2(EXAMPLE_2), 48);
+    }
 }
