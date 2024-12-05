@@ -1,0 +1,162 @@
+use aoc_runner_derive::{aoc, aoc_generator};
+#[aoc_generator(day5)]
+fn parse(input: &str) -> (Vec<Vec<u8>>, Vec<Vec<u8>>) {
+    let mut rules: Vec<Vec<u8>> = vec![];
+    let mut update: Vec<Vec<u8>> = vec![];
+    let mut update_rules = true;
+
+    input.lines().for_each(|line| {
+        if line.is_empty() {
+            update_rules = false;
+            return;
+        }
+
+        if update_rules {
+            rules.push(
+                line.split('|')
+                    .map(|x| {
+                        x.parse::<u8>()
+                            .expect("Failed to parse number in rules input")
+                    })
+                    .collect::<Vec<u8>>(),
+            );
+        } else {
+            update.push(
+                line.split(',')
+                    .map(|x| {
+                        x.parse::<u8>()
+                            .expect("Failed to parse number in update input")
+                    })
+                    .collect::<Vec<u8>>(),
+            );
+        }
+    });
+
+    rules.sort_by(|a, b| (a.get(0)).cmp(&b.get(0)));
+    (rules, update)
+}
+
+fn check_rules(rules: Vec<Vec<u8>>, num_a: u8, numbers: &Vec<u8>) -> bool {
+    let rule_filter = rules
+        .into_iter()
+        .filter(|x| {
+            let rule_first = x.get(0).expect("Failed to get first number of rule");
+            let rule_last = x.get(1).expect("Failed to get second number of rule");
+
+            (rule_first == &num_a && numbers.contains(rule_last))
+                || (rule_last == &num_a && numbers.contains(rule_first))
+        })
+        // .collect::<Vec<Vec<u8>>>();
+        // println!("Found rules: {:#?}", rule_filter);
+        .all(|rule| {
+            let rule_first = rule.get(0).expect("Failed to get first number of rule");
+            let rule_last = rule.get(1).expect("Failed to get second number of rule");
+            let rule_first_index = numbers.iter().position(|x| x == rule_first);
+            let rule_last_index = numbers.iter().position(|x| x == rule_last);
+
+            // println!(
+            //     "Checking rule: {:?} (first: {:?}, last: {:?})",
+            //     rule, rule_first_index, rule_last_index
+            // );
+
+            if rule_first == &num_a {
+                if rule_first_index > rule_last_index {
+                    return false;
+                }
+            }
+            if rule_last == &num_a {
+                if rule_last_index < rule_first_index {
+                    return false;
+                }
+            }
+
+            true
+        });
+    // println!(
+    //     "\n({}, {:?}) Result of rule checking: {:#?}",
+    //     num_a, numbers, rule_filter
+    // );
+
+    rule_filter
+}
+
+#[aoc(day5, part1)]
+fn part1(input: &(Vec<Vec<u8>>, Vec<Vec<u8>>)) -> u16 {
+    // println!("{:#?}", input.0);
+    // println!("{:#?}", input.1);
+    let rules = &input.0;
+    let updates = &input.1;
+
+    let mut total: u16 = 0;
+    for update in updates {
+        // println!("{:?}", update);
+
+        let mut accepted_order = true;
+        for rule in update.iter() {
+            let result = check_rules(rules.clone(), *rule, update);
+            if !result {
+                accepted_order = false;
+                break;
+            }
+        }
+
+        if accepted_order {
+            // println!("Order of {:?} accepted!", update);
+            total += *update
+                .get(update.len() / 2)
+                .expect("Failed to get middle number of update set.") as u16;
+        }
+    }
+
+    total
+}
+
+// #[aoc(day5, part2)]
+// fn part2(input: &str) -> String {
+//     todo!()
+// }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const EXAMPLE_1: &str = "47|53
+97|13
+97|61
+97|47
+75|29
+61|13
+75|53
+29|13
+97|29
+53|29
+61|53
+97|53
+61|29
+47|13
+75|47
+97|75
+47|61
+75|61
+47|29
+75|13
+53|13
+
+75,47,61,53,29
+97,61,53,29,13
+75,29,13
+75,97,47,61,53
+61,13,29
+97,13,75,29,47
+";
+
+    #[test]
+    fn part1_example() {
+        assert_eq!(part1(&parse(EXAMPLE_1)), 143);
+    }
+
+    // #[test]
+    // fn part2_example() {
+    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
+    // }
+}
