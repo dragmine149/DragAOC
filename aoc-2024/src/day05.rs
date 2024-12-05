@@ -1,4 +1,6 @@
 use aoc_runner_derive::{aoc, aoc_generator};
+use std::cmp::Ordering;
+
 #[aoc_generator(day5)]
 fn parse(input: &str) -> (Vec<Vec<u8>>, Vec<Vec<u8>>) {
     let mut rules: Vec<Vec<u8>> = vec![];
@@ -36,9 +38,9 @@ fn parse(input: &str) -> (Vec<Vec<u8>>, Vec<Vec<u8>>) {
     (rules, update)
 }
 
-fn check_rules(rules: Vec<Vec<u8>>, num_a: u8, numbers: &Vec<u8>) -> bool {
+fn check_rules(rules: &Vec<Vec<u8>>, num_a: u8, numbers: &Vec<u8>) -> bool {
     let rule_filter = rules
-        .into_iter()
+        .iter()
         .filter(|x| {
             let rule_first = x.get(0).expect("Failed to get first number of rule");
             let rule_last = x.get(1).expect("Failed to get second number of rule");
@@ -93,7 +95,7 @@ fn part1(input: &(Vec<Vec<u8>>, Vec<Vec<u8>>)) -> u16 {
 
         let mut accepted_order = true;
         for rule in update.iter() {
-            let result = check_rules(rules.clone(), *rule, update);
+            let result = check_rules(rules, *rule, update);
             if !result {
                 accepted_order = false;
                 break;
@@ -111,10 +113,85 @@ fn part1(input: &(Vec<Vec<u8>>, Vec<Vec<u8>>)) -> u16 {
     total
 }
 
-// #[aoc(day5, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+fn get_desired_rules(rules: &Vec<Vec<u8>>, num_a: u8, numbers: &Vec<u8>) -> Vec<Vec<u8>> {
+    rules
+        .clone()
+        .into_iter()
+        .filter(|x| {
+            let rule_first = x.get(0).expect("Failed to get first number of rule");
+            let rule_last = x.get(1).expect("Failed to get second number of rule");
+
+            (rule_first == &num_a && numbers.contains(rule_last))
+                || (rule_last == &num_a && numbers.contains(rule_first))
+        })
+        .collect::<Vec<Vec<u8>>>()
+}
+
+fn fix_rules(rules: &Vec<Vec<u8>>, numbers: &Vec<u8>) -> Vec<u8> {
+    // println!("Fixing order: {:?}", numbers);
+    let mut update_order = numbers.clone();
+    update_order.sort_by(|a, b| {
+        // println!("(a: {:?}, b: {:?})", a, b);
+        let desired_rules = get_desired_rules(rules, *b, numbers);
+        // println!("{:?}", desired_rules);
+
+        for rule in desired_rules {
+            let rule_first = rule.get(0).expect("Failed to get first number of rule");
+            let rule_last = rule.get(1).expect("Failed to get second number of rule");
+
+            if rule_first == a {
+                return Ordering::Less;
+            }
+
+            if rule_last == a {
+                return Ordering::Greater;
+            }
+        }
+
+        // let rule_first_index = numbers.iter().position(|x| x == rule_first);
+        // let rule_last_index = numbers.iter().position(|x| x == rule_last);
+
+        // desired_rules.get
+        // todo!();
+        // a.cmp(b)
+
+        Ordering::Equal
+    });
+
+    update_order
+}
+
+#[aoc(day5, part2)]
+fn part2(input: &(Vec<Vec<u8>>, Vec<Vec<u8>>)) -> u16 {
+    // println!("{:#?}", input.0);
+    // println!("{:#?}", input.1);
+    let rules = &input.0;
+    let updates = &input.1;
+
+    let mut total: u16 = 0;
+    for update in updates {
+        // println!("{:?}", update);
+
+        let mut accepted_order = true;
+        for rule in update.iter() {
+            let result = check_rules(rules, *rule, update);
+            if !result {
+                accepted_order = false;
+                break;
+            }
+        }
+
+        if !accepted_order {
+            let new_set = fix_rules(rules, update);
+            // println!("New order of numbers {:?}", new_set);
+            total += *new_set
+                .get(new_set.len() / 2)
+                .expect("Failed to get middle number of sorted set.") as u16;
+        }
+    }
+
+    total
+}
 
 #[cfg(test)]
 mod tests {
@@ -155,8 +232,8 @@ mod tests {
         assert_eq!(part1(&parse(EXAMPLE_1)), 143);
     }
 
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
+    #[test]
+    fn part2_example() {
+        assert_eq!(part2(&parse(EXAMPLE_1)), 123);
+    }
 }
