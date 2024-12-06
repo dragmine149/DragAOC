@@ -21,14 +21,10 @@ fn parse(input: &str) -> (Vec<Vec<u8>>, (u8, u8)) {
         .lines()
         .map(|line| {
             line.chars()
-                .map(|char| {
-                    if char == '#' {
-                        return 1;
-                    }
-                    if char == '^' {
-                        return 2;
-                    }
-                    0
+                .map(|char| match char {
+                    '#' => 1,
+                    '^' => 2,
+                    _ => 0,
                 })
                 .collect()
         })
@@ -175,32 +171,23 @@ fn move_and_block_guard(input: &(Vec<Vec<u8>>, (u8, u8)), obstruction_pos: (u8, 
     false
 }
 
+#[allow(dead_code)]
 fn output_map(map: &Vec<Vec<u8>>) {
     let output_map = map
         .iter()
         .map(|line| {
             let mut visible_line = line
                 .iter()
-                .map(|pos| {
-                    if pos == &0 {
-                        '.'
-                    } else if pos == &1 {
-                        '#'
-                    } else if pos == &2 {
-                        '^'
-                    } else if pos == &3 {
-                        '>'
-                    } else if pos == &4 {
-                        'v'
-                    } else if pos == &5 {
-                        '<'
-                    } else if pos == &6 {
-                        'X'
-                    } else if pos == &7 {
-                        'O'
-                    } else {
-                        '?'
-                    }
+                .map(|pos| match pos {
+                    &0 => '.',
+                    &1 => '#',
+                    &2 => '^',
+                    &3 => '>',
+                    &4 => 'v',
+                    &5 => '<',
+                    &6 => 'X',
+                    &7 => 'O',
+                    _ => '?',
                 })
                 .collect::<String>();
             visible_line.push('\n');
