@@ -84,7 +84,7 @@ fn move_guard(
             direction_info = (next_dir_info.0, next_dir_info.1);
             continue;
         }
-        if square == &1 {
+        if square == &1 || square == &7 {
             // the square is an object
             break;
         }
@@ -105,6 +105,74 @@ fn move_guard(
     }
 
     (map, move_count, false, direction_info)
+}
+
+fn move_and_rotate_guard(input: &(Vec<Vec<u8>>, (u8, u8))) -> u16 {
+    let mut is_out_map = false;
+    let mut map = input.0.clone();
+    let mut total_moves = 0;
+    let mut guard_direction = 2;
+    let mut pos = input.1;
+
+    while !is_out_map {
+        // output_map(&map);
+        let move_count;
+        (map, move_count, is_out_map, pos) = move_guard(map, pos, guard_direction);
+        // println!(
+        //     "Guard moved {} and is {} in map",
+        //     move_count,
+        //     if is_out_map { "not" } else { "still" }
+        // );
+        total_moves += move_count;
+
+        if !is_out_map {
+            guard_direction += 1;
+            if guard_direction >= 6 {
+                guard_direction = 2;
+            }
+        }
+
+        // output_map(&map);
+    }
+    // output_map(&map);
+
+    total_moves
+}
+
+fn move_and_block_guard(input: &(Vec<Vec<u8>>, (u8, u8)), obstruction_pos: (u8, u8)) -> bool {
+    let mut map = input.0.clone();
+    map[obstruction_pos.0 as usize][obstruction_pos.1 as usize] = 7;
+
+    let mut guard_direction = 2;
+    let mut pos = input.1;
+    let mut is_out_map = false;
+
+    let mut visited: Vec<(u8, u8)> = vec![pos];
+
+    while !is_out_map {
+        (map, _, is_out_map, pos) = move_guard(map, pos, guard_direction);
+
+        if visited.contains(&pos) && visited.last().expect("Failed to find last elm") != &pos {
+            // output_map(&map);
+            // println!("{:?}\t{:?}", visited, pos);
+            // println!("Obstruction worked!");
+            return true;
+        }
+        visited.push(pos);
+
+        // println!("{:?}\t{:?}\t{:?}", visited, pos, is_out_map);
+        if !is_out_map {
+            // println!("{}", guard_direction);
+            guard_direction += 1;
+            if guard_direction >= 6 {
+                guard_direction = 2;
+            }
+            // println!("{}", guard_direction);
+        }
+    }
+    // output_map(&map);
+    // println!("Obstruction failed");
+    false
 }
 
 fn output_map(map: &Vec<Vec<u8>>) {
@@ -128,6 +196,8 @@ fn output_map(map: &Vec<Vec<u8>>) {
                         '<'
                     } else if pos == &6 {
                         'X'
+                    } else if pos == &7 {
+                        'O'
                     } else {
                         '?'
                     }
@@ -142,38 +212,26 @@ fn output_map(map: &Vec<Vec<u8>>) {
 
 #[aoc(day6, part1)]
 fn part1(input: &(Vec<Vec<u8>>, (u8, u8))) -> u16 {
-    let mut is_out_map = false;
-    let mut map = input.0.clone();
-    let mut total_moves = 0;
-    let mut guard_direction = 2;
-    let mut pos = input.1;
-
-    while !is_out_map {
-        // output_map(&map);
-        let move_count;
-        (map, move_count, is_out_map, pos) = move_guard(map, pos, guard_direction);
-        // println!(
-        //     "Guard moved {} and is {} in map",
-        //     move_count,
-        //     if is_out_map { "not" } else { "still" }
-        // );
-        total_moves += move_count;
-
-        if !is_out_map {
-            guard_direction += 1;
-            if guard_direction > 6 {
-                guard_direction = 2;
-            }
-        }
-
-        // output_map(&map);
-    }
-    output_map(&map);
-
-    total_moves
+    move_and_rotate_guard(input)
 }
-// #[aoc(day6, part2)]
-// fn part2(input: &(Vec<Vec<u8>>, Vec<Vec<u8>>)) -> u16 {}
+#[aoc(day6, part2)]
+fn part2(input: &(Vec<Vec<u8>>, (u8, u8))) -> u16 {
+    let mut obstruction_count = 0;
+    for (line_index, line) in input.0.iter().enumerate() {
+        for (pos_index, _) in line.iter().enumerate() {
+            // println!("Adding obstruction at {:?}", (line_index, pos_index));
+            if input.0[line_index][pos_index] == 1 {
+                // println!("Canceled! Obstruction already at place.");
+                continue;
+            }
+
+            let looped = move_and_block_guard(input, (line_index as u8, pos_index as u8));
+            obstruction_count += if looped { 1 } else { 0 }
+        }
+    }
+
+    obstruction_count
+}
 
 #[cfg(test)]
 mod tests {
