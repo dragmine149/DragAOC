@@ -1,7 +1,5 @@
-use std::ops::BitAnd;
-
 use aoc_runner_derive::{aoc, aoc_generator};
-use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 #[aoc_generator(day7)]
 fn parse(input: &str) -> Vec<(u64, Vec<u64>)> {
@@ -70,8 +68,74 @@ fn part1(input: &Vec<(u64, Vec<u64>)>) -> u64 {
 
     total
 }
-// #[aoc(day7, part2)]
-// fn part2(input: &(Vec<Vec<u8>>, (u8, u8))) -> u16 {}
+
+fn warp_operators(operators: &mut Vec<u8>) {
+    operators[0] += 1;
+    for index in 0..(operators.len() - 1) {
+        if operators[index] >= 3 {
+            operators[index] = 0;
+            operators[index + 1] += 1;
+        }
+    }
+}
+
+fn check_if_calculate_2(input: &(u64, Vec<u64>)) -> bool {
+    let numbers = &input.1;
+    let mut operators: Vec<u8> = vec![];
+    operators.resize(numbers.len() + 2, 0);
+
+    let calculated = loop {
+        // println!("---");
+        let mut calculation = 0;
+        for (index, number) in numbers.iter().enumerate() {
+            // get operator
+            let desired_operator = operators[index];
+            if desired_operator == 0 {
+                // println!("{:?} + {:?}", calculation, number);
+                calculation += number;
+            } else if desired_operator == 1 {
+                // println!("{:?} || {:?}", calculation, number);
+                calculation *= 10_u64.pow(number.to_string().len() as u32);
+                calculation += number;
+            } else if desired_operator == 2 {
+                // println!("{:?} * {:?}", calculation, number);
+                calculation *= number;
+            } else {
+                panic!("AAA");
+            }
+        }
+
+        warp_operators(&mut operators);
+
+        // println!("{:?} ?= {:?}", calculation, input.0);
+        if calculation == input.0 {
+            break true;
+        }
+
+        if operators[operators.len() - 1] >= 3 {
+            break false;
+        }
+    };
+    calculated
+}
+
+#[aoc(day7, part2)]
+fn part2(input: &[(u64, Vec<u64>)]) -> u64 {
+    input
+        .par_iter()
+        // .iter()
+        .map(|calc| {
+            // println!("Attempting to check: {:?}", calc);
+            let calculated = check_if_calculate_2(calc);
+            // println!("Calculated: {:?}", calculated);
+            if calculated {
+                return calc.0;
+            }
+
+            0
+        })
+        .sum()
+}
 
 #[cfg(test)]
 mod tests {
@@ -93,8 +157,8 @@ mod tests {
         assert_eq!(part1(&parse(EXAMPLE_1)), 3749);
     }
 
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse(EXAMPLE_1)), 6);
-    // }
+    #[test]
+    fn part2_example() {
+        assert_eq!(part2(&parse(EXAMPLE_1)), 11387);
+    }
 }
