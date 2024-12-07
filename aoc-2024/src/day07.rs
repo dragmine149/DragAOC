@@ -95,8 +95,9 @@ fn check_if_calculate_2(input: &(u64, Vec<u64>)) -> bool {
                 calculation += number;
             } else if desired_operator == 1 {
                 // println!("{:?} || {:?}", calculation, number);
-                calculation *= 10_u64.pow(number.to_string().len() as u32);
-                calculation += number;
+                calculation =
+                    calculation * 10_u64.pow(((number + 1) as f64).log10().ceil() as u32) + number;
+                // Self::Concatenate => lhs * 10_u64.pow(((rhs + 1) as f64).log10().ceil() as u32) + rhs,
             } else if desired_operator == 2 {
                 // println!("{:?} * {:?}", calculation, number);
                 calculation *= number;
