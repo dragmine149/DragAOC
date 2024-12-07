@@ -57,9 +57,9 @@ fn part1(input: &Vec<(u64, Vec<u64>)>) -> u64 {
     let mut total = 0;
 
     for calc in input.iter() {
-        println!("Attempting to check: {:?}", calc);
+        // println!("Attempting to check: {:?}", calc);
         let calculated = check_if_calculate(calc);
-        println!("Calculated: {:?}", calculated);
+        // println!("Calculated: {:?}", calculated);
 
         if calculated {
             total += calc.0;
