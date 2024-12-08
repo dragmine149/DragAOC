@@ -1,0 +1,3 @@
+# Part 1
+125 - Too Low
+381 - Correct
