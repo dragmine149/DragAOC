@@ -32,6 +32,30 @@ fn parse(input: &str) -> (Vec<(char, Vec<(u8, u8)>)>, (u8, u8)) {
     )
 }
 
+fn check_antinode_valid(anti_node: (i8, i8), map_size: &(u8, u8)) -> bool {
+    anti_node.0 >= 0
+        && anti_node.1 >= 0
+        && anti_node.0 < map_size.0 as i8
+        && anti_node.1 < map_size.1 as i8
+}
+
+fn expand_antinodes(
+    mut goal: (i8, i8),
+    big_distance: (i8, i8),
+    map_size: &(u8, u8),
+) -> Vec<(u8, u8)> {
+    let mut positions: Vec<(u8, u8)> = vec![];
+    loop {
+        goal = (goal.0 - big_distance.0, goal.1 - big_distance.1);
+        if !check_antinode_valid(goal, map_size) {
+            break;
+        }
+        positions.push((goal.0 as u8, goal.1 as u8));
+    }
+
+    positions
+}
+
 fn calculate_antinodes(
     frequency_locations: &Vec<(u8, u8)>,
     map_size: &(u8, u8),
@@ -45,19 +69,27 @@ fn calculate_antinodes(
                 return;
             }
 
-            println!("{:?} {:?}", pos, pos2);
+            // println!("{:?} {:?}", pos, pos2);
             let distance = (pos2.0 as i8 - pos.0 as i8, pos2.1 as i8 - pos.1 as i8);
             let big_distance = (distance.0 * 2_i8, distance.1 * 2_i8);
             let goal = (pos2.0 as i8 - big_distance.0, pos2.1 as i8 - big_distance.1);
-            println!("{:?}, {:?}, {:?}", distance, big_distance, goal);
-
-            if goal.0 >= 0 && goal.1 >= 0 && goal.0 < map_size.0 as i8 && goal.1 < map_size.1 as i8
-            {
+            // println!("{:?}, {:?}, {:?}", distance, big_distance, goal);
+            if check_antinode_valid(goal, map_size) {
                 let big_u8 = (goal.0 as u8, goal.1 as u8);
 
                 let has_pos = positions.contains(&big_u8);
                 if !has_pos {
                     positions.push(big_u8);
+                }
+            }
+
+            if expand {
+                let expanded_list = expand_antinodes(goal, distance, map_size);
+                println!("{:?}, {:?}, {:#?}", goal, distance, expanded_list);
+                for node in expanded_list.iter() {
+                    if !positions.contains(&node) {
+                        positions.push(*node);
+                    }
                 }
             }
         });
@@ -66,6 +98,7 @@ fn calculate_antinodes(
     positions
 }
 
+#[allow(dead_code)]
 fn build_grid(unique: &Vec<(u8, u8)>, map_size: &(u8, u8)) -> String {
     let mut grid: Vec<Vec<char>> = vec![vec!['.'; map_size.1 as usize]; map_size.0 as usize];
     for pos in unique {
@@ -84,14 +117,14 @@ fn build_grid(unique: &Vec<(u8, u8)>, map_size: &(u8, u8)) -> String {
 fn part1(input: &(Vec<(char, Vec<(u8, u8)>)>, (u8, u8))) -> u32 {
     let positions = &input.0;
     let map_size = &input.1;
-    println!("Pos: {:#?}", positions);
-    println!("Map: {:#?}", map_size);
+    // println!("Pos: {:#?}", positions);
+    // println!("Map: {:#?}", map_size);
 
     let mut unique: Vec<(u8, u8)> = vec![];
     for pos in positions.iter() {
-        println!("Calculating antinodes for frequency: {:?}", &pos.0);
+        // println!("Calculating antinodes for frequency: {:?}", &pos.0);
         let antinodes = calculate_antinodes(&pos.1, map_size, false);
-        println!("Antinodes: {:#?}", antinodes);
+        // println!("Antinodes: {:#?}", antinodes);
 
         for antinode in antinodes.iter() {
             if !unique.contains(antinode) {
@@ -99,9 +132,9 @@ fn part1(input: &(Vec<(char, Vec<(u8, u8)>)>, (u8, u8))) -> u32 {
             }
         }
     }
-    println!("Uniquenodes: {:#?}", unique);
-    let map = build_grid(&unique, map_size);
-    println!("{}", map);
+    // println!("Uniquenodes: {:#?}", unique);
+    // let map = build_grid(&unique, map_size);
+    // println!("{}", map);
 
     (unique.len()) as u32
 }
@@ -110,14 +143,21 @@ fn part1(input: &(Vec<(char, Vec<(u8, u8)>)>, (u8, u8))) -> u32 {
 fn part2(input: &(Vec<(char, Vec<(u8, u8)>)>, (u8, u8))) -> u32 {
     let positions = &input.0;
     let map_size = &input.1;
-    println!("Pos: {:#?}", positions);
-    println!("Map: {:#?}", map_size);
+    // println!("Pos: {:#?}", positions);
+    // println!("Map: {:#?}", map_size);
 
     let mut unique: Vec<(u8, u8)> = vec![];
     for pos in positions.iter() {
-        println!("Calculating antinodes for frequency: {:?}", &pos.0);
+        // println!("Calculating antinodes for frequency: {:?}", &pos.0);
         let antinodes = calculate_antinodes(&pos.1, map_size, true);
-        println!("Antinodes: {:#?}", antinodes);
+        // println!("Antinodes: {:#?}", antinodes);
+        if pos.1.len() > 1 {
+            for node in pos.1.iter() {
+                if !unique.contains(node) {
+                    unique.push(*node);
+                }
+            }
+        }
 
         for antinode in antinodes.iter() {
             if !unique.contains(antinode) {
@@ -125,7 +165,7 @@ fn part2(input: &(Vec<(char, Vec<(u8, u8)>)>, (u8, u8))) -> u32 {
             }
         }
     }
-    println!("Uniquenodes: {:#?}", unique);
+    // println!("Uniquenodes: {:#?}", unique);
     let map = build_grid(&unique, map_size);
     println!("{}", map);
 
@@ -189,7 +229,7 @@ mod tests {
     }
 
     #[test]
-    fn part2_example() {
+    fn part2_example2() {
         assert_eq!(part2(&parse(EXAMPLE_3)), 9);
     }
 }
