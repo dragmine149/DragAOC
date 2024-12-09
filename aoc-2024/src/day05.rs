@@ -7,6 +7,7 @@ fn parse(input: &str) -> (Vec<Vec<u8>>, Vec<Vec<u8>>) {
     let mut update: Vec<Vec<u8>> = vec![];
     let mut update_rules = true;
 
+    // split the rules and pages into two seperate vectors
     input.lines().for_each(|line| {
         if line.is_empty() {
             update_rules = false;
@@ -42,6 +43,7 @@ fn check_rules(rules: &Vec<Vec<u8>>, num_a: u8, numbers: &Vec<u8>) -> bool {
     let rule_filter = rules
         .iter()
         .filter(|x| {
+            // get the rule based off the num input.
             let rule_first = x.get(0).expect("Failed to get first number of rule");
             let rule_last = x.get(1).expect("Failed to get second number of rule");
 
@@ -51,6 +53,7 @@ fn check_rules(rules: &Vec<Vec<u8>>, num_a: u8, numbers: &Vec<u8>) -> bool {
         // .collect::<Vec<Vec<u8>>>();
         // println!("Found rules: {:#?}", rule_filter);
         .all(|rule| {
+            // checks to see if the rule is valid.
             let rule_first = rule.get(0).expect("Failed to get first number of rule");
             let rule_last = rule.get(1).expect("Failed to get second number of rule");
             let rule_first_index = numbers.iter().position(|x| x == rule_first);
@@ -113,6 +116,7 @@ fn part1(input: &(Vec<Vec<u8>>, Vec<Vec<u8>>)) -> u16 {
     total
 }
 
+// get a list of the rules that are used with that number
 fn get_desired_rules(rules: &Vec<Vec<u8>>, num_a: u8, numbers: &Vec<u8>) -> Vec<Vec<u8>> {
     rules
         .clone()
@@ -135,6 +139,7 @@ fn fix_rules(rules: &Vec<Vec<u8>>, numbers: &Vec<u8>) -> Vec<u8> {
         let desired_rules = get_desired_rules(rules, *b, numbers);
         // println!("{:?}", desired_rules);
 
+        // change the ordering depending on rule order
         for rule in desired_rules {
             let rule_first = rule.get(0).expect("Failed to get first number of rule");
             let rule_last = rule.get(1).expect("Failed to get second number of rule");
@@ -155,6 +160,7 @@ fn fix_rules(rules: &Vec<Vec<u8>>, numbers: &Vec<u8>) -> Vec<u8> {
         // todo!();
         // a.cmp(b)
 
+        // if we have no rule or can't determin ordering, just keep it where it is
         Ordering::Equal
     });
 

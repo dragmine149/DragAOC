@@ -7,6 +7,7 @@ fn parse(input: &str) -> (Vec<(char, Vec<(u8, u8)>)>, (u8, u8)) {
     // Vector of [[Type, [(X, Y), (X, Y)]], [Type, [(X, Y), (X, Y)]]]
     let mut positions: Vec<(char, Vec<(u8, u8)>)> = vec![];
 
+    // Creates a list of positions
     for (line_index, line) in input.lines().enumerate() {
         for (char_index, char) in line.chars().enumerate() {
             if char == '.' || char == '#' {
@@ -17,9 +18,11 @@ fn parse(input: &str) -> (Vec<(char, Vec<(u8, u8)>)>, (u8, u8)) {
             let pos = positions.iter().position(|x| x.0 == char);
             match pos {
                 Some(idx) => {
+                    // If the tower already exists, add this position to it
                     positions[idx].1.push((line_index as u8, char_index as u8));
                 }
                 None => {
+                    // If the tower doesn't exist, make a new tower.
                     positions.push((char, vec![(line_index as u8, char_index as u8)]));
                 }
             }
@@ -32,6 +35,7 @@ fn parse(input: &str) -> (Vec<(char, Vec<(u8, u8)>)>, (u8, u8)) {
     )
 }
 
+// Check to see if where we want to place this antinode, it is inside the map.
 fn check_antinode_valid(anti_node: (i8, i8), map_size: &(u8, u8)) -> bool {
     anti_node.0 >= 0
         && anti_node.1 >= 0
@@ -39,6 +43,7 @@ fn check_antinode_valid(anti_node: (i8, i8), map_size: &(u8, u8)) -> bool {
         && anti_node.1 < map_size.1 as i8
 }
 
+// Which inside the map, keep generate a list of antinode positions.
 fn expand_antinodes(
     mut goal: (i8, i8),
     big_distance: (i8, i8),
@@ -63,9 +68,11 @@ fn calculate_antinodes(
 ) -> Vec<(u8, u8)> {
     let mut positions: Vec<(u8, u8)> = vec![];
 
+    // Double for loop to match each position with each other.
     frequency_locations.iter().for_each(|pos| {
         frequency_locations.iter().for_each(|pos2| {
             if pos == pos2 {
+                // Prevents infinite loops with delta being 0
                 return;
             }
 
@@ -98,6 +105,7 @@ fn calculate_antinodes(
     positions
 }
 
+// Debug
 #[allow(dead_code)]
 fn build_grid(unique: &Vec<(u8, u8)>, map_size: &(u8, u8)) -> String {
     let mut grid: Vec<Vec<char>> = vec![vec!['.'; map_size.1 as usize]; map_size.0 as usize];

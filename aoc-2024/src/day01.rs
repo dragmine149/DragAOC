@@ -2,6 +2,7 @@ use aoc_runner_derive::aoc;
 
 #[aoc(day1, part1)]
 fn part1(input: &str) -> i64 {
+    // Create two lists and fill them up
     let mut list_a: Vec<i64> = Vec::new();
     let mut list_b: Vec<i64> = Vec::new();
     for line in input.lines() {
@@ -22,9 +23,11 @@ fn part1(input: &str) -> i64 {
         list_b.push(num_b);
     }
 
+    // sort the lists
     list_a.sort();
     list_b.sort();
 
+    // Make a new list with the difference of all the values
     let mut diff: Vec<i64> = Vec::new();
 
     for (index, value) in list_a.iter().enumerate() {
@@ -36,6 +39,7 @@ fn part1(input: &str) -> i64 {
 
 #[aoc(day1, part2)]
 fn part2(input: &str) -> u64 {
+    // Once again split the data up
     let mut list_a: Vec<u64> = Vec::new();
     let mut list_b: Vec<u64> = Vec::new();
 
@@ -60,6 +64,7 @@ fn part2(input: &str) -> u64 {
     let mut list_c: Vec<u64> = Vec::new();
     // let list_d: Vec<u64> = Vec::new();
 
+    // Count how many times the value in the first list appears in the second list.
     for value in list_a.iter() {
         let mut count: u64 = 0;
         if list_b.contains(&value) {

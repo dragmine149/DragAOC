@@ -11,6 +11,8 @@ fn parse(input: &str) -> Vec<Vec<String>> {
         .collect()
 }
 
+// Hard coded values to check if "MAS" is in a certain position comparied to the starting values.
+// (this gets confusing, ik)
 fn check_for_xmas(
     input: &Vec<Vec<String>>,
     start_line_index: usize,
@@ -95,6 +97,7 @@ fn check_for_xmas(
     count
 }
 
+// Same as above function but only for "AS" instead.
 fn find_as_from_mas(
     input: &Vec<Vec<String>>,
     index_a: (usize, usize),
@@ -151,6 +154,7 @@ fn find_as_from_mas(
     count
 }
 
+// the "M" pat of "AS"
 fn check_for_x_mas(
     input: &Vec<Vec<String>>,
     start_line_index: usize,

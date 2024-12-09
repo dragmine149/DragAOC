@@ -27,10 +27,12 @@ fn part1(input: &Vec<Vec<u32>>) -> u32 {
     for levels in input {
         // println!("----");
 
+        // Pop the first one out of the list to make maths easier. (and so we don't work with negative values)
         let mut levels_iter = levels.iter().enumerate();
         levels_iter.next();
         let mut state: u8 = 0;
         let mut result = true;
+        // for all the rest.
         for (index, level) in levels_iter {
             // println!("{}, {}, {}", index, level, state);
 
@@ -38,6 +40,7 @@ fn part1(input: &Vec<Vec<u32>>) -> u32 {
                 .get(index - 1)
                 .expect("Failed to get previous level index");
 
+            // check if safe or not depending on the rest of them.
             let diff = safe_diff(previous_level, level, &state);
             if diff == 0 {
                 result = false;
@@ -52,6 +55,7 @@ fn part1(input: &Vec<Vec<u32>>) -> u32 {
     safe_count
 }
 
+// check if the level is safe or not depending on its relationship to the over levels.
 fn safe_diff(input_a: &u32, input_b: &u32, state: &u8) -> u8 {
     let diff = compare_levels(input_a, input_b);
     if diff == 1 && state == &2 {
@@ -63,6 +67,7 @@ fn safe_diff(input_a: &u32, input_b: &u32, state: &u8) -> u8 {
     diff
 }
 
+// Get the result of the difference in the two levels.
 fn compare_levels(input_a: &u32, input_b: &u32) -> u8 {
     if input_a > &input_b.saturating_add(3) {
         return 0;
@@ -100,6 +105,7 @@ fn p2_parse_level(input: &Vec<u32>, retry: bool) -> bool {
 
     // println!("{}", break_index);
 
+    // if something did break, retry again 3 times but removing either the start, one before or one after this one to see if it still breaks.
     if break_index != 0 {
         if retry {
             let mut new_input = input.clone();

@@ -4,6 +4,7 @@ use aoc_runner_derive::{aoc, aoc_generator};
 fn parse(input: &str) -> (Vec<Vec<u8>>, (u8, u8)) {
     let mut guard = (0_u8, 0_u8);
 
+    // get the location of the guard
     for (index, line) in input.lines().enumerate() {
         let guard_potential_pos = line.find('^');
 
@@ -17,6 +18,7 @@ fn parse(input: &str) -> (Vec<Vec<u8>>, (u8, u8)) {
         }
     }
 
+    // translate the map into a grid of numbers.
     let map = input
         .lines()
         .map(|line| {
@@ -32,6 +34,7 @@ fn parse(input: &str) -> (Vec<Vec<u8>>, (u8, u8)) {
     (map, guard)
 }
 
+// Returns the next position to go to and if that is inside or outside of the map.
 fn translate_direction(pos: (u8, u8), direction: u8) -> (u8, u8, bool) {
     if direction == 2 {
         let out_of_map = pos.0 < 1;
@@ -47,6 +50,13 @@ fn translate_direction(pos: (u8, u8), direction: u8) -> (u8, u8, bool) {
     (pos.0, pos.1.saturating_sub(1), out_of_map)
 }
 
+// Move the guard around the map
+// Takes: map, pos, direction
+// Returns:
+// - map: The map
+// - move count: How many cells the guard moved this time
+// - Is out of map: Is guard inside or outside of the border
+// - Position: Position of the guard (or last position guard was in before going outside)
 fn move_guard(
     mut map: Vec<Vec<u8>>,
     pos: (u8, u8),
@@ -73,7 +83,8 @@ fn move_guard(
         if square == &0 {
             // new square, mark it
             move_count += 1;
-            // move guard
+            // move guard by setting the next square to the guard and the previous square to an x.
+            // This also accidently prevents an issue in p2
             map[next_dir_info.0 as usize][next_dir_info.1 as usize] = direction;
             map[direction_info.0 as usize][direction_info.1 as usize] = 6;
 
@@ -103,6 +114,7 @@ fn move_guard(
     (map, move_count, false, direction_info)
 }
 
+// Normal guard movement
 fn move_and_rotate_guard(input: &(Vec<Vec<u8>>, (u8, u8))) -> u16 {
     let mut is_out_map = false;
     let mut map = input.0.clone();
@@ -122,6 +134,7 @@ fn move_and_rotate_guard(input: &(Vec<Vec<u8>>, (u8, u8))) -> u16 {
         total_moves += move_count;
 
         if !is_out_map {
+            // overflow rotation system
             guard_direction += 1;
             if guard_direction >= 6 {
                 guard_direction = 2;
@@ -135,19 +148,22 @@ fn move_and_rotate_guard(input: &(Vec<Vec<u8>>, (u8, u8))) -> u16 {
     total_moves
 }
 
+// Try to block the guard by doing the same as the above but slightly different.
 fn move_and_block_guard(input: &(Vec<Vec<u8>>, (u8, u8)), obstruction_pos: (u8, u8)) -> bool {
     let mut map = input.0.clone();
-    map[obstruction_pos.0 as usize][obstruction_pos.1 as usize] = 7;
+    map[obstruction_pos.0 as usize][obstruction_pos.1 as usize] = 7; // the square to block
 
     let mut guard_direction = 2;
     let mut pos = input.1;
     let mut is_out_map = false;
 
-    let mut visited: Vec<(u8, u8)> = vec![pos];
+    let mut visited: Vec<(u8, u8)> = vec![pos]; // list of positions
 
     while !is_out_map {
         (map, _, is_out_map, pos) = move_guard(map, pos, guard_direction);
 
+        // If the guard has been here before break. (Pos is only when the guard rotates, and since we're back here we are 99% likely to be in a loop)
+        // The `visited.last().expect("Failed to find last elm") != &pos` check prevents the guard from giving up if it has just rotated and already got stuck without moving.
         if visited.contains(&pos) && visited.last().expect("Failed to find last elm") != &pos {
             // output_map(&map);
             // println!("{:?}\t{:?}", visited, pos);
@@ -171,6 +187,7 @@ fn move_and_block_guard(input: &(Vec<Vec<u8>>, (u8, u8)), obstruction_pos: (u8, 
     false
 }
 
+// Debug, convert and print map.
 #[allow(dead_code)]
 fn output_map(map: &Vec<Vec<u8>>) {
     let output_map = map

@@ -8,6 +8,8 @@ fn parse(input: &str) -> Vec<(u64, Vec<u64>)> {
         .map(|line| {
             let info: Vec<&str> = line.split(':').collect();
 
+            // split input up into calculations and the desired result
+
             let result = info
                 .get(0)
                 .expect("Failed to get desired result")
@@ -24,27 +26,29 @@ fn parse(input: &str) -> Vec<(u64, Vec<u64>)> {
         .collect::<Vec<(u64, Vec<u64>)>>()
 }
 
+// Using binary, check if we can do a calculation.
 fn check_if_calculate(input: &(u64, Vec<u64>)) -> bool {
     let numbers = &input.1;
-    let mut operators: u16 = 0b0;
+    let mut operators: u16 = 0b0; // Bit 0: addition, Bit 1: Multiplication
 
     let calculated = loop {
         let mut calculation = 0;
         for (index, number) in numbers.iter().enumerate() {
             // get operator
-            let desired_operator = (operators >> index) & 1;
+            let desired_operator = (operators >> index) & 1; // get the bit at the specified index
             if desired_operator == 0 {
                 calculation += number;
             } else {
                 calculation *= number;
             }
         }
-        operators += 0b1;
+        operators += 0b1; // increment by 1, which also wraps the input around
 
         if calculation == input.0 {
             break true;
         }
 
+        // checks if the last big (biggest bit) is one, aka we have been though everything and found nothing.
         if (operators >> numbers.len()) & 1 == 1 {
             break false;
         }
@@ -69,6 +73,7 @@ fn part1(input: &Vec<(u64, Vec<u64>)>) -> u64 {
     total
 }
 
+// Vector and manual version of binary wrapping.
 fn warp_operators(operators: &mut Vec<u8>) {
     operators[0] += 1;
     for index in 0..(operators.len() - 1) {
@@ -79,6 +84,7 @@ fn warp_operators(operators: &mut Vec<u8>) {
     }
 }
 
+// The same as the previous check_if_calculate but uses vector wrapping and support for the third operator
 fn check_if_calculate_2(input: &(u64, Vec<u64>)) -> bool {
     let numbers = &input.1;
     let mut operators: Vec<u8> = vec![];
@@ -95,6 +101,7 @@ fn check_if_calculate_2(input: &(u64, Vec<u64>)) -> bool {
                 calculation += number;
             } else if desired_operator == 1 {
                 // println!("{:?} || {:?}", calculation, number);
+                // Does 10^(the ceiling of how many times 10 goes into the right hand side number).
                 calculation =
                     calculation * 10_u64.pow(((number + 1) as f64).log10().ceil() as u32) + number;
                 // Self::Concatenate => lhs * 10_u64.pow(((rhs + 1) as f64).log10().ceil() as u32) + rhs,

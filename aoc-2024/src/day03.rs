@@ -8,11 +8,14 @@ fn parse_regex(input: &str, skip: bool) -> u64 {
     )
     .unwrap();
 
+    // capture results and process them
     let result = regex.captures_iter(input);
     let mut calculation: u64 = 0;
     let mut is_skipping: bool = false;
     for mat in result {
         // println!("{:#?}", mat);
+
+        // enable or disable if we are skipping over some
         if !mat.name("do").is_none() && skip {
             // println!("Stop Skipping");
             is_skipping = false;
@@ -32,6 +35,7 @@ fn parse_regex(input: &str, skip: bool) -> u64 {
             continue;
         }
 
+        // calculate the result from the numbers provided by regex match.
         let num_1 = mat
             .name("num1")
             .expect("Failed to find first number in match")
