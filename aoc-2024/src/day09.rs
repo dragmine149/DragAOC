@@ -264,9 +264,9 @@ fn part2(input: &Vec<Cell>) -> u64 {
     let mut cells = input.clone();
     cells.iter_mut().for_each(|cell| cell.overflow = true);
 
-    print_real(&cells);
+    // print_real(&cells);
     let result_cells = fill_up_cells(&cells);
-    print_real(&result_cells);
+    // print_real(&result_cells);
     calculate_checksum(&result_cells)
 }
 
