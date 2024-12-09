@@ -5,6 +5,7 @@ struct Cell {
     empty: bool,
     id: u32,
     size: u32,
+    overflow: bool,
 }
 
 impl Cell {
@@ -13,7 +14,24 @@ impl Cell {
             empty: true,
             id: 0,
             size: 0,
+            overflow: self.overflow,
         };
+
+        if self.empty && self.overflow {
+            if self.size >= other.size {
+                self.id = other.id;
+                self.empty = false;
+                other.empty = true;
+
+                let overflow = self.size - other.size;
+                self.size = other.size;
+                cell.size = overflow;
+
+                return cell;
+            }
+            return cell;
+        }
+
         if !self.empty {
             return cell;
         }
@@ -43,11 +61,25 @@ impl Cell {
         cell
     }
 
+    fn can_fit(&self, other: Cell) -> bool {
+        // println!(
+        //     "Testing to see if {:?} can fit in {:?} (Result: {:?})",
+        //     other,
+        //     self,
+        //     self.size >= other.size
+        // );
+        self.size >= other.size
+    }
+
     fn has_no_size(&self) -> bool {
         self.size == 0
     }
 
     fn calculate_checksum(&self, position: u32) -> (u32, u64) {
+        if self.empty {
+            return (position + self.size, 0);
+        }
+
         let mut checksum = 0;
         for index in 0..self.size {
             checksum += self.id * (position + index);
@@ -56,7 +88,14 @@ impl Cell {
     }
 
     fn real_repersentation(&self) -> String {
-        let vec: Vec<String> = vec![self.id.to_string(); self.size as usize];
+        let vec: Vec<String> = vec![
+            if self.empty {
+                '.'.to_string()
+            } else {
+                self.id.to_string()
+            };
+            self.size as usize
+        ];
         vec.join("")
     }
 }
@@ -72,6 +111,7 @@ fn parse(input: &str) -> Vec<Cell> {
             empty: is_empty,
             id: if is_empty { 0 } else { id },
             size: char.to_digit(10).expect("Failed to parse digit in input."),
+            overflow: false,
         };
         cells.push(cell);
         if !is_empty {
@@ -91,6 +131,7 @@ fn get_back_cell(cell_list: &Vec<Cell>, mut back_list_index: usize) -> (usize, C
                     empty: true,
                     id: 0,
                     size: 0,
+                    overflow: false,
                 },
             );
         }
@@ -108,6 +149,32 @@ fn get_back_cell(cell_list: &Vec<Cell>, mut back_list_index: usize) -> (usize, C
     }
 }
 
+fn get_fit_back_cell(cell_list: &Vec<Cell>, cell: usize) -> (usize, Cell) {
+    let current_cell = cell_list[cell];
+    let mut back_index = 1;
+    loop {
+        let back = cell_list[cell_list.len() - back_index];
+        if !back.empty {
+            if current_cell.can_fit(back) {
+                break (back_index, back);
+            }
+        }
+
+        back_index += 1;
+        if back_index > cell_list.len() - 1 {
+            break (
+                0,
+                Cell {
+                    empty: true,
+                    id: 0,
+                    size: 0,
+                    overflow: true,
+                },
+            );
+        }
+    }
+}
+
 fn fill_up_cells(cells: &Vec<Cell>) -> Vec<Cell> {
     let mut cell_list = cells.clone();
     let mut new_list: Vec<Cell> = vec![];
@@ -116,6 +183,7 @@ fn fill_up_cells(cells: &Vec<Cell>) -> Vec<Cell> {
     for cell in 0..cell_list.len() {
         // println!("{:?}", cell_list);
         // print_real(&new_list);
+        // println!("{:?} {:?}", cell, back_list_index);
         let front_cell = cell_list[cell];
         if front_cell.has_no_size() {
             continue;
@@ -128,11 +196,19 @@ fn fill_up_cells(cells: &Vec<Cell>) -> Vec<Cell> {
         }
 
         let mut back_cell;
-        (back_list_index, back_cell) = get_back_cell(&cell_list, back_list_index);
-        // println!("BLI: {:?} CELL: {:?}", back_list_index, cell);
-        if back_cell.empty {
-            break;
+        if !front_cell.overflow {
+            (back_list_index, back_cell) = get_back_cell(&cell_list, back_list_index);
+            if back_cell.empty {
+                break;
+            }
+        } else {
+            (back_list_index, back_cell) = get_fit_back_cell(&cell_list, cell);
+            if back_cell.empty {
+                new_list.push(front_cell);
+                continue;
+            }
         }
+        // println!("BLI: {:?} CELL: {:?}", back_list_index, cell);
 
         let mut clone_front = front_cell.clone();
         // println!("{:?} {:?}", clone_front, back_cell);
@@ -183,10 +259,16 @@ fn part1(input: &Vec<Cell>) -> u64 {
     calculate_checksum(&cells)
 }
 
-// #[aoc(day9, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+#[aoc(day9, part2)]
+fn part2(input: &Vec<Cell>) -> u64 {
+    let mut cells = input.clone();
+    cells.iter_mut().for_each(|cell| cell.overflow = true);
+
+    print_real(&cells);
+    let result_cells = fill_up_cells(&cells);
+    print_real(&result_cells);
+    calculate_checksum(&result_cells)
+}
 
 #[cfg(test)]
 mod tests {
@@ -204,8 +286,8 @@ mod tests {
         assert_eq!(part1(&parse(EXAMPLE_2)), 60);
     }
 
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
+    #[test]
+    fn part2_example() {
+        assert_eq!(part2(&parse(EXAMPLE_1)), 2858);
+    }
 }
