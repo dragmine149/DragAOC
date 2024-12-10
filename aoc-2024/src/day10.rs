@@ -11,6 +11,7 @@ fn parse(input: &str) -> Vec<Vec<u32>> {
         .collect::<Vec<Vec<u32>>>()
 }
 
+// Find the next possible route by checking the neighbours to see if a node is a step above the current node.
 fn find_next_nodes(grid: &Vec<Vec<u32>>, cell: &(usize, usize)) -> Vec<(usize, usize)> {
     let current_node = grid[cell.1][cell.0];
     let mut possible_routes: Vec<(usize, usize)> = vec![];
@@ -37,6 +38,7 @@ fn find_next_nodes(grid: &Vec<Vec<u32>>, cell: &(usize, usize)) -> Vec<(usize, u
     possible_routes
 }
 
+// function recursive. Calls itelf until it reaches the end, or no route.
 fn get_pos_of_9(
     grid: &Vec<Vec<u32>>,
     cell: &(usize, usize),
@@ -48,7 +50,7 @@ fn get_pos_of_9(
     }
     let routes = find_next_nodes(grid, cell);
     if routes.is_empty() {
-        return vec![];
+        return vec![]; // empty array as no path
     }
     let mut cells = vec![];
     for route in routes.iter() {
