@@ -12,28 +12,22 @@ fn parse(input: &str) -> Vec<Vec<u32>> {
 }
 
 // Find the next possible route by checking the neighbours to see if a node is a step above the current node.
-fn find_next_nodes(grid: &Vec<Vec<u32>>, cell: &(usize, usize)) -> Vec<(usize, usize)> {
+fn find_next_nodes(grid: &[Vec<u32>], cell: &(usize, usize)) -> Vec<(usize, usize)> {
     let current_node = grid[cell.1][cell.0];
     let mut possible_routes: Vec<(usize, usize)> = vec![];
-    if cell.1 >= 1 {
-        if grid[cell.1 - 1][cell.0] == current_node + 1 {
-            possible_routes.push((cell.0, cell.1 - 1));
-        }
+    if cell.1 >= 1 && grid[cell.1 - 1][cell.0] == current_node + 1 {
+        possible_routes.push((cell.0, cell.1 - 1));
     }
-    if cell.0 < grid.len() - 1 {
-        if grid[cell.1][cell.0 + 1] == current_node + 1 {
-            possible_routes.push((cell.0 + 1, cell.1));
-        }
+    if cell.0 < grid.len() - 1 && grid[cell.1][cell.0 + 1] == current_node + 1 {
+        possible_routes.push((cell.0 + 1, cell.1));
     }
-    if cell.1 < grid.first().expect("Failed to get first row").len() - 1 {
-        if grid[cell.1 + 1][cell.0] == current_node + 1 {
-            possible_routes.push((cell.0, cell.1 + 1));
-        }
+    if cell.1 < grid.first().expect("Failed to get first row").len() - 1
+        && grid[cell.1 + 1][cell.0] == current_node + 1
+    {
+        possible_routes.push((cell.0, cell.1 + 1));
     }
-    if cell.0 >= 1 {
-        if grid[cell.1][cell.0 - 1] == current_node + 1 {
-            possible_routes.push((cell.0 - 1, cell.1));
-        }
+    if cell.0 >= 1 && grid[cell.1][cell.0 - 1] == current_node + 1 {
+        possible_routes.push((cell.0 - 1, cell.1));
     }
     possible_routes
 }
@@ -77,9 +71,8 @@ fn part1(input: &Vec<Vec<u32>>) -> u64 {
                         return vec![];
                     }
                     // println!("Start: {:?}", (cell_index, row_index));
-                    let a = get_pos_of_9(input, &(cell_index, row_index), false);
+                    get_pos_of_9(input, &(cell_index, row_index), false)
                     // println!("End: {:?}", a);
-                    a
                 })
                 .collect::<Vec<(usize, usize)>>()
         })
@@ -101,9 +94,8 @@ fn part2(input: &Vec<Vec<u32>>) -> u64 {
                         return vec![];
                     }
                     // println!("Start: {:?}", (cell_index, row_index));
-                    let a = get_pos_of_9(input, &(cell_index, row_index), true);
+                    get_pos_of_9(input, &(cell_index, row_index), true)
                     // println!("End: {:?}", a);
-                    a
                 })
                 .collect::<Vec<(usize, usize)>>()
         })

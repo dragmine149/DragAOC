@@ -78,11 +78,14 @@ fn compare_levels(input_a: &u32, input_b: &u32) -> u8 {
     if input_a < &input_b.saturating_sub(3) {
         return 0;
     }
-    let diff = if input_a > input_b { 1 } else { 2 };
-    diff
+    if input_a > input_b {
+        1
+    } else {
+        2
+    }
 }
 
-fn p2_parse_level(input: &Vec<u32>, retry: bool) -> bool {
+fn p2_parse_level(input: &[u32], retry: bool) -> bool {
     // println!("{:?}", input);
     let mut iter = input.iter().enumerate();
     iter.next();
@@ -108,15 +111,15 @@ fn p2_parse_level(input: &Vec<u32>, retry: bool) -> bool {
     // if something did break, retry again 3 times but removing either the start, one before or one after this one to see if it still breaks.
     if break_index != 0 {
         if retry {
-            let mut new_input = input.clone();
+            let mut new_input = input.to_owned();
             new_input.remove(break_index);
             let check_a = p2_parse_level(&new_input, false);
 
-            let mut new_input_2 = input.clone();
+            let mut new_input_2 = input.to_owned();
             new_input_2.remove(break_index - 1);
             let check_b = p2_parse_level(&new_input_2, false);
 
-            let mut new_input_3 = input.clone();
+            let mut new_input_3 = input.to_owned();
             new_input_3.remove(0);
             let check_c = p2_parse_level(&new_input_3, false);
 
@@ -133,7 +136,7 @@ fn part2(input: &Vec<Vec<u32>>) -> u32 {
     let mut safe_count: u32 = 0;
 
     for levels in input {
-        safe_count += if p2_parse_level(&levels, true) { 1 } else { 0 };
+        safe_count += if p2_parse_level(levels, true) { 1 } else { 0 };
     }
 
     safe_count

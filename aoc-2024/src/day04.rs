@@ -14,7 +14,7 @@ fn parse(input: &str) -> Vec<Vec<String>> {
 // Hard coded values to check if "MAS" is in a certain position comparied to the starting values.
 // (this gets confusing, ik)
 fn check_for_xmas(
-    input: &Vec<Vec<String>>,
+    input: &[Vec<String>],
     start_line_index: usize,
     start_char_index: usize,
     line_length: usize,
@@ -22,76 +22,72 @@ fn check_for_xmas(
     let mut count: u64 = 0;
 
     // north
-    if start_line_index >= 3 {
-        if input[start_line_index - 1][start_char_index] == "M"
-            && input[start_line_index - 2][start_char_index] == "A"
-            && input[start_line_index - 3][start_char_index] == "S"
-        {
-            count += 1;
-        }
+    if start_line_index >= 3
+        && input[start_line_index - 1][start_char_index] == "M"
+        && input[start_line_index - 2][start_char_index] == "A"
+        && input[start_line_index - 3][start_char_index] == "S"
+    {
+        count += 1;
     }
     // north east
-    if start_line_index >= 3 && start_char_index + 3 < line_length {
-        if input[start_line_index - 1][start_char_index + 1] == "M"
-            && input[start_line_index - 2][start_char_index + 2] == "A"
-            && input[start_line_index - 3][start_char_index + 3] == "S"
-        {
-            count += 1;
-        }
+    if start_line_index >= 3
+        && start_char_index + 3 < line_length
+        && input[start_line_index - 1][start_char_index + 1] == "M"
+        && input[start_line_index - 2][start_char_index + 2] == "A"
+        && input[start_line_index - 3][start_char_index + 3] == "S"
+    {
+        count += 1;
     }
     // east
-    if start_char_index + 3 < line_length {
-        if input[start_line_index][start_char_index + 1] == "M"
-            && input[start_line_index][start_char_index + 2] == "A"
-            && input[start_line_index][start_char_index + 3] == "S"
-        {
-            count += 1;
-        }
+    if start_char_index + 3 < line_length
+        && input[start_line_index][start_char_index + 1] == "M"
+        && input[start_line_index][start_char_index + 2] == "A"
+        && input[start_line_index][start_char_index + 3] == "S"
+    {
+        count += 1;
     }
     // south east
-    if start_line_index + 3 < input.len() && start_char_index + 3 < line_length {
-        if input[start_line_index + 1][start_char_index + 1] == "M"
-            && input[start_line_index + 2][start_char_index + 2] == "A"
-            && input[start_line_index + 3][start_char_index + 3] == "S"
-        {
-            count += 1;
-        }
+    if start_line_index + 3 < input.len()
+        && start_char_index + 3 < line_length
+        && input[start_line_index + 1][start_char_index + 1] == "M"
+        && input[start_line_index + 2][start_char_index + 2] == "A"
+        && input[start_line_index + 3][start_char_index + 3] == "S"
+    {
+        count += 1;
     }
     // south
-    if start_line_index + 3 < input.len() {
-        if input[start_line_index + 1][start_char_index] == "M"
-            && input[start_line_index + 2][start_char_index] == "A"
-            && input[start_line_index + 3][start_char_index] == "S"
-        {
-            count += 1;
-        }
+    if start_line_index + 3 < input.len()
+        && input[start_line_index + 1][start_char_index] == "M"
+        && input[start_line_index + 2][start_char_index] == "A"
+        && input[start_line_index + 3][start_char_index] == "S"
+    {
+        count += 1;
     }
     // south west
-    if start_line_index + 3 < input.len() && start_char_index >= 3 {
-        if input[start_line_index + 1][start_char_index - 1] == "M"
-            && input[start_line_index + 2][start_char_index - 2] == "A"
-            && input[start_line_index + 3][start_char_index - 3] == "S"
-        {
-            count += 1;
-        }
+    if start_line_index + 3 < input.len()
+        && start_char_index >= 3
+        && input[start_line_index + 1][start_char_index - 1] == "M"
+        && input[start_line_index + 2][start_char_index - 2] == "A"
+        && input[start_line_index + 3][start_char_index - 3] == "S"
+    {
+        count += 1;
     }
     // west
-    if start_char_index >= 3 {
-        if input[start_line_index][start_char_index - 1] == "M"
-            && input[start_line_index][start_char_index - 2] == "A"
-            && input[start_line_index][start_char_index - 3] == "S"
-        {
-            count += 1;
-        }
+    if start_char_index >= 3
+        && input[start_line_index][start_char_index - 1] == "M"
+        && input[start_line_index][start_char_index - 2] == "A"
+        && input[start_line_index][start_char_index - 3] == "S"
+    {
+        count += 1;
     }
     // north west
-    if start_line_index >= 3 && start_char_index >= 3 {
-        if input[start_line_index - 1][start_char_index - 1] == "M"
-            && input[start_line_index - 2][start_char_index - 2] == "A"
-            && input[start_line_index - 3][start_char_index - 3] == "S"
-        {
-            count += 1;
-        }
+    if start_line_index >= 3
+        && start_char_index >= 3
+        && input[start_line_index - 1][start_char_index - 1] == "M"
+        && input[start_line_index - 2][start_char_index - 2] == "A"
+        && input[start_line_index - 3][start_char_index - 3] == "S"
+    {
+        count += 1;
     }
 
     count
@@ -99,7 +95,7 @@ fn check_for_xmas(
 
 // Same as above function but only for "AS" instead.
 fn find_as_from_mas(
-    input: &Vec<Vec<String>>,
+    input: &[Vec<String>],
     index_a: (usize, usize),
     index_b: (usize, usize),
     line_length: usize,
@@ -156,40 +152,36 @@ fn find_as_from_mas(
 
 // the "M" pat of "AS"
 fn check_for_x_mas(
-    input: &Vec<Vec<String>>,
+    input: &[Vec<String>],
     start_line_index: usize,
     start_char_index: usize,
     line_length: usize,
 ) -> u64 {
     let mut count: u64 = 0;
 
-    if start_char_index + 2 < line_length {
-        if input[start_line_index][start_char_index + 2] == "M" {
-            count += find_as_from_mas(
-                input,
-                (start_line_index, start_char_index),
-                (start_line_index, start_char_index + 2),
-                line_length,
-            );
-        }
+    if start_char_index + 2 < line_length && input[start_line_index][start_char_index + 2] == "M" {
+        count += find_as_from_mas(
+            input,
+            (start_line_index, start_char_index),
+            (start_line_index, start_char_index + 2),
+            line_length,
+        );
     }
 
-    if start_line_index + 2 < input.len() {
-        if input[start_line_index + 2][start_char_index] == "M" {
-            count += find_as_from_mas(
-                input,
-                (start_line_index, start_char_index),
-                (start_line_index + 2, start_char_index),
-                line_length,
-            );
-        }
+    if start_line_index + 2 < input.len() && input[start_line_index + 2][start_char_index] == "M" {
+        count += find_as_from_mas(
+            input,
+            (start_line_index, start_char_index),
+            (start_line_index + 2, start_char_index),
+            line_length,
+        );
     }
 
     count
 }
 
 #[aoc(day4, part1)]
-fn part1(input: &Vec<Vec<String>>) -> u64 {
+fn part1(input: &[Vec<String>]) -> u64 {
     let mut xmas_found: u64 = 0;
 
     for (line_index, line) in input.iter().enumerate() {
@@ -213,7 +205,7 @@ fn part1(input: &Vec<Vec<String>>) -> u64 {
 }
 
 #[aoc(day4, part2)]
-fn part2(input: &Vec<Vec<String>>) -> u64 {
+fn part2(input: &[Vec<String>]) -> u64 {
     let mut xmas_found: u64 = 0;
 
     for (line_index, line) in input.iter().enumerate() {

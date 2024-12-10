@@ -35,16 +35,19 @@ fn parse(input: &str) -> (Vec<Vec<u8>>, Vec<Vec<u8>>) {
         }
     });
 
-    rules.sort_by(|a, b| (a.get(0)).cmp(&b.get(0)));
+    rules.sort_by(|a, b| {
+        (a.first().expect("Failed to get first element"))
+            .cmp(b.first().expect("Failed to get element"))
+    });
     (rules, update)
 }
 
-fn check_rules(rules: &Vec<Vec<u8>>, num_a: u8, numbers: &Vec<u8>) -> bool {
+fn check_rules(rules: &[Vec<u8>], num_a: u8, numbers: &[u8]) -> bool {
     let rule_filter = rules
         .iter()
         .filter(|x| {
             // get the rule based off the num input.
-            let rule_first = x.get(0).expect("Failed to get first number of rule");
+            let rule_first = x.first().expect("Failed to get first number of rule");
             let rule_last = x.get(1).expect("Failed to get second number of rule");
 
             (rule_first == &num_a && numbers.contains(rule_last))
@@ -54,7 +57,7 @@ fn check_rules(rules: &Vec<Vec<u8>>, num_a: u8, numbers: &Vec<u8>) -> bool {
         // println!("Found rules: {:#?}", rule_filter);
         .all(|rule| {
             // checks to see if the rule is valid.
-            let rule_first = rule.get(0).expect("Failed to get first number of rule");
+            let rule_first = rule.first().expect("Failed to get first number of rule");
             let rule_last = rule.get(1).expect("Failed to get second number of rule");
             let rule_first_index = numbers.iter().position(|x| x == rule_first);
             let rule_last_index = numbers.iter().position(|x| x == rule_last);
@@ -64,15 +67,11 @@ fn check_rules(rules: &Vec<Vec<u8>>, num_a: u8, numbers: &Vec<u8>) -> bool {
             //     rule, rule_first_index, rule_last_index
             // );
 
-            if rule_first == &num_a {
-                if rule_first_index > rule_last_index {
-                    return false;
-                }
+            if rule_first == &num_a && rule_first_index > rule_last_index {
+                return false;
             }
-            if rule_last == &num_a {
-                if rule_last_index < rule_first_index {
-                    return false;
-                }
+            if rule_last == &num_a && rule_last_index < rule_first_index {
+                return false;
             }
 
             true
@@ -117,12 +116,13 @@ fn part1(input: &(Vec<Vec<u8>>, Vec<Vec<u8>>)) -> u16 {
 }
 
 // get a list of the rules that are used with that number
-fn get_desired_rules(rules: &Vec<Vec<u8>>, num_a: u8, numbers: &Vec<u8>) -> Vec<Vec<u8>> {
+fn get_desired_rules(rules: &[Vec<u8>], num_a: u8, numbers: &[u8]) -> Vec<Vec<u8>> {
     rules
+        .to_owned()
         .clone()
         .into_iter()
         .filter(|x| {
-            let rule_first = x.get(0).expect("Failed to get first number of rule");
+            let rule_first = x.first().expect("Failed to get first number of rule");
             let rule_last = x.get(1).expect("Failed to get second number of rule");
 
             (rule_first == &num_a && numbers.contains(rule_last))
@@ -131,9 +131,9 @@ fn get_desired_rules(rules: &Vec<Vec<u8>>, num_a: u8, numbers: &Vec<u8>) -> Vec<
         .collect::<Vec<Vec<u8>>>()
 }
 
-fn fix_rules(rules: &Vec<Vec<u8>>, numbers: &Vec<u8>) -> Vec<u8> {
+fn fix_rules(rules: &[Vec<u8>], numbers: &[u8]) -> Vec<u8> {
     // println!("Fixing order: {:?}", numbers);
-    let mut update_order = numbers.clone();
+    let mut update_order = numbers.to_owned();
     update_order.sort_by(|a, b| {
         // println!("(a: {:?}, b: {:?})", a, b);
         let desired_rules = get_desired_rules(rules, *b, numbers);
@@ -141,7 +141,7 @@ fn fix_rules(rules: &Vec<Vec<u8>>, numbers: &Vec<u8>) -> Vec<u8> {
 
         // change the ordering depending on rule order
         for rule in desired_rules {
-            let rule_first = rule.get(0).expect("Failed to get first number of rule");
+            let rule_first = rule.first().expect("Failed to get first number of rule");
             let rule_last = rule.get(1).expect("Failed to get second number of rule");
 
             if rule_first == a {

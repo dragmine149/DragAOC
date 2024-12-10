@@ -11,7 +11,7 @@ fn parse(input: &str) -> Vec<(u64, Vec<u64>)> {
             // split input up into calculations and the desired result
 
             let result = info
-                .get(0)
+                .first()
                 .expect("Failed to get desired result")
                 .parse::<u64>()
                 .expect("Failed to parse desired result");
@@ -31,7 +31,7 @@ fn check_if_calculate(input: &(u64, Vec<u64>)) -> bool {
     let numbers = &input.1;
     let mut operators: u16 = 0b0; // Bit 0: addition, Bit 1: Multiplication
 
-    let calculated = loop {
+    loop {
         let mut calculation = 0;
         for (index, number) in numbers.iter().enumerate() {
             // get operator
@@ -52,12 +52,11 @@ fn check_if_calculate(input: &(u64, Vec<u64>)) -> bool {
         if (operators >> numbers.len()) & 1 == 1 {
             break false;
         }
-    };
-    calculated
+    }
 }
 
 #[aoc(day7, part1)]
-fn part1(input: &Vec<(u64, Vec<u64>)>) -> u64 {
+fn part1(input: &[(u64, Vec<u64>)]) -> u64 {
     let mut total = 0;
 
     for calc in input.iter() {
@@ -74,7 +73,7 @@ fn part1(input: &Vec<(u64, Vec<u64>)>) -> u64 {
 }
 
 // Vector and manual version of binary wrapping.
-fn warp_operators(operators: &mut Vec<u8>) {
+fn warp_operators(operators: &mut [u8]) {
     operators[0] += 1;
     for index in 0..(operators.len() - 1) {
         if operators[index] >= 3 {
@@ -87,10 +86,9 @@ fn warp_operators(operators: &mut Vec<u8>) {
 // The same as the previous check_if_calculate but uses vector wrapping and support for the third operator
 fn check_if_calculate_2(input: &(u64, Vec<u64>)) -> bool {
     let numbers = &input.1;
-    let mut operators: Vec<u8> = vec![];
-    operators.resize(numbers.len() + 2, 0);
+    let mut operators: Vec<u8> = vec![0; numbers.len() + 2];
 
-    let calculated = loop {
+    loop {
         // println!("---");
         let mut calculation = 0;
         for (index, number) in numbers.iter().enumerate() {
@@ -123,8 +121,7 @@ fn check_if_calculate_2(input: &(u64, Vec<u64>)) -> bool {
         if operators[operators.len() - 1] >= 3 {
             break false;
         }
-    };
-    calculated
+    }
 }
 
 #[aoc(day7, part2)]

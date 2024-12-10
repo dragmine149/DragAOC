@@ -148,7 +148,7 @@ fn parse(input: &str) -> Vec<Cell> {
 }
 
 // Returns the cell at the back of the list that isn't empty.
-fn get_back_cell(cell_list: &Vec<Cell>, mut back_list_index: usize) -> (usize, Cell) {
+fn get_back_cell(cell_list: &[Cell], mut back_list_index: usize) -> (usize, Cell) {
     loop {
         // If we empty out of the list just break, we aren't going to find cells in negative territory.
         if back_list_index >= cell_list.len() {
@@ -177,15 +177,13 @@ fn get_back_cell(cell_list: &Vec<Cell>, mut back_list_index: usize) -> (usize, C
 }
 
 // The same as [get_back_cell] but only returns the cell if it can fit in the current cell.
-fn get_fit_back_cell(cell_list: &Vec<Cell>, cell: usize) -> (usize, Cell) {
+fn get_fit_back_cell(cell_list: &[Cell], cell: usize) -> (usize, Cell) {
     let current_cell = cell_list[cell];
     let mut back_index = 1;
     loop {
         let back = cell_list[cell_list.len() - back_index];
-        if !back.empty {
-            if current_cell.can_fit(back) {
-                break (back_index, back);
-            }
+        if !back.empty && current_cell.can_fit(back) {
+            break (back_index, back);
         }
 
         back_index += 1;
@@ -204,8 +202,8 @@ fn get_fit_back_cell(cell_list: &Vec<Cell>, cell: usize) -> (usize, Cell) {
 }
 
 // Recreate the file system by using the old file system and hence filling up the spaces which are empty.
-fn fill_up_cells(cells: &Vec<Cell>) -> Vec<Cell> {
-    let mut cell_list = cells.clone();
+fn fill_up_cells(cells: &[Cell]) -> Vec<Cell> {
+    let mut cell_list = cells.to_owned();
     let mut new_list: Vec<Cell> = vec![];
     let mut back_list_index = 1;
 
@@ -245,7 +243,7 @@ fn fill_up_cells(cells: &Vec<Cell>) -> Vec<Cell> {
         // println!("BLI: {:?} CELL: {:?}", back_list_index, cell);
 
         // Move the back cell into the front cell.
-        let mut clone_front = front_cell.clone();
+        let mut clone_front = front_cell;
         // println!("{:?} {:?}", clone_front, back_cell);
         let extra = clone_front.fill_cell(&mut back_cell);
         // println!("{:?} {:?} {:?}", clone_front, back_cell, extra);
@@ -263,7 +261,7 @@ fn fill_up_cells(cells: &Vec<Cell>) -> Vec<Cell> {
     new_list
 }
 
-fn calculate_checksum(cells: &Vec<Cell>) -> u64 {
+fn calculate_checksum(cells: &[Cell]) -> u64 {
     let mut checksum = 0;
     let mut position = 0;
     for cell in cells.iter() {
@@ -276,7 +274,7 @@ fn calculate_checksum(cells: &Vec<Cell>) -> u64 {
 
 // Debug
 #[allow(dead_code)]
-fn print_real(cells: &Vec<Cell>) {
+fn print_real(cells: &[Cell]) {
     for cell in cells.iter() {
         print!("{}", cell.real_repersentation());
     }
@@ -284,7 +282,7 @@ fn print_real(cells: &Vec<Cell>) {
 }
 
 #[aoc(day9, part1)]
-fn part1(input: &Vec<Cell>) -> u64 {
+fn part1(input: &[Cell]) -> u64 {
     // println!("{:?}", input);
     // println!();
 
@@ -296,8 +294,8 @@ fn part1(input: &Vec<Cell>) -> u64 {
 }
 
 #[aoc(day9, part2)]
-fn part2(input: &Vec<Cell>) -> u64 {
-    let mut cells = input.clone();
+fn part2(input: &[Cell]) -> u64 {
+    let mut cells = input.to_owned();
     cells.iter_mut().for_each(|cell| cell.overflow = true);
 
     // print_real(&cells);

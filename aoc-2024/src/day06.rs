@@ -63,7 +63,7 @@ fn move_guard(
     direction: u8,
 ) -> (Vec<Vec<u8>>, u16, bool, (u8, u8)) {
     let mut move_count: u16 = 0;
-    let mut direction_info = pos.clone();
+    let mut direction_info = pos.to_owned();
     loop {
         let next_dir_info = translate_direction(direction_info, direction);
         if next_dir_info.0 >= map.len() as u8
@@ -95,7 +95,7 @@ fn move_guard(
             // the square is an object
             break;
         }
-        if square >= &2 && square <= &5 {
+        if (&2..&5).contains(&square) {
             // another guard somehow
             panic!("Why is there another guard around?");
         }
@@ -189,21 +189,21 @@ fn move_and_block_guard(input: &(Vec<Vec<u8>>, (u8, u8)), obstruction_pos: (u8, 
 
 // Debug, convert and print map.
 #[allow(dead_code)]
-fn output_map(map: &Vec<Vec<u8>>) {
+fn output_map(map: &[Vec<u8>]) {
     let output_map = map
         .iter()
         .map(|line| {
             let mut visible_line = line
                 .iter()
-                .map(|pos| match pos {
-                    &0 => '.',
-                    &1 => '#',
-                    &2 => '^',
-                    &3 => '>',
-                    &4 => 'v',
-                    &5 => '<',
-                    &6 => 'X',
-                    &7 => 'O',
+                .map(|pos| match *pos {
+                    0 => '.',
+                    1 => '#',
+                    2 => '^',
+                    3 => '>',
+                    4 => 'v',
+                    5 => '<',
+                    6 => 'X',
+                    7 => 'O',
                     _ => '?',
                 })
                 .collect::<String>();

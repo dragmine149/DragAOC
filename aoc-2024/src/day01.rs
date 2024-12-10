@@ -67,7 +67,7 @@ fn part2(input: &str) -> u64 {
     // Count how many times the value in the first list appears in the second list.
     for value in list_a.iter() {
         let mut count: u64 = 0;
-        if list_b.contains(&value) {
+        if list_b.contains(value) {
             for value_2 in list_b.iter() {
                 if value_2 == value {
                     count += 1;

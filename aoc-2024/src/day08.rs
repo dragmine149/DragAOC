@@ -1,11 +1,12 @@
 use aoc_runner_derive::{aoc, aoc_generator};
-// use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+
+type Position = (u8, u8);
 
 // Probably a better way of doing this
 #[aoc_generator(day8)]
-fn parse(input: &str) -> (Vec<(char, Vec<(u8, u8)>)>, (u8, u8)) {
+fn parse(input: &str) -> (Vec<(char, Vec<Position>)>, Position) {
     // Vector of [[Type, [(X, Y), (X, Y)]], [Type, [(X, Y), (X, Y)]]]
-    let mut positions: Vec<(char, Vec<(u8, u8)>)> = vec![];
+    let mut positions: Vec<(char, Vec<Position>)> = vec![];
 
     // Creates a list of positions
     for (line_index, line) in input.lines().enumerate() {
@@ -36,7 +37,7 @@ fn parse(input: &str) -> (Vec<(char, Vec<(u8, u8)>)>, (u8, u8)) {
 }
 
 // Check to see if where we want to place this antinode, it is inside the map.
-fn check_antinode_valid(anti_node: (i8, i8), map_size: &(u8, u8)) -> bool {
+fn check_antinode_valid(anti_node: (i8, i8), map_size: &Position) -> bool {
     anti_node.0 >= 0
         && anti_node.1 >= 0
         && anti_node.0 < map_size.0 as i8
@@ -47,9 +48,9 @@ fn check_antinode_valid(anti_node: (i8, i8), map_size: &(u8, u8)) -> bool {
 fn expand_antinodes(
     mut goal: (i8, i8),
     big_distance: (i8, i8),
-    map_size: &(u8, u8),
-) -> Vec<(u8, u8)> {
-    let mut positions: Vec<(u8, u8)> = vec![];
+    map_size: &Position,
+) -> Vec<Position> {
+    let mut positions: Vec<Position> = vec![];
     loop {
         goal = (goal.0 - big_distance.0, goal.1 - big_distance.1);
         if !check_antinode_valid(goal, map_size) {
@@ -62,11 +63,11 @@ fn expand_antinodes(
 }
 
 fn calculate_antinodes(
-    frequency_locations: &Vec<(u8, u8)>,
-    map_size: &(u8, u8),
+    frequency_locations: &[Position],
+    map_size: &Position,
     expand: bool,
-) -> Vec<(u8, u8)> {
-    let mut positions: Vec<(u8, u8)> = vec![];
+) -> Vec<Position> {
+    let mut positions: Vec<Position> = vec![];
 
     // Double for loop to match each position with each other.
     frequency_locations.iter().for_each(|pos| {
@@ -94,7 +95,7 @@ fn calculate_antinodes(
                 let expanded_list = expand_antinodes(goal, distance, map_size);
                 println!("{:?}, {:?}, {:#?}", goal, distance, expanded_list);
                 for node in expanded_list.iter() {
-                    if !positions.contains(&node) {
+                    if !positions.contains(node) {
                         positions.push(*node);
                     }
                 }
@@ -107,7 +108,7 @@ fn calculate_antinodes(
 
 // Debug
 #[allow(dead_code)]
-fn build_grid(unique: &Vec<(u8, u8)>, map_size: &(u8, u8)) -> String {
+fn build_grid(unique: &Vec<Position>, map_size: &Position) -> String {
     let mut grid: Vec<Vec<char>> = vec![vec!['.'; map_size.1 as usize]; map_size.0 as usize];
     for pos in unique {
         grid[pos.0 as usize][pos.1 as usize] = '#';
@@ -122,13 +123,13 @@ fn build_grid(unique: &Vec<(u8, u8)>, map_size: &(u8, u8)) -> String {
 }
 
 #[aoc(day8, part1)]
-fn part1(input: &(Vec<(char, Vec<(u8, u8)>)>, (u8, u8))) -> u32 {
+fn part1(input: &(Vec<(char, Vec<Position>)>, Position)) -> u32 {
     let positions = &input.0;
     let map_size = &input.1;
     // println!("Pos: {:#?}", positions);
     // println!("Map: {:#?}", map_size);
 
-    let mut unique: Vec<(u8, u8)> = vec![];
+    let mut unique: Vec<Position> = vec![];
     for pos in positions.iter() {
         // println!("Calculating antinodes for frequency: {:?}", &pos.0);
         let antinodes = calculate_antinodes(&pos.1, map_size, false);
@@ -148,13 +149,13 @@ fn part1(input: &(Vec<(char, Vec<(u8, u8)>)>, (u8, u8))) -> u32 {
 }
 
 #[aoc(day8, part2)]
-fn part2(input: &(Vec<(char, Vec<(u8, u8)>)>, (u8, u8))) -> u32 {
+fn part2(input: &(Vec<(char, Vec<Position>)>, Position)) -> u32 {
     let positions = &input.0;
     let map_size = &input.1;
     // println!("Pos: {:#?}", positions);
     // println!("Map: {:#?}", map_size);
 
-    let mut unique: Vec<(u8, u8)> = vec![];
+    let mut unique: Vec<Position> = vec![];
     for pos in positions.iter() {
         // println!("Calculating antinodes for frequency: {:?}", &pos.0);
         let antinodes = calculate_antinodes(&pos.1, map_size, true);

@@ -16,18 +16,18 @@ fn parse_regex(input: &str, skip: bool) -> u64 {
         // println!("{:#?}", mat);
 
         // enable or disable if we are skipping over some
-        if !mat.name("do").is_none() && skip {
+        if mat.name("do").is_some() && skip {
             // println!("Stop Skipping");
             is_skipping = false;
             continue;
         }
-        if !mat.name("dont").is_none() && skip {
+        if mat.name("dont").is_some() && skip {
             // println!("Started Skipping");
             is_skipping = true;
             continue;
         }
 
-        if !skip && (!mat.name("do").is_none() || !mat.name("dont").is_none()) {
+        if !skip && (mat.name("do").is_some() || mat.name("dont").is_some()) {
             continue;
         }
 
