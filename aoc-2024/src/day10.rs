@@ -37,7 +37,11 @@ fn find_next_nodes(grid: &Vec<Vec<u32>>, cell: &(usize, usize)) -> Vec<(usize, u
     possible_routes
 }
 
-fn get_pos_of_9(grid: &Vec<Vec<u32>>, cell: &(usize, usize)) -> Vec<(usize, usize)> {
+fn get_pos_of_9(
+    grid: &Vec<Vec<u32>>,
+    cell: &(usize, usize),
+    any_route: bool,
+) -> Vec<(usize, usize)> {
     if grid[cell.1][cell.0] == 9 {
         // println!("Found: {:?}", cell);
         return vec![*cell];
@@ -48,9 +52,9 @@ fn get_pos_of_9(grid: &Vec<Vec<u32>>, cell: &(usize, usize)) -> Vec<(usize, usiz
     }
     let mut cells = vec![];
     for route in routes.iter() {
-        let result_squares = get_pos_of_9(grid, route);
+        let result_squares = get_pos_of_9(grid, route, any_route);
         for result in result_squares {
-            if !cells.contains(&result) {
+            if !cells.contains(&result) || any_route {
                 cells.push(result);
             }
         }
@@ -71,7 +75,7 @@ fn part1(input: &Vec<Vec<u32>>) -> u64 {
                         return vec![];
                     }
                     // println!("Start: {:?}", (cell_index, row_index));
-                    let a = get_pos_of_9(input, &(cell_index, row_index));
+                    let a = get_pos_of_9(input, &(cell_index, row_index), false);
                     // println!("End: {:?}", a);
                     a
                 })
@@ -82,10 +86,29 @@ fn part1(input: &Vec<Vec<u32>>) -> u64 {
     results.len() as u64
 }
 
-// #[aoc(day10, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+#[aoc(day10, part2)]
+fn part2(input: &Vec<Vec<u32>>) -> u64 {
+    let results = input
+        .iter()
+        .enumerate()
+        .flat_map(|(row_index, row)| {
+            row.iter()
+                .enumerate()
+                .flat_map(move |(cell_index, cell)| {
+                    if *cell != 0 {
+                        return vec![];
+                    }
+                    // println!("Start: {:?}", (cell_index, row_index));
+                    let a = get_pos_of_9(input, &(cell_index, row_index), true);
+                    // println!("End: {:?}", a);
+                    a
+                })
+                .collect::<Vec<(usize, usize)>>()
+        })
+        .collect::<Vec<(usize, usize)>>();
+    // println!("{:?}", results);
+    results.len() as u64
+}
 
 #[cfg(test)]
 mod tests {
@@ -106,8 +129,8 @@ mod tests {
         assert_eq!(part1(&parse(EXAMPLE_1)), 36);
     }
 
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
+    #[test]
+    fn part2_example() {
+        assert_eq!(part2(&parse(EXAMPLE_1)), 81);
+    }
 }
