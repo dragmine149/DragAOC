@@ -1,0 +1,5 @@
+Puzzle1:
+    496 - 1 gold star.
+
+Puzzle2:
+    

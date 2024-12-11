@@ -1,0 +1,38 @@
+import datetime
+import os
+
+# get advent calendar day
+d = datetime.datetime.now()
+day = d.strftime("%d")
+
+# check if not already made
+if not os.path.isdir(f'{day}'):
+
+    # make folder
+    os.system(f'mkdir {day}')
+
+    # data for files
+    file = ["import file\n" +
+            "import run\n" +
+            "\n\n" +
+            "class Class():\n" +
+            "    def __init__(self, debug):\n" +
+            "        self.debug = debug.lower()[0] == 't'\n"
+            "        self.lines = file.get()\n" +
+            "        if self.debug:\n" +
+            "            self.lines = file.get2()\n" +
+            "\n\n" +
+            "if __name__ == '__main__':\n" +
+            "    c = Class(input('Debug?: '))\n" +
+            "    print(run.End())"]
+
+    # make files
+    os.system(f'echo "{file[0]}" > {day}/Puzzle1.py')
+    os.system(f'echo "{file[0]}" > {day}/Puzzle2.py')
+    os.system(f'echo "Puzzle1:\n    " > {day}/Guess.txt')
+    os.system(f'echo "" > {day}/Inputs.txt')
+    os.system(f'echo "" > {day}/Inputs2.txt')
+    os.system(f'cp file.py {day}')
+    os.system(f'cp run.py {day}')
+else:
+    print('\nPlease delete the folder before running the command\n')

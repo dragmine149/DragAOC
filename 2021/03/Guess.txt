@@ -1,0 +1,7 @@
+Puzzle1:
+  1131506 - 1 gold star
+
+Puzzle2:
+  7863147 - 1  gold star, NOTE: this was hard, not an easy one. Also messed up
+                                some values (when duplicating code) so took longer
+                                than excepted. But Finally did it!

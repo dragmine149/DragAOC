@@ -1,4 +1,5 @@
 *.pyc
+**/__pycache__/**
 data.txt
 2023/Godot/Data/Day1/Default.txt
 2023/Godot/Data/Day2/Default.txt
@@ -9,3 +10,5 @@ data.txt
 2023/Godot/Data/Day7/Default.txt
 **/target/**
 input
+2021/**/Inputs.txt
+.DS_Store

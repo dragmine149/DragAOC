@@ -1,0 +1,7 @@
+Puzzle1:
+  1341 - too low
+  1343 - too high
+  1342 - 1 gold star
+
+Puzzle2:
+  1378 - 1 gold star

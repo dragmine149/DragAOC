@@ -1,0 +1,7 @@
+Puzzle1:
+  7196 - too high
+  6115 - too high
+  6113 - 1 gold star. CORRECT YIPPEE!
+
+Puzzle2:
+  20373 - 1 gold star.

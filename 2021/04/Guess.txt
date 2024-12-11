@@ -1,0 +1,11 @@
+Puzzle1:
+  59124 - too high
+  32292 - too low
+  43628 - too high
+  52052 - not right answer. (too high ^^)
+  33222 - nope (seems too low)
+  33348 - 1 gold star. Yay!
+
+Puzzle2:
+  10292 - too high
+  8112 - 1 gold star.

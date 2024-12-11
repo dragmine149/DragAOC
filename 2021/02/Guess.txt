@@ -1,0 +1,5 @@
+Puzzle1:
+  2091984 - 1 gold star
+
+Puzzle2:
+  2086261056 - 1 gold star
