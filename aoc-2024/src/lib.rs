@@ -1,3 +1,4 @@
+mod day12;
 mod day11;
 extern crate aoc_runner;
 
