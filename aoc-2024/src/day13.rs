@@ -29,6 +29,11 @@ impl Machine {
 
     fn simultaneous(&self) -> (u64, u64) {
         // THANKS: https://www.reddit.com/r/adventofcode/comments/1hde7e4/you_dont_have_to_use_linear_algebra_you_can_use/
+        // Basically does simulatenous equations to get the answer.
+        // println!(
+        //     "Attempting to do simulataneous equations on machine: {:?}",
+        //     self
+        // );
         let a = (self.button_a.0 as f64, self.button_a.1 as f64);
         let b = (self.button_b.0 as f64, self.button_b.1 as f64);
         let p = (self.prize.0 as f64, self.prize.1 as f64);
@@ -37,29 +42,17 @@ impl Machine {
         let y = ((-(a.0) * x) + p.0) / b.0;
 
         // println!("X: {:?}, Y: {:?}", x, y);
+        // Makes sure we are a whole number because we can't move decimals.
         if x.fract() == 0.0 && y.fract() == 0.0 {
             return (x as u64, y as u64);
         }
 
-        (0, 0)
+        (0, 0) // technically this could be possible, but well that would be free so yeah.
     }
 
-    fn machine_cost_1(&self) -> u64 {
-        // println!(
-        //     "Attempting to do simulataneous equations on machine: {:?}",
-        //     self
-        // );
+    fn machine_cost(&self) -> u64 {
         let (a_count, b_count) = self.simultaneous();
         // println!("Result of sim: (X: {:?}, y: {:?})", a_count, b_count);
-        if a_count > 100 || b_count > 100 {
-            return 0_u64;
-        }
-
-        a_count as u64 * 3 + b_count as u64
-    }
-
-    fn machine_cost_2(&self) -> u64 {
-        let (a_count, b_count) = self.simultaneous();
         a_count * 3 + b_count
     }
 }
@@ -139,8 +132,7 @@ fn part1(input: &[Machine]) -> u64 {
 
     input
         .into_par_iter()
-        // .iter()
-        .map(|machine| machine.machine_cost_1())
+        .map(|machine| machine.machine_cost())
         .sum()
 }
 
@@ -152,10 +144,11 @@ fn part2(input: &[Machine]) -> u64 {
     machines
         .par_iter_mut()
         .map(|machine| {
+            // fun offset
             machine.prize.0 += 10_000_000_000_000;
             machine.prize.1 += 10_000_000_000_000;
             // println!("{:?}", machine);
-            machine.machine_cost_2()
+            machine.machine_cost()
         })
         .sum()
 }
@@ -195,9 +188,4 @@ Prize: X=3, Y=12
     fn sim_test() {
         assert_eq!(part1(&parse(SIM_TEST)), 9);
     }
-
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
 }
