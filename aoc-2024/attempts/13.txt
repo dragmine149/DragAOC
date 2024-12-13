@@ -1,2 +1,9 @@
 # Part 1
 31897 - Correct
+
+# Part 2
+129280 - Too Low
+224760 - Too low?
+158100 - Too low
+158100 - ?
+87596249540359 - Correct

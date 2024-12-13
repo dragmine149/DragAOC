@@ -1,5 +1,5 @@
 use aoc_runner_derive::{aoc, aoc_generator};
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use rayon::iter::{IntoParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
 use regex::Regex;
 
 #[derive(Debug, Clone, Copy)]
@@ -27,7 +27,7 @@ impl Machine {
         Default::default()
     }
 
-    fn simultaneous(&self) -> (u8, u8) {
+    fn simultaneous(&self) -> (u64, u64) {
         // THANKS: https://www.reddit.com/r/adventofcode/comments/1hde7e4/you_dont_have_to_use_linear_algebra_you_can_use/
         let a = (self.button_a.0 as f64, self.button_a.1 as f64);
         let b = (self.button_b.0 as f64, self.button_b.1 as f64);
@@ -36,27 +36,31 @@ impl Machine {
         let x = ((p.1 * b.0) - (p.0 * b.1)) / ((a.1 * b.0) - (a.0 * b.1));
         let y = ((-(a.0) * x) + p.0) / b.0;
 
-        println!("X: {:?}, Y: {:?}", x, y);
-        if x >= 0.0 && x <= 100.0 && y >= 0.0 && y <= 100.0 && x.fract() == 0.0 && y.fract() == 0.0
-        {
-            return (x as u8, y as u8);
+        // println!("X: {:?}, Y: {:?}", x, y);
+        if x.fract() == 0.0 && y.fract() == 0.0 {
+            return (x as u64, y as u64);
         }
 
-        (101, 101)
+        (0, 0)
     }
 
-    fn machine_cost(&self) -> u64 {
-        println!(
-            "Attempting to do simulataneous equations on machine: {:?}",
-            self
-        );
+    fn machine_cost_1(&self) -> u64 {
+        // println!(
+        //     "Attempting to do simulataneous equations on machine: {:?}",
+        //     self
+        // );
         let (a_count, b_count) = self.simultaneous();
-        println!("Result of sim: (X: {:?}, y: {:?})", a_count, b_count);
+        // println!("Result of sim: (X: {:?}, y: {:?})", a_count, b_count);
         if a_count > 100 || b_count > 100 {
             return 0_u64;
         }
 
         a_count as u64 * 3 + b_count as u64
+    }
+
+    fn machine_cost_2(&self) -> u64 {
+        let (a_count, b_count) = self.simultaneous();
+        a_count * 3 + b_count
     }
 }
 
@@ -131,19 +135,30 @@ fn parse(input: &str) -> Vec<Machine> {
 
 #[aoc(day13, part1)]
 fn part1(input: &[Machine]) -> u64 {
-    println!("{:#?}", input);
+    // println!("{:#?}", input);
 
     input
         .into_par_iter()
         // .iter()
-        .map(|machine| machine.machine_cost())
+        .map(|machine| machine.machine_cost_1())
         .sum()
 }
 
-// #[aoc(day13, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+#[aoc(day13, part2)]
+fn part2(input: &[Machine]) -> u64 {
+    // println!("{:#?}", input);
+    let mut machines = input.to_owned();
+
+    machines
+        .par_iter_mut()
+        .map(|machine| {
+            machine.prize.0 += 10_000_000_000_000;
+            machine.prize.1 += 10_000_000_000_000;
+            // println!("{:?}", machine);
+            machine.machine_cost_2()
+        })
+        .sum()
+}
 
 #[cfg(test)]
 mod tests {
