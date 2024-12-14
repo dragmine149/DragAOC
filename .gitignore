@@ -12,3 +12,6 @@ data.txt
 input
 2021/**/Inputs.txt
 .DS_Store
+
+.aoc_tiles/*
+!.aoc_tiles/tiles/

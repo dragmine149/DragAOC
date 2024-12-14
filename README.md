@@ -13,3 +13,8 @@
 ## Advent of code Information
 
 <https://adventofcode.com/about>
+
+## Scores
+<!-- AOC TILES BEGIN -->
+
+<!-- AOC TILES END -->
