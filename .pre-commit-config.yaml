@@ -4,7 +4,7 @@ repos:
       hooks:
           - id: aoc-tiles
           - --count-as-solved-when=both
-          - --language-sorting=rs, py, js
+          - --language-sorting=rs,py,js
             # Optionally use these arguments. Auto add tiles to git adds the tiles to git,
             # possibly amends your commit by creating the tile images and updating the README.
             # Language sorting shows the preference of the order of the languages to use.
@@ -13,5 +13,5 @@ repos:
             # Simply remove the comments (#) below for args and the flags you want.
             # args:
             #     - --auto-add-tiles-to-git=amend
-            #     - --language-sorting=jl,kt,py,rs
+                # - --language-sorting=jl,kt,py,rs
             #     - --exclude-patterns=2021/*/*.apl,2021/*/*.py,2021/*/*.cpp
