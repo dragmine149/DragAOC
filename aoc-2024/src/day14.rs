@@ -9,21 +9,23 @@ struct Position(usize, usize);
 struct Velocity(isize, isize);
 
 impl Position {
+    // work out maths to make the robot move
     fn move_distance(&mut self, distance: Velocity, max: Position) {
         let mut x = self.0 as isize + distance.0;
         let mut y = self.1 as isize + distance.1;
 
+        // .abs() is used in the rare cases where the robot loops around more than twice at once.
         if x < 0 {
             x = max.0 as isize - (x.abs() % max.0 as isize);
         }
         if x >= max.0 as isize {
-            x = x % max.0 as isize;
+            x %= max.0 as isize;
         }
         if y < 0 {
             y = max.1 as isize - (y.abs() % max.1 as isize);
         }
         if y >= max.1 as isize {
-            y = y % max.1 as isize;
+            y %= max.1 as isize;
         }
 
         self.0 = x as usize;
@@ -62,6 +64,7 @@ impl Robot {
     fn get_quadrant(self, grid_size: Position) -> u8 {
         // println!("{:?}", self);
 
+        // Check which quadrant the robot is in thanks to easy maths due to odd size grid.
         // 0 = None. 1 = top left, 2 = top right, 3 = bottom left, 4 = bottom right
         let x_split = grid_size.0 / 2;
         let y_split = grid_size.1 / 2;
@@ -82,6 +85,7 @@ impl Robot {
     }
 }
 
+// count how many robots are in each space and print them out. Useful for debugging or finding the christmas tree.
 #[allow(dead_code)]
 fn debug_grid(robots: &[Robot], grid_size: Position, split: bool) {
     let x_split = grid_size.0 / 2;
@@ -110,14 +114,18 @@ fn debug_grid(robots: &[Robot], grid_size: Position, split: bool) {
     }
 }
 
+// Check to see if a line has a group of at least 30 in the IQR.
+// Used for finding the tree
 fn check_for_line(robots: &[Robot], grid_size: Position) -> bool {
     for y in 0..grid_size.1 {
+        // don't worry about other info
         let mut robot_pos = robots
             .iter()
             .map(|robot| robot.pos)
             .collect::<Vec<Position>>();
         robot_pos.sort();
         let count = robot_pos.iter().filter(|robot| robot.1 == y);
+        // not enough robots
         if count.count() < 30 {
             continue;
         }
@@ -142,7 +150,7 @@ fn check_for_line(robots: &[Robot], grid_size: Position) -> bool {
         }
     }
 
-    return false;
+    false
 }
 
 #[aoc_generator(day14)]
@@ -193,11 +201,12 @@ fn parse(input: &str) -> Vec<Robot> {
         .collect()
 }
 
+// part 1: move the robots and see where they end up at.
 fn process_robots(input: &[Robot], grid_size: Position) -> usize {
     let mut robots = input.to_owned();
     // println!("Start");
     // debug_grid(&robots, grid_size, false);
-    for second in 0..100 {
+    for _second in 0..100 {
         robots
             .par_iter_mut()
             .for_each(|robot| robot.move_robot(grid_size));
@@ -221,6 +230,7 @@ fn process_robots(input: &[Robot], grid_size: Position) -> usize {
     q1 * q2 * q3 * q4
 }
 
+// part 2 search every second until tree might have been found.
 fn find_tree(input: &[Robot], grid_size: Position) -> bool {
     let mut robots = input.to_owned();
     let mut line = false;
