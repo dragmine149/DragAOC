@@ -359,8 +359,8 @@ fn merge_segment(grid: &[Vec<Plot>], segment: Plot, segments: &mut Vec<(Vec<Plot
             }
 
             // println!(
-            //     "Inserted neigh {:?} with wall {:?} into {:?}",
-            //     neigh, wall, seg,
+            //     "Inserted seg {:?} with wall {:?} into {:?}",
+            //     segment, wall, seg,
             // );
             insert = true;
             seg.0.push(segment);
@@ -369,9 +369,49 @@ fn merge_segment(grid: &[Vec<Plot>], segment: Plot, segments: &mut Vec<(Vec<Plot
         }
 
         if !insert && !contains {
-            // println!("Making new segments out of {:?} (Made: {:?})", neigh, wall);
+            // println!(
+            //     "Making new segments out of {:?} (Made: {:?})",
+            //     segment, wall
+            // );
             segments.push((vec![segment], wall));
         }
+    }
+}
+
+fn merge_segment_with_wall(
+    grid: &[Vec<Plot>],
+    segment: Plot,
+    segments: &mut Vec<(Vec<Plot>, Direction)>,
+    wall: Direction,
+) {
+    let mut insert = false;
+    let mut contains = false;
+    for seg in segments.iter_mut() {
+        if seg.1 != wall {
+            continue;
+        }
+
+        if segment_has_plot(&seg.0, segment) {
+            contains = true;
+            continue;
+        }
+
+        if !plot_potential_in_segment(&seg.0, segment) {
+            continue;
+        }
+
+        if !plot_in_segmenet(grid, &seg.0, segment) {
+            continue;
+        }
+
+        insert = true;
+        seg.0.push(segment);
+        seg.0.sort();
+        break;
+    }
+
+    if !insert && !contains {
+        segments.push((vec![segment], wall));
     }
 }
 
@@ -403,13 +443,28 @@ fn get_land_sides(grid: &mut [Vec<Plot>], plot: Plot) -> (Vec<(Vec<Plot>, Direct
         }
     }
 
-    // let mut final_segments: Vec<(Vec<Plot>, Direction)> = vec![];
-    // for segment in segments.iter() {
-    //     for seg in segment.0.iter() {
-    //         merge_segment(grid, *seg, &mut final_segments);
-    //     }
-    // }
-    // segments = final_segments;
+    // println!("While segmenets change loop");
+    let mut changed = true;
+    while changed {
+        segments.sort();
+        // println!("{:#?}", segments);
+        let mut final_segments: Vec<(Vec<Plot>, Direction)> = vec![];
+        for segment in segments.iter() {
+            for seg in segment.0.iter() {
+                // println!("\nProcessing seg: {:?} ({:?})\n", seg, segment.1);
+                merge_segment_with_wall(grid, *seg, &mut final_segments, segment.1);
+            }
+        }
+        final_segments.sort();
+        if segments == final_segments {
+            // println!("No change done!");
+            changed = false;
+            // } else {
+            // println!("Change done");
+        }
+
+        segments = final_segments;
+    }
 
     if segments.is_empty() {
         segments.push((vec![plot], Direction::North));
@@ -452,11 +507,11 @@ fn part2(input: &[Vec<Plot>]) -> u64 {
             if grid[plot.plot_pos.0][plot.plot_pos.1].accounted_for {
                 return;
             }
-            println!("-------------------------------Searching for {:?}-------{:?}-----------------------------------------------", convert_to_str(&plot.plot_id), plot);
+            // println!("-------------------------------Searching for {:?}-------{:?}-----------------------------------------------", convert_to_str(&plot.plot_id), plot);
             let sides = get_land_sides(&mut grid, *plot);
-            println!("Sides: {:#?}", sides.0);
-            println!("Side Count: {:?}", sides.0.len());
-            println!("Price: {:?}", sides.0.len() as u64 * sides.1);
+            // println!("Sides: {:#?}", sides.0);
+            // println!("Side Count: {:?}", sides.0.len());
+            // println!("Price: {:?}", sides.0.len() as u64 * sides.1);
             price_total += sides.0.len() as u64 * sides.1;
         })
     });
