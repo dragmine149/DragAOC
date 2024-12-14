@@ -116,6 +116,7 @@ fn debug_grid(robots: &[Robot], grid_size: Position, split: bool) {
 
 // Check to see if a line has a group of at least 30 in the IQR.
 // Used for finding the tree
+#[allow(dead_code)]
 fn check_for_line(robots: &[Robot], grid_size: Position) -> bool {
     for y in 0..grid_size.1 {
         // don't worry about other info
@@ -151,6 +152,22 @@ fn check_for_line(robots: &[Robot], grid_size: Position) -> bool {
     }
 
     false
+}
+
+// Improved version of tree search, just hope that the tree isn't too split out across quadrants
+#[allow(dead_code)]
+fn check_quadrant(robots: &[Robot], grid_size: Position) -> bool {
+    let robots_in_quadrants = robots
+        .par_iter()
+        .map(|robot| robot.get_quadrant(grid_size))
+        .collect::<Vec<u8>>();
+
+    let q1 = robots_in_quadrants.iter().filter(|&r| *r == 1).count();
+    let q2 = robots_in_quadrants.iter().filter(|&r| *r == 2).count();
+    let q3 = robots_in_quadrants.iter().filter(|&r| *r == 3).count();
+    let q4 = robots_in_quadrants.iter().filter(|&r| *r == 4).count();
+
+    q1 >= 300 || q2 >= 300 || q3 >= 300 || q4 >= 300
 }
 
 #[aoc_generator(day14)]
@@ -240,7 +257,8 @@ fn find_tree(input: &[Robot], grid_size: Position) -> bool {
         robots
             .par_iter_mut()
             .for_each(|robot| robot.move_robot(grid_size));
-        line = check_for_line(&robots, grid_size);
+        // line = check_for_line(&robots, grid_size);
+        line = check_quadrant(&robots, grid_size);
     }
     println!("Found this at {:?}", time);
     debug_grid(&robots, grid_size, false);
