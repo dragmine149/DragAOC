@@ -1,0 +1,6 @@
+# Part 1
+215760000 - Too low
+225943500 - Correct
+
+# Part 2
+6377 - Correct
