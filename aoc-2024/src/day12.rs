@@ -12,6 +12,7 @@ enum Direction {
 #[derive(Clone, Copy, PartialEq, PartialOrd, Eq, Ord)]
 struct Position(usize, usize);
 
+// Handles the position and where we can or can not go.
 impl Position {
     fn get_valid_positions(&self, grid: &[Vec<Plot>]) -> Vec<Position> {
         let mut valid: Vec<Position> = vec![];
@@ -77,6 +78,7 @@ struct Plot {
 }
 
 impl Plot {
+    // Probably a better way of doing this, but due to `accounted_for` these have to be done.
     fn compare_plot(&self, other: &Plot) -> bool {
         self.plot_id == other.plot_id
     }
@@ -84,6 +86,7 @@ impl Plot {
         self.plot_pos == other.plot_pos
     }
 
+    // Returns a list of neighbours as the same type as us.
     fn get_neighbours_of_same_type(&self, grid: &[Vec<Plot>]) -> Vec<Plot> {
         let directions = self.plot_pos.get_valid_positions(grid);
         let mut neighbours = vec![];
@@ -96,10 +99,12 @@ impl Plot {
         neighbours
     }
 
+    // Using the list of neighbours, get how many of them have we can't go to.
     fn get_border_count(&self, grid: &[Vec<Plot>]) -> u8 {
         let directions = self.plot_pos.get_valid_positions(grid).len() as u8;
         let neighbours = self.get_neighbours_of_same_type(grid).len() as u8;
 
+        // need to do some extra math beacuse of the outside edges
         match directions {
             4 => 4_u8 - neighbours,
             3 => (3_u8 - neighbours) + 1_u8,
@@ -110,6 +115,7 @@ impl Plot {
         }
     }
 
+    // get the sides we can go to.
     fn get_sides(&self, grid: &[Vec<Plot>]) -> Vec<Direction> {
         let directions = self.plot_pos.get_valid_positions(grid);
         let valid_direct = self.plot_pos.get_valid_directions(grid);
@@ -127,11 +133,13 @@ impl Plot {
         sides
     }
 
+    // get the area of this cell (yes bit stupid but whatever)
     fn get_area(&self) -> u8 {
         1
     }
 }
 
+// Custom debug to make it slightly more readable
 impl fmt::Debug for Plot {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -231,6 +239,7 @@ fn parse(input: &str) -> Vec<Vec<Plot>> {
         .collect::<Vec<Vec<Plot>>>()
 }
 
+// Using a stack, keep going until all plots of the requested type are found. (together that is)
 fn get_all_of_type(grid: &[Vec<Plot>], plot: Plot) -> Vec<Plot> {
     let mut types: Vec<Plot> = vec![plot];
     let mut neighbours: Vec<Plot> = vec![];
@@ -256,6 +265,7 @@ fn get_all_of_type(grid: &[Vec<Plot>], plot: Plot) -> Vec<Plot> {
     neighbours
 }
 
+// get how much the plots cost
 fn get_plot_price(grid: &mut [Vec<Plot>], plots: &mut [Plot]) -> u64 {
     let mut area = 0;
     let mut perimeter = 0;
@@ -270,6 +280,7 @@ fn get_plot_price(grid: &mut [Vec<Plot>], plots: &mut [Plot]) -> u64 {
     area * perimeter
 }
 
+// Checks to see if any part of a plot position is similar (in at least one axis) to all of the plots in a segment
 fn plot_potential_in_segment(seg_list: &[Plot], seg: Plot) -> bool {
     let mut pass: bool = true;
     for elm in seg_list.iter() {
@@ -281,6 +292,7 @@ fn plot_potential_in_segment(seg_list: &[Plot], seg: Plot) -> bool {
     pass
 }
 
+// Check if plot .x +- 1 .y +- 1 is within that segment
 fn plot_in_segmenet(grid: &[Vec<Plot>], seg_list: &[Plot], seg: Plot) -> bool {
     let r = seg_list.iter().any(|x| {
         // println!(
@@ -323,16 +335,16 @@ fn plot_in_segmenet(grid: &[Vec<Plot>], seg_list: &[Plot], seg: Plot) -> bool {
     r
 }
 
+// Check if a plot already has this segment
 fn segment_has_plot(seg_list: &[Plot], seg: Plot) -> bool {
-    match seg_list.iter().find(|x| x.compare_pos(&seg)) {
-        Some(_) => true,
-        None => false,
-    }
+    seg_list.iter().any(|x| x.compare_pos(&seg))
 }
 
+// Merge segments together
 fn merge_segment(grid: &[Vec<Plot>], segment: Plot, segments: &mut Vec<(Vec<Plot>, Direction)>) {
     let sides = segment.get_sides(grid);
     if sides.is_empty() {
+        // check it has sides
         return;
     }
 
@@ -342,9 +354,11 @@ fn merge_segment(grid: &[Vec<Plot>], segment: Plot, segments: &mut Vec<(Vec<Plot
         let mut contains = false;
         for seg in segments.iter_mut() {
             if seg.1 != wall {
+                // check if we care about that wall
                 continue;
             }
 
+            // check if it can fit
             if segment_has_plot(&seg.0, segment) {
                 contains = true;
                 continue;
@@ -362,12 +376,15 @@ fn merge_segment(grid: &[Vec<Plot>], segment: Plot, segments: &mut Vec<(Vec<Plot
             //     "Inserted seg {:?} with wall {:?} into {:?}",
             //     segment, wall, seg,
             // );
+
+            // insert into the wall
             insert = true;
             seg.0.push(segment);
             seg.0.sort();
             break;
         }
 
+        // if it doesn't exist and we can't insert it, make a new one.
         if !insert && !contains {
             // println!(
             //     "Making new segments out of {:?} (Made: {:?})",
@@ -378,6 +395,7 @@ fn merge_segment(grid: &[Vec<Plot>], segment: Plot, segments: &mut Vec<(Vec<Plot
     }
 }
 
+// Same as the previous functions but cares about what wall the segment was with previously.
 fn merge_segment_with_wall(
     grid: &[Vec<Plot>],
     segment: Plot,
@@ -415,12 +433,14 @@ fn merge_segment_with_wall(
     }
 }
 
+// Get the sides of the land
 fn get_land_sides(grid: &mut [Vec<Plot>], plot: Plot) -> (Vec<(Vec<Plot>, Direction)>, u64) {
     let mut types: Vec<Plot> = vec![plot];
 
     let mut searched: Vec<Plot> = vec![];
     let mut segments: Vec<(Vec<Plot>, Direction)> = vec![];
 
+    // Insert loop, like we were doing with getting all neighbours of same type.
     while let Some(pt) = types.pop() {
         let neighs = pt.get_neighbours_of_same_type(grid);
         for neigh in neighs {
@@ -428,6 +448,7 @@ fn get_land_sides(grid: &mut [Vec<Plot>], plot: Plot) -> (Vec<(Vec<Plot>, Direct
             match searched.iter().find(|x| x.compare_pos(&neigh)) {
                 Some(_) => {}
                 None => {
+                    // if we haven't searched that square yet
                     types.push(neigh);
                 }
             }
@@ -437,13 +458,15 @@ fn get_land_sides(grid: &mut [Vec<Plot>], plot: Plot) -> (Vec<(Vec<Plot>, Direct
         match searched.iter().find(|x| x.compare_pos(&pt)) {
             Some(_) => {}
             None => {
+                // if we haven't finished that square search yet.
                 searched.push(pt);
-                grid[pt.plot_pos.0][pt.plot_pos.1].accounted_for = true;
+                grid[pt.plot_pos.0][pt.plot_pos.1].accounted_for = true; // make sure the main loop can't do this whole function again just 1 square off.
             }
         }
     }
 
     // println!("While segmenets change loop");
+    // Final sort, collapses the segments so that they are together
     let mut changed = true;
     while changed {
         segments.sort();
@@ -466,6 +489,7 @@ fn get_land_sides(grid: &mut [Vec<Plot>], plot: Plot) -> (Vec<(Vec<Plot>, Direct
         segments = final_segments;
     }
 
+    // if we have no segments, assume its a 1x1 cell and hence we have borders everywhere
     if segments.is_empty() {
         segments.push((vec![plot], Direction::North));
         segments.push((vec![plot], Direction::East));
@@ -484,6 +508,7 @@ fn part1(input: &[Vec<Plot>]) -> u64 {
     input.iter().enumerate().for_each(|(line_index, line)| {
         line.iter().enumerate().for_each(|(plot_index, plot)| {
             if grid[line_index][plot_index].accounted_for {
+                // don't research the same cell twice
                 return;
             }
 
