@@ -1,7 +1,6 @@
-use std::cmp::Ordering;
-
 use aoc_runner_derive::aoc;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+use std::cmp::Ordering;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Direction {
@@ -12,6 +11,7 @@ enum Direction {
 }
 
 impl Direction {
+    // Useful for quickly going in the opposite direction
     fn inverse(&self) -> Self {
         match self {
             Direction::East => Direction::West,
@@ -40,6 +40,8 @@ enum CellType {
 struct Position(usize, usize);
 
 impl Position {
+    // Modifies itself for the next position. Because everywhere is a wall we didn't have to worry about much.
+    // I prefer doing it here so then everything can stay as `ux` instead of going to `ix`
     fn next_pos(&mut self, direction: Direction) {
         match direction {
             Direction::North => self.0 -= 1,
@@ -75,6 +77,7 @@ struct Robot {
 }
 
 impl Robot {
+    // search said direction until an empty cell is discovered, if an empty cell is discovered
     fn find_empty_cell(self, grid: &[Vec<Location>], direction: Direction) -> Option<Position> {
         let mut search_pos = self.pos;
         let mut cell = get_cell(grid, self.pos);
@@ -94,22 +97,23 @@ impl Robot {
         }
     }
 
+    // get all of the boxes that are needed to be push in order to push them
     fn find_boxes(self, grid: &[Vec<Location>], direction: Direction) -> Option<Vec<Position>> {
         let mut search_pos = self.pos;
         search_pos.next_pos(direction);
         let mut boxes = vec![];
 
-        let mut stack: Vec<Position> = vec![search_pos];
+        let mut stack: Vec<Position> = vec![search_pos]; // stack
         while let Some(pos) = stack.pop() {
             let cell = get_cell(grid, pos);
             match cell {
-                CellType::Wall => return None,
+                CellType::Wall => return None, // well, we can't push them
                 CellType::Robot => panic!("How did we run into the robot?"),
                 CellType::Box => panic!("How is there a 1x1 box here?"),
                 CellType::BoxLeft => {
                     let mut forward = Position(pos.0, pos.1);
                     forward.next_pos(direction);
-                    let mut right_forward = Position(pos.0, pos.1);
+                    let mut right_forward = Position(pos.0, pos.1); // alsso add in the right one here because we need to check that as well.
                     right_forward.next_pos(Direction::East);
                     right_forward.next_pos(direction);
 
@@ -126,7 +130,7 @@ impl Robot {
                 CellType::BoxRight => {
                     let mut forward = Position(pos.0, pos.1);
                     forward.next_pos(direction);
-                    let mut left_forward = Position(pos.0, pos.1);
+                    let mut left_forward = Position(pos.0, pos.1); // same here for left
                     left_forward.next_pos(Direction::West);
                     left_forward.next_pos(direction);
 
@@ -140,9 +144,11 @@ impl Robot {
                         boxes.push(left_forward);
                     }
                 }
-                CellType::Empty => {}
+                CellType::Empty => {} // no need to do anything special here.
             }
         }
+
+        // initial sort to make sure everything is the right order
         boxes.sort_by(|a, b| {
             if direction == Direction::North {
                 if a.0 < b.0 {
@@ -172,6 +178,7 @@ impl Robot {
             Ordering::Equal
         });
 
+        // and another sort because i forgot to remove this one, yet it is 100% required so i'm keeping it.
         boxes.sort_by(|a, b| {
             if a.0 > b.0 {
                 return if direction == Direction::South {
@@ -197,12 +204,14 @@ impl Robot {
         Some(boxes)
     }
 
+    // check to see if the next cell we plan to go to is empty or not.
     fn next_cell_empty(self, grid: &[Vec<Location>], direction: Direction) -> bool {
         let mut cpos = self.pos;
         cpos.next_pos(direction);
         get_cell(grid, cpos) == CellType::Empty
     }
 
+    // move the cells in oreder, from back to front.
     fn move_cells(
         &mut self,
         grid: &mut [Vec<Location>],
@@ -224,9 +233,10 @@ impl Robot {
         self.pos.next_pos(direction);
     }
 
+    // function to move vertical cells because they take a bit more processing than just the normal ones.
     fn improved_vertical_movement(
         &mut self,
-        grid: &mut Vec<Vec<Location>>,
+        grid: &mut [Vec<Location>],
         boxes: Vec<Position>,
         direction: Direction,
     ) {
@@ -255,13 +265,16 @@ impl Robot {
         self.move_if_empty(grid, direction);
     }
 
-    fn move_if_empty(&mut self, grid: &mut Vec<Vec<Location>>, direction: Direction) {
+    // Move us in the direction we want to
+    fn move_if_empty(&mut self, grid: &mut [Vec<Location>], direction: Direction) {
         grid[self.pos.0][self.pos.1].cell = CellType::Empty;
         self.pos.next_pos(direction);
         grid[self.pos.0][self.pos.1].cell = CellType::Robot;
     }
 
-    fn try_move(&mut self, grid: &mut Vec<Vec<Location>>, direction: Direction) -> bool {
+    // TBH, idk why i even return a value here... I don't use it
+    // The normal move function, works EW on 2 wide and NESW on 1 wide
+    fn try_move(&mut self, grid: &mut [Vec<Location>], direction: Direction) -> bool {
         if self.next_cell_empty(grid, direction) {
             self.move_if_empty(grid, direction);
             return true;
@@ -277,7 +290,8 @@ impl Robot {
         true
     }
 
-    fn try_move_2(&mut self, grid: &mut Vec<Vec<Location>>, direction: Direction) -> bool {
+    // 2 wide movement function
+    fn try_move_2(&mut self, grid: &mut [Vec<Location>], direction: Direction) -> bool {
         if self.next_cell_empty(grid, direction) {
             self.move_if_empty(grid, direction);
             return true;
@@ -302,10 +316,12 @@ impl Robot {
     }
 }
 
+// get the current cell
 fn get_cell(grid: &[Vec<Location>], pos: Position) -> CellType {
     grid[pos.0][pos.1].cell
 }
 
+// print off the map for debugging purpose
 #[allow(dead_code)]
 fn debug_map(grid: &[Vec<Location>]) {
     let map = grid
@@ -322,6 +338,7 @@ fn debug_map(grid: &[Vec<Location>]) {
     println!("{}", map);
 }
 
+// Function to check if the grid is still in tack. (no half boxes left around)
 #[allow(dead_code)]
 fn check_grid(grid: &[Vec<Location>], direction_count: usize) {
     // Par iter speeds this up slightly consedering how often we check it.
@@ -358,6 +375,7 @@ fn parse(input: &str, p2: bool) -> (Vec<Vec<Location>>, Vec<Direction>, Robot) {
         debug: false,
     };
 
+    // parse each char, p2 requires a bit so seperate if for them
     input
         .trim()
         .lines()
@@ -422,6 +440,7 @@ fn parse(input: &str, p2: bool) -> (Vec<Vec<Location>>, Vec<Direction>, Robot) {
             }
         });
 
+    // get the position of the robot
     grid.iter().enumerate().for_each(|(line_index, line)| {
         line.iter().enumerate().for_each(|(pos_index, pos)| {
             if pos.cell != CellType::Robot {
@@ -481,18 +500,18 @@ fn part2(input: &str) -> u64 {
     // debug_map(&grid);
     // println!("{:?}", directions.len());
 
-    let mut direction_count = 0;
+    // let mut direction_count = 0;
     for direction in directions {
-        direction_count += 1;
+        // direction_count += 1;
         robot.try_move_2(&mut grid, direction);
-        check_grid(&grid, direction_count);
+        // check_grid(&grid, direction_count);
 
-        if direction_count >= 65536 {
-            // if direction_count >= 6047 {
-            robot.debug = true;
-            println!("Direction: {:?}", direction);
-            debug_map(&grid);
-        }
+        // if direction_count >= 65536 {
+        //     // if direction_count >= 6047 {
+        //     robot.debug = true;
+        //     println!("Direction: {:?}", direction);
+        //     debug_map(&grid);
+        // }
     }
 
     // debug_map(&grid);
