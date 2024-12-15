@@ -2,3 +2,5 @@
 1429911 - Correct
 
 # Part 2
+1435623 - Too Low
+1453087 - Correct
