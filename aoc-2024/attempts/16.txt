@@ -2,3 +2,6 @@
 94436 - Correct
 
 # Part 2
+46 - Not Correct
+60 - Not Correct
+481 - Correct
