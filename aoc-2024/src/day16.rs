@@ -1,7 +1,8 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 use core::fmt;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
-use std::u64;
+
+use crate::utils::{Direction, Position};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 enum Cell {
@@ -12,25 +13,8 @@ enum Cell {
     End,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-enum Direction {
-    North,
-    East,
-    South,
-    West,
-}
-
 impl Direction {
-    // Useful for quickly going in the opposite direction
-    fn inverse(&self) -> Self {
-        match self {
-            Direction::East => Direction::West,
-            Direction::West => Direction::East,
-            Direction::North => Direction::South,
-            Direction::South => Direction::North,
-        }
-    }
-
+    // in order to go that way it costs. Returns the amount of score depending on the cost.
     fn get_score_from_rotation(&self, new: Self) -> u64 {
         match self {
             Direction::North => match new {
@@ -60,21 +44,7 @@ impl Direction {
         }
     }
 }
-
-#[derive(Debug, Clone, Copy)]
-struct Position(usize, usize);
-
-impl Position {
-    fn next_pos(&self, direction: &Direction) -> Self {
-        match direction {
-            Direction::North => Position(self.0 - 1, self.1),
-            Direction::East => Position(self.0, self.1 + 1),
-            Direction::South => Position(self.0 + 1, self.1),
-            Direction::West => Position(self.0, self.1 - 1),
-        }
-    }
-}
-
+// Stores each cell direction and the value assigned to this cell from that direction.
 #[derive(Debug, Clone, Copy)]
 struct MapData {
     north: u64,
@@ -85,6 +55,7 @@ struct MapData {
 
 impl MapData {
     fn new() -> Self {
+        // using max values as we can then replace them with lower values (and not have 0 everywhere which will cause issues)
         MapData {
             north: u64::MAX,
             east: u64::MAX,
@@ -102,24 +73,21 @@ impl MapData {
         }
     }
 
-    fn get_smallest(&self) -> (u64, Direction) {
-        let mut smallest = (self.north, Direction::North);
-        if self.east < smallest.0 {
-            smallest = (self.east, Direction::East);
+    fn get_smallest_num(&self) -> u64 {
+        let mut smallest = self.north;
+        if self.east < smallest {
+            smallest = self.east;
         }
-        if self.south < smallest.0 {
-            smallest = (self.south, Direction::South);
+        if self.south < smallest {
+            smallest = self.south;
         }
-        if self.west < smallest.0 {
-            smallest = (self.west, Direction::West);
+        if self.west < smallest {
+            smallest = self.west;
         }
         smallest
     }
 
-    fn get_smallest_num(&self) -> u64 {
-        self.get_smallest().0
-    }
-
+    // set the direction and the score that came with it
     fn set_direction(&mut self, direction: Direction, score: u64) {
         match direction {
             Direction::North => self.north = score,
@@ -129,41 +97,40 @@ impl MapData {
         }
     }
 
+    // using the current score, check if any path is either the same or 1 turn away and is either the same or 1 score away
     fn get_directions_from_score(&self, score: u64) -> Vec<Direction> {
         let corners = get_corner_count(score);
         let score = get_forward_score(score);
         let mut directions = vec![];
 
-        println!();
-        println!("Score: {:?}, Corners: {:?}", score, corners);
-        println!("Self: {:?}", self);
-        println!();
+        // println!();
+        // println!("Score: {:?}, Corners: {:?}", score, corners);
+        // println!("Self: {:?}", self);
+        // println!();
 
-        if get_forward_score(self.north) == score || get_forward_score(self.north) == score - 1 {
-            if get_corner_count(self.north) == corners
-                || get_corner_count(self.north) == corners - 1
-            {
-                directions.push(Direction::South);
-            }
+        if (get_forward_score(self.north) == score || get_forward_score(self.north) == score - 1)
+            && (get_corner_count(self.north) == corners
+                || get_corner_count(self.north) == corners - 1)
+        {
+            directions.push(Direction::South);
         }
-        if get_forward_score(self.east) == score || get_forward_score(self.east) == score - 1 {
-            if get_corner_count(self.east) == corners || get_corner_count(self.east) == corners - 1
-            {
-                directions.push(Direction::West);
-            }
+        if (get_forward_score(self.east) == score || get_forward_score(self.east) == score - 1)
+            && (get_corner_count(self.east) == corners
+                || get_corner_count(self.east) == corners - 1)
+        {
+            directions.push(Direction::West);
         }
-        if get_forward_score(self.south) == score || get_forward_score(self.south) == score - 1 {
-            if get_corner_count(self.south) == corners
-                || get_corner_count(self.south) == corners - 1
-            {
-                directions.push(Direction::North);
-            }
+        if (get_forward_score(self.south) == score || get_forward_score(self.south) == score - 1)
+            && (get_corner_count(self.south) == corners
+                || get_corner_count(self.south) == corners - 1)
+        {
+            directions.push(Direction::North);
         }
-        if get_forward_score(self.west) == score || get_forward_score(self.west) == score - 1 {
-            if get_corner_count(self.west) == corners || get_corner_count(self.west) == corners - 1
-            {
-                directions.push(Direction::East);
-            }
+        if (get_forward_score(self.west) == score || get_forward_score(self.west) == score - 1)
+            && (get_corner_count(self.west) == corners
+                || get_corner_count(self.west) == corners - 1)
+        {
+            directions.push(Direction::East);
         }
 
         directions
@@ -253,11 +220,14 @@ impl Map {
         }
     }
 
+    // visit a cell
     fn visit_cell(&mut self, pos: &Position, score: u64, from_dir: &Direction) {
         if self.get_cell(pos) != Cell::Start && self.get_cell(pos) != Cell::End {
+            // don't override the start and end pos
             self.grid[pos.0][pos.1] = Cell::Visited;
         }
         if score != u64::MAX {
+            // don't set the score if it's insanely high. Aka for p2
             self.score[pos.0][pos.1].set_direction(*from_dir, score);
         }
     }
@@ -266,6 +236,7 @@ impl Map {
         self.grid[pos.0][pos.1] == Cell::Visited
     }
 
+    // reset the map of all visited cells
     fn clear_map(&mut self) {
         let y_size = self.grid.len();
         let x_size = self.grid.first().expect("Failed to get first row").len();
@@ -280,6 +251,7 @@ impl Map {
         }
     }
 
+    // find the first cell in the map of the specified type
     fn find_first_cell_of_type(&self, cell_type: &Cell) -> Position {
         for (line_index, line) in self.grid.iter().enumerate() {
             for (pos_index, pos) in line.iter().enumerate() {
@@ -304,6 +276,7 @@ impl Map {
         self.score[pos.0][pos.1]
     }
 
+    // check if the cell isn't a wall...
     fn can_move(&self, pos: &Position, dir: &Direction) -> bool {
         let destination = pos.next_pos(dir);
         // println!("{:?}", pos);
@@ -311,6 +284,7 @@ impl Map {
         self.get_cell(&destination) != Cell::Wall
     }
 
+    // get all possible directions of movement
     fn get_possible_directions(&self, pos: &Position, from_dir: &Direction) -> Vec<Direction> {
         // println!("{:?}", self);
 
@@ -341,15 +315,7 @@ impl Map {
         directions
     }
 
-    fn get_neighbours_score(&self, pos: Position, from_dir: &Direction) -> Vec<MapData> {
-        let neighbours = self.get_possible_directions(&pos, from_dir);
-        let mut scores = vec![];
-        for neigh in neighbours {
-            scores.push(self.get_score_data(&pos.next_pos(&neigh)));
-        }
-        scores
-    }
-
+    // a messy function, start from the end and keep going until we found all points to the start.
     fn get_best_path_count(
         &mut self,
         mut pos: Position,
@@ -361,7 +327,6 @@ impl Map {
         }
 
         let score = get_forward_score(self.get_score(&pos));
-        let ccount = get_corner_count(self.get_score(&pos));
 
         if score == 0 {
             return 1; // reached our destination.
@@ -370,8 +335,8 @@ impl Map {
         let mut count = 1; // 1, aka ourselfs
         self.visit_cell(&pos, u64::MAX, from_dir);
 
-        println!("Score: {:?}", self.get_score(&pos));
-        println!("Cell: {:?}", self.get_score_data(&pos));
+        // println!("Score: {:?}", self.get_score(&pos));
+        // println!("Cell: {:?}", self.get_score_data(&pos));
 
         let mut path: Vec<(Position, Direction, u64)> = vec![];
         for dir in self
@@ -381,30 +346,30 @@ impl Map {
             path.push((pos, dir, start_score));
         }
 
-        println!("Directions: {:?}", path);
+        // println!("Directions: {:?}", path);
         while let Some(info) = path.pop() {
             pos = info.0.next_pos(&info.1);
 
-            println!("Processing: {:?}", info);
+            // println!("Processing: {:?}", info);
             if self.has_visited(&pos) {
-                println!("Visited: {:?}", info);
+                // println!("Visited: {:?}", info);
                 continue;
             }
             if get_forward_score(self.get_score(&pos)) == 0 {
-                println!("Info is start: {:?}", info);
+                // println!("Info is start: {:?}", info);
                 continue;
             }
 
             self.visit_cell(&pos, u64::MAX, &Direction::North);
             count += 1;
 
-            println!("Data: {:?}", self.get_score_data(&pos));
-            println!(
-                "Directions: {:?}",
-                self.get_score_data(&pos).get_directions_from_score(info.2)
-            );
+            // println!("Data: {:?}", self.get_score_data(&pos));
+            // println!(
+            //     "Directions: {:?}",
+            //     self.get_score_data(&pos).get_directions_from_score(info.2)
+            // );
             for dir in self.get_score_data(&pos).get_directions_from_score(info.2) {
-                println!("Adding dir '{:?}' to list", dir);
+                // println!("Adding dir '{:?}' to list", dir);
                 path.push((
                     pos,
                     dir,
@@ -412,28 +377,6 @@ impl Map {
                 ));
             }
         }
-
-        // let neighbours = self.get_neighbours_score(pos, from_dir);
-        // if neighbours.len() == 0 {
-        //     return 0;
-        // }
-
-        // println!("Possible: {:?}", neighbours);
-        // println!("Score: {:?}", score);
-
-        // let options = neighbours.iter().filter(|neigh| {
-        //     get_forward_score(neigh.0) == score - 1 && get_corner_count(neigh.0) <= corner_count + 1
-        // });
-
-        // // println!(
-        // //     "Options left: {:?}",
-        // //     options.to_owned().collect::<Vec<&(u64, Direction)>>()
-        // // );
-
-        // for option in options {
-        //     // println!("Option: {:?}", option);
-        //     count += self.get_best_path_count(pos.next_pos(&option.1), &option.1.inverse(), ccount);
-        // }
 
         count + 1
     }
@@ -446,6 +389,7 @@ struct Reindeer {
 }
 
 impl Reindeer {
+    // move the reindeer everywhere, aka make the map.
     fn move_reindeer(&mut self, map: &mut Map, score: u64) {
         if map.get_cell(&self.pos) == Cell::End {
             // println!("Found end of map!");
@@ -453,12 +397,10 @@ impl Reindeer {
             return;
         }
 
-        if map.has_visited(&self.pos) {
-            if map.get_score_data(&self.pos).get_direction_score(self.rot) <= score {
-                // if map.get_score(&self.pos) <= score {
-                // println!("Already visited: {:?} at a lower cost.", self.pos);
-                return;
-            }
+        if map.has_visited(&self.pos)
+            && map.get_score_data(&self.pos).get_direction_score(self.rot) <= score
+        {
+            return;
         }
 
         map.visit_cell(&self.pos, score, &self.rot);
