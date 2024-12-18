@@ -6,6 +6,8 @@ struct Register {
     value: usize,
 }
 
+// computer, hello computer
+// https://www.youtube.com/watch?v=hShY6xZWVGE
 struct Computer {
     regiseter_a: Register,
     regiseter_b: Register,
@@ -18,6 +20,7 @@ struct Computer {
 }
 
 impl Computer {
+    // quick way to test everything
     fn test(&mut self) -> Vec<u8> {
         while !self.halt {
             self.process_instruction();
@@ -27,6 +30,7 @@ impl Computer {
         out
     }
 
+    // quick way to reset as most of the data is already 0 to begin with.
     fn reset(&mut self) {
         self.regiseter_a = Register { value: 0 };
         self.regiseter_b = Register { value: 0 };
@@ -37,6 +41,7 @@ impl Computer {
         self.output.clear();
     }
 
+    // process all the instructions
     fn process_instructions(&mut self) -> String {
         while !self.halt {
             self.process_instruction();
@@ -49,16 +54,19 @@ impl Computer {
             .join(",")
     }
 
+    // procress an instruction
     fn process_instruction(&mut self) {
         if self.halt {
+            // check if not broken
             return;
         }
 
+        // check if not at end
         if self.instruction_pointer >= self.instructions.len() {
             self.halt = true;
             return;
         }
-        self.jump = false;
+        self.jump = false; // reset jumping
 
         let opcode = self.instructions[self.instruction_pointer];
         let operand = self.instructions[self.instruction_pointer + 1];
@@ -78,11 +86,13 @@ impl Computer {
             }
         }
 
+        // don't increment if we jumped
         if !self.jump {
             self.instruction_pointer += 2;
         }
     }
 
+    // operand can be different based on the intruction
     fn get_operand_value(&self, operand: u8, literal: bool) -> usize {
         if literal {
             return operand as usize;
@@ -97,6 +107,7 @@ impl Computer {
             5 => self.regiseter_b.value,
             6 => self.regiseter_c.value,
             7 => {
+                // reserved so shouldn't be called but just in case.
                 panic!("Operand 7 is reservered.");
             }
             _ => {
@@ -106,9 +117,11 @@ impl Computer {
         }
     }
 
+    // main opcode processing.
+
     fn adv(&mut self, operand: u8) {
         let operand = self.get_operand_value(operand, false);
-        self.regiseter_a.value = self.regiseter_a.value / 2_usize.pow(operand as u32);
+        self.regiseter_a.value /= 2_usize.pow(operand as u32);
     }
 
     fn bxl(&mut self, operand: u8) {
@@ -151,6 +164,7 @@ impl Computer {
     }
 }
 
+// generate the computer
 fn parse(input: &str) -> Computer {
     let regex = Regex::new(
         r"Register A: (?P<rega>\d*)\nRegister B: (?P<regb>\d*)\nRegister C: (?P<regc>\d*)\n\nProgram: (?P<p>(\d,)*\d)",
@@ -210,6 +224,7 @@ fn get_x(data: Vec<u8>, end: usize) -> Vec<u8> {
     data.to_owned().split_off(end)
 }
 
+// backtack algorithm to work out a, stolen from a couple of sources on reddit.
 fn backtrack(computer: &mut Computer) -> u64 {
     let mut potential: Vec<u64> = vec![];
     // stack, so looping until we found something
