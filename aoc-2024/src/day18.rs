@@ -61,6 +61,16 @@ impl Grid<Cell> {
             .collect::<String>();
         println!("{}", map);
     }
+
+    fn reset(&mut self, size: &Position) {
+        for y in 0..size.1 {
+            for x in 0..size.0 {
+                let cell = self.get_cell(Position(x, y));
+                cell.score = 0;
+                cell.visited = false;
+            }
+        }
+    }
 }
 
 fn parse(input: &str, map_size: Position, byte_count: usize) -> Grid<Cell> {
@@ -86,9 +96,8 @@ fn parse(input: &str, map_size: Position, byte_count: usize) -> Grid<Cell> {
     grid
 }
 
-fn process_part1(input: &str, size: Position, byte_count: usize) -> u64 {
-    let mut grid = parse(input, size, byte_count);
-    // println!("{:?}", grid);
+fn pathfinding(grid: &mut Grid<Cell>, size: Position) {
+    grid.reset(&size);
     let mut stack = vec![(Position(0, 0), 0)]; // stack for location finding
 
     // searching algorith, give each cell the lowest possible score
@@ -114,7 +123,12 @@ fn process_part1(input: &str, size: Position, byte_count: usize) -> u64 {
             stack.push((posit, score + 1));
         }
     }
+}
 
+fn process_part1(input: &str, size: Position, byte_count: usize) -> u64 {
+    let mut grid = parse(input, size, byte_count);
+    // println!("{:?}", grid);
+    pathfinding(&mut grid, size);
     // grid.debug_score();
     // return the end cell location as the score
     grid.get_cell(Position(size.0 - 1, size.1 - 1)).score as u64
@@ -125,6 +139,7 @@ fn part1(input: &str) -> u64 {
     process_part1(input, Position(71, 71), 1024)
 }
 
+#[allow(dead_code)]
 fn process_part2(input: &str, size: Position, mut index: usize) -> String {
     // let mut grid = parse(input, size, 1024);
     let mut score = u64::MAX; // set to max so it's not 0
@@ -143,9 +158,98 @@ fn process_part2(input: &str, size: Position, mut index: usize) -> String {
         .to_string()
 }
 
+fn get_path(grid: &mut Grid<Cell>, size: Position) -> Vec<Position> {
+    pathfinding(grid, size);
+    // println!("{:#?}", grid);
+    // grid.debug_score();
+
+    let end_cell = Position(size.0 - 1, size.1 - 1);
+    let mut pos = end_cell;
+    // if we have no score at the end, then the path did not computer, hence break.
+    if grid.get_cell(pos).score == 0 {
+        return vec![];
+    }
+
+    let mut path = vec![pos];
+
+    // start at the end and work to the front
+    let mut score = grid.get_cell(pos).score;
+    while score != 0 {
+        let options = pos.get_valid_positions(&end_cell);
+        for option in options {
+            let cell = grid.get_cell(option);
+            // println!("{:?} opt: {:?}", pos, option);
+            // println!(
+            //     "cell: {:?} score: {:?}, t: {:?} type: {:?}",
+            //     cell.score + 1,
+            //     score,
+            //     cell.score + 1 != score,
+            //     cell.tpe
+            // );
+            if cell.tpe == CellType::Memory {
+                // println!("Memory");
+                continue;
+            }
+            if cell.score != score - 1 {
+                // println!("Score ({:?}, {:?})", cell.score, score);
+                continue;
+            }
+            // println!("Found: {:?}", cell);
+            // Only care about cells that are one less than us.
+            pos = option;
+            path.push(pos);
+            score = cell.score;
+            break;
+        }
+    }
+
+    path
+}
+
+fn speed_part2(input: &str, size: Position, mut byte_count: usize) -> String {
+    let mut grid = parse(input, size, byte_count);
+    let mut path = get_path(&mut grid, size);
+
+    // println!("e!");
+    // println!("{:#?}", grid);
+
+    while !path.is_empty() {
+        byte_count += 1;
+        // println!("Byte: {:?}", byte_count);
+        // println!("Path: {:?}", path);
+
+        // make the byte fall
+        let pos = Position::from(
+            &input
+                .lines()
+                .nth(byte_count - 1)
+                .expect("Failed to get byte count line")
+                .split(",")
+                .map(|x| x.parse::<usize>().expect("Failed to parse line coord"))
+                .collect::<Vec<usize>>(),
+        );
+        // println!("{:?}", pos);
+        grid.get_cell(pos).tpe = CellType::Memory;
+
+        if path.contains(&pos) {
+            // println!("Regenerating path...");
+            // If the byte has affected our current path, regenerate it.
+            // Possible could only regenerate a short section but this is easier.
+            path = get_path(&mut grid, size);
+        }
+    }
+
+    input
+        .lines()
+        .nth(byte_count - 1)
+        .expect("Failed to get line at speicfied index")
+        .to_string()
+}
+
 #[aoc(day18, part2)]
 fn part2(input: &str) -> String {
-    process_part2(input, Position(71, 71), 1024)
+    // process_part2(input, Position(71, 71), 1024)
+    speed_part2(input, Position(71, 71), 1024)
 }
 
 #[cfg(test)]
@@ -187,5 +291,10 @@ mod tests {
     #[test]
     fn part2_example() {
         assert_eq!(process_part2(&EXAMPLE_1, Position(7, 7), 12), "6,1");
+    }
+
+    #[test]
+    fn part2_example_test() {
+        assert_eq!(speed_part2(&EXAMPLE_1, Position(7, 7), 12), "6,1");
     }
 }
