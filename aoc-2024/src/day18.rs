@@ -1,6 +1,7 @@
 use crate::utils::{Grid, Position};
 use aoc_runner_derive::aoc;
 use core::fmt;
+use std::u64;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum CellType {
@@ -116,15 +117,31 @@ fn part1(input: &str) -> u64 {
     process_part1(input, Position(71, 71), 1024)
 }
 
-fn process_part2(input: &str, size: Position) -> String {
-    let mut grid = parse(input, size, 1024);
+fn process_part2(input: &str, size: Position, mut index: usize) -> String {
+    // let mut grid = parse(input, size, 1024);
+    let mut score = u64::MAX;
+    while score != 0 {
+        index += 1;
+        // println!("Iteration: {:?}", index);
+        score = process_part1(input, size, index);
+    }
 
-    "0,0".to_string()
+    println!("{:?}", index);
+
+    let mut result = "";
+    for (line_index, line) in input.lines().enumerate() {
+        if line_index == index - 1 {
+            result = line;
+            break;
+        }
+    }
+
+    result.to_string()
 }
 
 #[aoc(day18, part2)]
 fn part2(input: &str) -> String {
-    process_part2(input, Position(71, 71))
+    process_part2(input, Position(71, 71), 1024)
 }
 
 #[cfg(test)]
@@ -165,6 +182,6 @@ mod tests {
 
     #[test]
     fn part2_example() {
-        assert_eq!(process_part2(&EXAMPLE_1, Position(7, 7)), "6,1");
+        assert_eq!(process_part2(&EXAMPLE_1, Position(7, 7), 12), "6,1");
     }
 }
