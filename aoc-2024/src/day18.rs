@@ -1,6 +1,8 @@
 use crate::utils::{Grid, Position};
 use aoc_runner_derive::aoc;
 use core::fmt;
+use std::cmp::Reverse;
+use std::collections::BinaryHeap;
 use std::fmt::Write;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -98,12 +100,14 @@ fn parse(input: &str, map_size: Position, byte_count: usize) -> Grid<Cell> {
 
 fn pathfinding(grid: &mut Grid<Cell>, size: Position) {
     grid.reset(&size);
-    let mut stack = vec![(Position(0, 0), 0)]; // stack for location finding
+    // let mut stack = vec![(Position(0, 0), 0)]; // stack for location finding
+    let mut heap = BinaryHeap::new();
+    heap.push(Reverse((Position(0, 0), 0)));
 
     // searching algorith, give each cell the lowest possible score
-    while let Some(info) = stack.pop() {
-        let pos = info.0;
-        let score = info.1;
+    while let Some(info) = heap.pop() {
+        let pos = info.0 .0;
+        let score = info.0 .1;
         // println!("Looking at: {:?}", pos);
         let cell = grid.get_cell(pos);
         if cell.visited && cell.score <= score {
@@ -120,7 +124,7 @@ fn pathfinding(grid: &mut Grid<Cell>, size: Position) {
         // find neighbours and repeat
         let positions = pos.get_valid_positions(&Position(size.0 - 1, size.1 - 1));
         for posit in positions {
-            stack.push((posit, score + 1));
+            heap.push(Reverse((posit, score + 1)));
         }
     }
 }
@@ -211,7 +215,7 @@ fn speed_part2(input: &str, size: Position, mut byte_count: usize) -> String {
     let mut path = get_path(&mut grid, size);
 
     // println!("e!");
-    println!("{:?}", grid);
+    // println!("{:?}", grid);
 
     while !path.is_empty() {
         byte_count += 1;
