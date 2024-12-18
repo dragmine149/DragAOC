@@ -66,13 +66,12 @@ impl<T: fmt::Debug> fmt::Debug for Grid<T> {
         write!(
             f,
             "{}",
-            // self.iter().fold(String::new(), |mut output, y| {
-            //     let _ = write!(output, "{:?}", y);
-            //     output
-            // })
             self.iter()
                 .map(|y| {
-                    let mut yy = y.iter().map(|x| format!("{:?}", x)).collect::<String>();
+                    let mut yy = y.iter().fold(String::new(), |mut output, x| {
+                        let _ = write!(output, "{:?}", x);
+                        output
+                    });
                     yy.push('\n');
                     yy
                 })

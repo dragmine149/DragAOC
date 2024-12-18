@@ -211,7 +211,7 @@ fn speed_part2(input: &str, size: Position, mut byte_count: usize) -> String {
     let mut path = get_path(&mut grid, size);
 
     // println!("e!");
-    // println!("{:#?}", grid);
+    println!("{:?}", grid);
 
     while !path.is_empty() {
         byte_count += 1;
@@ -285,16 +285,16 @@ mod tests {
 
     #[test]
     fn part1_example() {
-        assert_eq!(process_part1(&EXAMPLE_1, Position(7, 7), 12), 22);
+        assert_eq!(process_part1(EXAMPLE_1, Position(7, 7), 12), 22);
     }
 
     #[test]
     fn part2_example() {
-        assert_eq!(process_part2(&EXAMPLE_1, Position(7, 7), 12), "6,1");
+        assert_eq!(process_part2(EXAMPLE_1, Position(7, 7), 12), "6,1");
     }
 
     #[test]
     fn part2_example_test() {
-        assert_eq!(speed_part2(&EXAMPLE_1, Position(7, 7), 12), "6,1");
+        assert_eq!(speed_part2(EXAMPLE_1, Position(7, 7), 12), "6,1");
     }
 }
