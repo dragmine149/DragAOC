@@ -1,7 +1,7 @@
 use crate::utils::{Grid, Position};
 use aoc_runner_derive::aoc;
 use core::fmt;
-use std::u64;
+use std::fmt::Write;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum CellType {
@@ -41,7 +41,7 @@ impl fmt::Debug for CellType {
 
 impl fmt::Debug for Cell {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", format!("{:?}", self.tpe))
+        write!(f, "{:?}", self.tpe)
     }
 }
 
@@ -51,10 +51,10 @@ impl Grid<Cell> {
         let map = self
             .iter()
             .map(|y| {
-                let mut yy = y
-                    .iter()
-                    .map(|x| format!("{:>3} ", x.score))
-                    .collect::<String>();
+                let mut yy = y.iter().fold(String::new(), |mut out, x| {
+                    let _ = write!(out, "{:>3}", x.score);
+                    out
+                });
                 yy.push('\n');
                 yy
             })
@@ -64,16 +64,20 @@ impl Grid<Cell> {
 }
 
 fn parse(input: &str, map_size: Position, byte_count: usize) -> Grid<Cell> {
-    let mut grid = Grid::new(map_size, Cell::new(CellType::Empty));
+    let mut grid = Grid::new(map_size, Cell::new(CellType::Empty)); // make a big empty grid
     for (line_index, line) in input.lines().enumerate() {
+        // loop though all lines
         if line_index >= byte_count {
+            // if we at end of our input, stop
             break;
         }
+        // get the location
         let pos = line
             .split(",")
             .map(|v| v.parse::<usize>().expect("Failed to parse number"))
             .collect::<Vec<usize>>();
 
+        // set that cell to the memory type
         let position = Position::from(&pos);
         let cell = grid.get_cell(position);
         cell.tpe = CellType::Memory;
@@ -85,8 +89,9 @@ fn parse(input: &str, map_size: Position, byte_count: usize) -> Grid<Cell> {
 fn process_part1(input: &str, size: Position, byte_count: usize) -> u64 {
     let mut grid = parse(input, size, byte_count);
     // println!("{:?}", grid);
-    let mut stack = vec![(Position(0, 0), 0)];
+    let mut stack = vec![(Position(0, 0), 0)]; // stack for location finding
 
+    // searching algorith, give each cell the lowest possible score
     while let Some(info) = stack.pop() {
         let pos = info.0;
         let score = info.1;
@@ -95,6 +100,7 @@ fn process_part1(input: &str, size: Position, byte_count: usize) -> u64 {
         if cell.visited && cell.score <= score {
             continue;
         }
+        // don't glitch though walls
         if cell.tpe == CellType::Memory {
             continue;
         }
@@ -102,6 +108,7 @@ fn process_part1(input: &str, size: Position, byte_count: usize) -> u64 {
         cell.score = score;
         cell.visited = true;
 
+        // find neighbours and repeat
         let positions = pos.get_valid_positions(&Position(size.0 - 1, size.1 - 1));
         for posit in positions {
             stack.push((posit, score + 1));
@@ -109,6 +116,7 @@ fn process_part1(input: &str, size: Position, byte_count: usize) -> u64 {
     }
 
     // grid.debug_score();
+    // return the end cell location as the score
     grid.get_cell(Position(size.0 - 1, size.1 - 1)).score as u64
 }
 
@@ -119,24 +127,20 @@ fn part1(input: &str) -> u64 {
 
 fn process_part2(input: &str, size: Position, mut index: usize) -> String {
     // let mut grid = parse(input, size, 1024);
-    let mut score = u64::MAX;
+    let mut score = u64::MAX; // set to max so it's not 0
     while score != 0 {
-        index += 1;
-        // println!("Iteration: {:?}", index);
+        index += 1; // keep going one iteration at a time
+                    // println!("Iteration: {:?}", index);
         score = process_part1(input, size, index);
     }
 
     println!("{:?}", index);
 
-    let mut result = "";
-    for (line_index, line) in input.lines().enumerate() {
-        if line_index == index - 1 {
-            result = line;
-            break;
-        }
-    }
-
-    result.to_string()
+    input
+        .lines()
+        .nth(index - 1)
+        .expect("Failed to get line at specified index")
+        .to_string()
 }
 
 #[aoc(day18, part2)]

@@ -1,4 +1,5 @@
 use core::fmt;
+use std::fmt::Write;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Position(pub usize, pub usize);
@@ -65,13 +66,10 @@ impl<T: fmt::Debug> fmt::Debug for Grid<T> {
         write!(
             f,
             "{}",
-            self.iter()
-                .map(|y| {
-                    let mut yy = y.iter().map(|x| format!("{:?}", x)).collect::<String>();
-                    yy.push('\n');
-                    yy
-                })
-                .collect::<String>()
+            self.iter().fold(String::new(), |mut output, y| {
+                let _ = write!(output, "{:?}", y);
+                output
+            })
         )
     }
 }
