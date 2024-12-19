@@ -1,0 +1,6 @@
+Part 1
+1731 -- Too Low
+6882 -- Correct
+
+Part 2
+491 -- Correct

@@ -1,0 +1,7 @@
+Part 1:
+249384614 -- Too low
+249710443 -- Too low
+250232501 -- Correct
+
+Part 2:
+249138943 -- Correct

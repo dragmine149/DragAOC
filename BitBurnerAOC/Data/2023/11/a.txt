@@ -1,0 +1,7 @@
+Part1
+9496165 -- Too Low
+9795148 -- Correct
+
+Part2
+9795148 -- Too Low
+650672493820 -- Correct
