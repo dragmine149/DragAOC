@@ -3,8 +3,8 @@ use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
 use std::collections::BinaryHeap;
 use std::fmt;
+use std::fmt::Write;
 use std::str::FromStr;
-use std::usize;
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 enum TowelColour {
@@ -52,11 +52,10 @@ struct Towel {
 
 impl fmt::Debug for Towel {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let colours = self
-            .colours
-            .iter()
-            .map(|c| format!("{:?}", c))
-            .collect::<String>();
+        let colours = self.colours.iter().fold(String::new(), |mut output, c| {
+            let _ = write!(output, "{:?}", c);
+            output
+        });
 
         write!(f, "Towel({:?})", colours)
     }
@@ -105,6 +104,7 @@ struct TowelColourStorage {
 }
 
 impl TowelColourStorage {
+    #[allow(dead_code)]
     fn new(towels: Vec<Towel>) -> Self {
         let mut white = vec![];
         let mut black = vec![];
@@ -143,12 +143,15 @@ impl TowelColourStorage {
 }
 
 impl Towel {
+    // original function for getting the count of possible ones.
+    #[allow(dead_code)]
     fn make_towel(&self, combinations: &TowelColourStorage) -> u64 {
         // println!();
         // println!("Processing towel: {:?}", self);
 
         let mut local_cahce: Vec<(Vec<TowelColour>, Towel)> = vec![];
 
+        // binary heap for efficiency
         let mut heap = BinaryHeap::new();
         heap.push(vec![]);
         while let Some(progress) = heap.pop() {
@@ -159,36 +162,41 @@ impl Towel {
             //         colours: progress.to_vec()
             //     }
             // );
+
+            // check if we aren't out of bounds
             let index = progress.len();
             if index >= self.colours.len() {
                 continue;
             }
 
+            // get the possible combinations of that colour
             let options = combinations.get(&self.colours[index]);
             let combos = options.into_iter().filter(|t| {
+                // filter the combinations out so that we only have those which are
+                // In length, and match the next few colours
                 index + t.colours.len() <= self.colours.len()
                     && t.colours == self.colours[index..index + t.colours.len()]
             });
 
+            // loop though them all
             for combo in combos {
-                match local_cahce.iter().find(|x| x.0 == progress) {
-                    Some(res) => {
-                        if res.1 == *combo {
-                            continue;
-                        }
+                // check if we haven't already done this combination
+                if let Some(res) = local_cahce.iter().find(|x| x.0 == progress) {
+                    if res.1 == *combo {
+                        continue;
                     }
-                    None => {}
                 }
 
+                // create a new one
                 let mut prog = progress.to_owned();
                 prog.append(&mut combo.colours.to_vec());
                 if prog == *self.colours {
+                    // if reach end
                     // println!("Processed {:?}. Returning 1!", towel);
                     return 1;
                 }
 
-                // if
-
+                // add to heap and cache to search next.
                 heap.push(prog);
                 local_cahce.push((progress.to_vec(), combo.to_owned()));
             }
@@ -198,14 +206,27 @@ impl Towel {
         0
     }
 
+    fn make_towel_2(&self, combinations: &[Towel]) -> u64 {
+        let r = pattern_cache(
+            &self.colours,
+            combinations,
+            0,
+            &mut vec![u64::MAX; self.colours.len()],
+        );
+        if r > 1 {
+            1
+        } else {
+            0
+        }
+    }
+
     fn all_combos(&self, combinations: &[Towel]) -> u64 {
-        // println!();
-        let mut cache: Vec<u64> = vec![];
-        cache.resize(self.colours.len() * 5, u64::MAX);
-        // let r = pattern_cache(&self.colours, combinations, 0, &mut cache);
-        // println!("{:?}", cache);
-        // r
-        pattern_cache(&self.colours, combinations, 0, &mut cache)
+        pattern_cache(
+            &self.colours,
+            combinations,
+            0,
+            &mut vec![u64::MAX; self.colours.len()],
+        )
     }
 }
 
@@ -217,23 +238,28 @@ fn pattern_cache(
 ) -> u64 {
     // println!("Design: {:?}", design);
 
+    // check that the design has enough length otherwise we probably at the end here
     if design.len() <= start {
         return 1; // well, always one
     }
 
     // let hash = design_hash(design);
+    // check if we haven't cached this size yet
     if cache[start] != u64::MAX {
         return cache[start];
     }
 
+    // create the new design and check all combinations
     let matched_design = &design[start..];
     let mut sum = 0;
     for combination in combinations {
         // println!("{:?} {:?}", matched_design, combination);
         if !matched_design.starts_with(&combination.colours[0..]) {
+            // if it doesn't match, its not a part of us so we don't care
             continue;
         }
 
+        // repeat this whole function
         sum += pattern_cache(
             design,
             combinations,
@@ -253,7 +279,7 @@ fn pattern_cache(
 fn parse(input: &str) -> (Vec<Towel>, Vec<Towel>) {
     let mut towels = input
         .lines()
-        .nth(0)
+        .next()
         .expect("Failed to get the first line")
         .trim()
         .replace(" ", "")
@@ -275,12 +301,13 @@ fn parse(input: &str) -> (Vec<Towel>, Vec<Towel>) {
 fn part1(input: &(Vec<Towel>, Vec<Towel>)) -> u64 {
     let combinations = &input.0;
     let requested = &input.1;
-    let combinations = TowelColourStorage::new(combinations.to_owned());
+    // let combinations = TowelColourStorage::new(combinations.to_owned());
 
     requested
         // .iter()
         .par_iter()
-        .map(|towel| towel.make_towel(&combinations))
+        // .map(|towel| towel.make_towel(&combinations))
+        .map(|towel| towel.make_towel_2(combinations))
         .sum::<u64>()
     // + 1
 }
@@ -292,9 +319,9 @@ fn part2(input: &(Vec<Towel>, Vec<Towel>)) -> u64 {
     // let combinations = TowelColourStorage::new(combinations.to_owned());
 
     requested
-        .iter()
-        // .par_iter()
-        .map(|towel| towel.all_combos(&combinations))
+        // .iter()
+        .par_iter()
+        .map(|towel| towel.all_combos(combinations))
         .sum::<u64>()
 }
 
