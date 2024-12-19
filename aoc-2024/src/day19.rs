@@ -4,6 +4,7 @@ use rayon::iter::ParallelIterator;
 use std::collections::BinaryHeap;
 use std::fmt;
 use std::str::FromStr;
+use std::usize;
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 enum TowelColour {
@@ -142,13 +143,9 @@ impl TowelColourStorage {
 }
 
 impl Towel {
-    fn make_towel(
-        &self,
-        combinations: &TowelColourStorage,
-        // cache: &mut Vec<(Vec<TowelColour>, Towel)>,
-    ) -> u64 {
+    fn make_towel(&self, combinations: &TowelColourStorage) -> u64 {
         // println!();
-        println!("Processing towel: {:?}", self);
+        // println!("Processing towel: {:?}", self);
 
         let mut local_cahce: Vec<(Vec<TowelColour>, Towel)> = vec![];
 
@@ -200,6 +197,56 @@ impl Towel {
         // println!("Processed {:?}. Returning 0", towel);
         0
     }
+
+    fn all_combos(&self, combinations: &[Towel]) -> u64 {
+        // println!();
+        let mut cache: Vec<u64> = vec![];
+        cache.resize(self.colours.len() * 5, u64::MAX);
+        // let r = pattern_cache(&self.colours, combinations, 0, &mut cache);
+        // println!("{:?}", cache);
+        // r
+        pattern_cache(&self.colours, combinations, 0, &mut cache)
+    }
+}
+
+fn pattern_cache(
+    design: &[TowelColour],
+    combinations: &[Towel],
+    start: usize,
+    cache: &mut [u64],
+) -> u64 {
+    // println!("Design: {:?}", design);
+
+    if design.len() <= start {
+        return 1; // well, always one
+    }
+
+    // let hash = design_hash(design);
+    if cache[start] != u64::MAX {
+        return cache[start];
+    }
+
+    let matched_design = &design[start..];
+    let mut sum = 0;
+    for combination in combinations {
+        // println!("{:?} {:?}", matched_design, combination);
+        if !matched_design.starts_with(&combination.colours[0..]) {
+            continue;
+        }
+
+        sum += pattern_cache(
+            design,
+            combinations,
+            start + combination.colours.len(),
+            cache,
+        );
+        // println!("Sum: {:?}", sum);
+    }
+    // println!("Hash: {:?} set to {:?}", start, sum);
+
+    cache[start] = sum;
+
+    sum
 }
 
 #[aoc_generator(day19)]
@@ -230,8 +277,6 @@ fn part1(input: &(Vec<Towel>, Vec<Towel>)) -> u64 {
     let requested = &input.1;
     let combinations = TowelColourStorage::new(combinations.to_owned());
 
-    // let mut cache = vec![];
-
     requested
         // .iter()
         .par_iter()
@@ -240,10 +285,18 @@ fn part1(input: &(Vec<Towel>, Vec<Towel>)) -> u64 {
     // + 1
 }
 
-// #[aoc(day19, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+#[aoc(day19, part2)]
+fn part2(input: &(Vec<Towel>, Vec<Towel>)) -> u64 {
+    let combinations = &input.0;
+    let requested = &input.1;
+    // let combinations = TowelColourStorage::new(combinations.to_owned());
+
+    requested
+        .iter()
+        // .par_iter()
+        .map(|towel| towel.all_combos(&combinations))
+        .sum::<u64>()
+}
 
 #[cfg(test)]
 mod tests {
@@ -265,8 +318,8 @@ bbrgwb";
         assert_eq!(part1(&parse(EXAMPLE_1)), 6);
     }
 
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
+    #[test]
+    fn part2_example() {
+        assert_eq!(part2(&parse(EXAMPLE_1)), 16);
+    }
 }
