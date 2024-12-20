@@ -260,8 +260,8 @@ fn find_tree(input: &[Robot], grid_size: Position) -> bool {
         // line = check_for_line(&robots, grid_size);
         line = check_quadrant(&robots, grid_size);
     }
-    println!("Found this at {:?}", time);
-    debug_grid(&robots, grid_size, false);
+    // println!("Found this at {:?}", time);
+    // debug_grid(&robots, grid_size, false);
 
     line
 }

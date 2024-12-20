@@ -93,7 +93,7 @@ fn calculate_antinodes(
 
             if expand {
                 let expanded_list = expand_antinodes(goal, distance, map_size);
-                println!("{:?}, {:?}, {:#?}", goal, distance, expanded_list);
+                // println!("{:?}, {:?}, {:#?}", goal, distance, expanded_list);
                 for node in expanded_list.iter() {
                     if !positions.contains(node) {
                         positions.push(*node);
@@ -176,7 +176,7 @@ fn part2(input: &(Vec<(char, Vec<Position>)>, Position)) -> u32 {
     }
     // println!("Uniquenodes: {:#?}", unique);
     let map = build_grid(&unique, map_size);
-    println!("{}", map);
+    // println!("{}", map);
 
     (unique.len()) as u32
 }
