@@ -175,7 +175,7 @@ fn part2(input: &(Vec<(char, Vec<Position>)>, Position)) -> u32 {
         }
     }
     // println!("Uniquenodes: {:#?}", unique);
-    let map = build_grid(&unique, map_size);
+    // let map = build_grid(&unique, map_size);
     // println!("{}", map);
 
     (unique.len()) as u32

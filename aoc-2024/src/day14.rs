@@ -251,9 +251,9 @@ fn process_robots(input: &[Robot], grid_size: Position) -> usize {
 fn find_tree(input: &[Robot], grid_size: Position) -> bool {
     let mut robots = input.to_owned();
     let mut line = false;
-    let mut time = 0;
+    // let mut time = 0;
     while !line {
-        time += 1;
+        // time += 1;
         robots
             .par_iter_mut()
             .for_each(|robot| robot.move_robot(grid_size));
