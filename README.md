@@ -17,10 +17,10 @@
 ## Scores
 <!-- AOC TILES BEGIN -->
 <h1 align="center">
-  Advent of Code - 114/492 ⭐
+  Advent of Code - 115/492 ⭐
 </h1>
 <h1 align="center">
-  2024 - 39 ⭐ - Rust
+  2024 - 40 ⭐ - Rust
 </h1>
 <a href="aoc-2024/src/day01.rs">
   <img src=".aoc_tiles/tiles/2024/01.png" width="161px">
@@ -81,6 +81,9 @@
 </a>
 <a href="aoc-2024/src/day20.rs">
   <img src=".aoc_tiles/tiles/2024/20.png" width="161px">
+</a>
+<a href="aoc-2024/src/day21.rs">
+  <img src=".aoc_tiles/tiles/2024/21.png" width="161px">
 </a>
 <h1 align="center">
   2023 - 32 ⭐ - Python
