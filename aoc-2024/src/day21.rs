@@ -1,6 +1,5 @@
-use std::{char, fmt};
-
 use aoc_runner_derive::{aoc, aoc_generator};
+use std::{char, fmt};
 
 enum NumberKeys {
     Zero,
@@ -470,6 +469,29 @@ impl DirectionalKeys {
         keys.push(DirectionalKeys::Accept);
         keys
     }
+
+    fn index(&self) -> usize {
+        match self {
+            Self::Up => 0,
+            Self::Accept => 1,
+            Self::Left => 2,
+            Self::Down => 3,
+            Self::Right => 4,
+        }
+    }
+}
+
+impl From<usize> for DirectionalKeys {
+    fn from(value: usize) -> Self {
+        match value {
+            0 => Self::Up,
+            1 => Self::Accept,
+            2 => Self::Left,
+            3 => Self::Down,
+            4 => Self::Right,
+            _ => panic!("Invalid number"),
+        }
+    }
 }
 
 #[aoc_generator(day21)]
@@ -503,8 +525,11 @@ fn get_number_combination(input: &[NumberKeys]) -> Vec<DirectionalKeys> {
     }
     directions
 }
-fn get_directional_combination(input: &[DirectionalKeys]) -> Vec<DirectionalKeys> {
-    let mut pos = &DirectionalKeys::Accept;
+fn get_directional_combination(
+    start: &DirectionalKeys,
+    input: &[DirectionalKeys],
+) -> Vec<DirectionalKeys> {
+    let mut pos = start;
     let mut directions = vec![];
     for destination in input {
         // let mut path = pos.path(destination);
@@ -517,6 +542,15 @@ fn get_directional_combination(input: &[DirectionalKeys]) -> Vec<DirectionalKeys
     }
     directions
 }
+fn get_directional_count(start: &DirectionalKeys, input: &[DirectionalKeys]) -> u64 {
+    let mut pos = start;
+    let mut count: u64 = 0;
+    for destination in input {
+        count += pos.path(destination).len() as u64;
+        pos = destination;
+    }
+    count
+}
 
 #[aoc(day21, part1)]
 fn part1(input: &[(Vec<NumberKeys>, u64)]) -> u64 {
@@ -524,24 +558,154 @@ fn part1(input: &[(Vec<NumberKeys>, u64)]) -> u64 {
         .iter()
         .map(|code| {
             let depressurized = &code.0;
-            println!("{:?}", depressurized);
+            // println!("{:?}", depressurized);
             let radiation = get_number_combination(&depressurized);
-            println!("{:?}", radiation);
-            let cold = get_directional_combination(&radiation);
-            println!("{:?}", cold);
-            let you = get_directional_combination(&cold);
+            // println!("{:?}", radiation);
+            let cold = get_directional_combination(&DirectionalKeys::Accept, &radiation);
+            // println!("{:?}", cold);
+            let you = get_directional_combination(&DirectionalKeys::Accept, &cold);
             // println!("{:?}", you);
 
-            println!("Num: {:?}. You: {:?} ({:?})", code.1, you, you.len());
+            // println!("Num: {:?}. You: {:?} ({:?})", code.1, you, you.len());
             code.1 * you.len() as u64
         })
         .sum()
 }
 
-// #[aoc(day21, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+#[aoc(day21, part2)]
+fn part2(input: &[(Vec<NumberKeys>, u64)]) -> u64 {
+    // < A
+    // v < < A
+    // < v A < A A > > ^ A
+    // v < < A > A < A > > ^ A v A A < ^ A > A
+    // < v A < A A > > ^ A v A ^ A v < < A > > ^ A v A A < ^ A > A < v A ^ > A A v < < A > ^ A > A v A ^ A
+
+    // ^, ^, ^, A, v, A, <, ^, A, v, v, v, >, A
+    //
+    // v, <, <, A, >, >, ^, A, A, A, v, A, ^, A, v, <, <, A, >, A, ^, >, A, <, A, v, >, A, ^, A, <, v, A, <, A, A, >, >, ^, A, v, A, <, ^, A, >, A, v, A, ^, A, v, <, <, A, >, A, ^, >, A, A, A, v, A, ^, A, <, A, >, A
+    // v, <, <, A, >, >, ^, A, v, <, <, A, >, >, ^, A, v, <, <, A, >, >, ^, A, A, v, <, <, A, >, A, ^, >, A, A, <, v, A, <, A, A, >, >, ^, A, v, <, <, A, >, >, ^, A, A, v, <, <, A, >, A, ^, >, A, v, <, <, A, >, A, ^, >, A, v, <, <, A, >, A, ^, >, A, <, v, A, ^, >, A, A
+
+    // v, <, <, A, >, >, ^, A, > A, > A, v, >, A, ^, A, v, <, <, A, >, A, ^, >, A, ^, A, v, >, A, ^, A, <, v, A, <, A, A, >, >, ^, A, >, >, A, <, ^, A, >, A, v, >, A, ^, A, v, <, <, A, >, A, ^, >, A, ^, >, A, ^, >, A, >, A, ^, A, <, ^, A, >, A
+
+    // ^, ^, ^, A, v, A, <, ^, A, v, v, v, >, A
+    // <, A, A, A, >, A, <, v, A, ^, >, A, v, <, <, A, >, ^, A, >, A, <, v, A, A, A, >, A, ^, A
+    // <, A, A, A, >, A, <, v, A, ^, >, A, v, <, <, A, >, ^, A, >, A, <, v, A, A, A, >, A, ^, A
+    // v, <, <, A, >, >, ^, A, A, A, v, A, ^, A, v, <, <, A, >, A, ^, >, A, <, A, v, >, A, ^, A, <, v, A, <, A, A, >, >, ^, A, v, A, <, ^, A, >, A, v, A, ^, A, v, <, <, A, >, A, ^, >, A, A, A, v, A, ^, A, <, A, >, A
+    // v, <, <, A, >, >, ^, A, >, A, >, A, v, >, A, ^, A, v, <, <, A, >, A, ^, >, A, ^, A, v, >, A, ^, A, <, v, A, <, A, A, >, >, ^, A, >, >, A, <, ^, A, >, A, v, >, A, ^, A, v, <, <, A, >, A, ^, >, A, ^, >, A, ^, >, A, >, A, ^, A, <, ^, A, >, A
+    // v, <, <, A, >, >, ^, A, A, A, v, A, ^, A, v, <, <, A, >, A, ^, >, A, <, A, v, >, A, ^, A, <, v, A, <, A, A, >, >, ^, A, v, A, <, ^, A, >, A, v, A, ^, A, v, <, <, A, >, A, ^, >, A, A, A, v, A, ^, A, <, A, >, A
+
+    // v, <, <, A, >, >, ^, A, A, v, A, ^, A, v, <, <, A, >, A, ^, >, A, <, A, v, >, A, ^, A, <, v, A, <, A, A, >, >, ^, A, v, A, <, ^, A, >, A, <, v, A, ^, >, A, A, v, A, ^, A, <, A, >, A
+
+    let mut cache = [u64::MAX; 25];
+
+    input
+        .iter()
+        // .par_iter()
+        .map(|code| {
+            println!("Computing: {:?}", code);
+            let keypad = &code.0;
+            // println!("{:?}", keypad);
+            let combo_1 = get_number_combination(&keypad);
+            // println!("{:?}", combo_1);
+            // println!("1");
+            // ^ A < v >
+            let mut sum: u64 = 0;
+            let mut previous = &DirectionalKeys::Accept;
+            // let mut a = vec![];
+            combo_1.iter().for_each(|char| {
+                // println!("Calculating: prev({:?}) to next({:?})", previous, char);
+                let c = char.to_owned();
+                let pos = c.index();
+                let cache_pos = pos + (previous.index() * 5);
+                if cache[cache_pos] != u64::MAX {
+                    sum += cache[cache_pos];
+                    previous = char;
+                    println!("Cache!");
+                    // println!(
+                    //     "Used cache as cacluated prev({:?}) to next({:?}) before score ({:?})",
+                    //     previous, c, cache[cache_pos]
+                    // );
+                    return;
+                }
+
+                // println!("Prev: {:?} Char: {:?}", previous, char);
+                let combo_2 = get_directional_combination(previous, &[DirectionalKeys::from(pos)]);
+                // println!("2");
+                // println!("{:?}", combo_2);
+                let combo_3 = get_directional_combination(&DirectionalKeys::Accept, &combo_2);
+                // println!("3");
+                // let combo_3 = get_directional_count(&DirectionalKeys::Accept, &combo_2);
+                previous = char;
+
+                // for i in combo_3.iter() {
+                //     a.push(DirectionalKeys::from(i.index()));
+                // }
+
+                // cache[cache_pos] = combo_3;
+                // sum += combo_3;
+
+                let combo_4 = get_directional_combination(&DirectionalKeys::Accept, &combo_3);
+                println!("4");
+                let combo_5 = get_directional_combination(&DirectionalKeys::Accept, &combo_4);
+                println!("5");
+                let combo_6 = get_directional_combination(&DirectionalKeys::Accept, &combo_5);
+                println!("6");
+                let combo_7 = get_directional_combination(&DirectionalKeys::Accept, &combo_6);
+                println!("7");
+                let combo_8 = get_directional_combination(&DirectionalKeys::Accept, &combo_7);
+                println!("8");
+                let combo_9 = get_directional_combination(&DirectionalKeys::Accept, &combo_8);
+                println!("9");
+                let combo_10 = get_directional_combination(&DirectionalKeys::Accept, &combo_9);
+                println!("10");
+                let combo_11 = get_directional_combination(&DirectionalKeys::Accept, &combo_10);
+                println!("11");
+                let combo_12 = get_directional_combination(&DirectionalKeys::Accept, &combo_11);
+                println!("12");
+                let combo_13 = get_directional_combination(&DirectionalKeys::Accept, &combo_12);
+                println!("13");
+                let combo_14 = get_directional_combination(&DirectionalKeys::Accept, &combo_13);
+                println!("14");
+                let combo_15 = get_directional_combination(&DirectionalKeys::Accept, &combo_14);
+                println!("15");
+                let combo_16 = get_directional_combination(&DirectionalKeys::Accept, &combo_15);
+                println!("16");
+                let combo_17 = get_directional_combination(&DirectionalKeys::Accept, &combo_16);
+                println!("17");
+                let combo_18 = get_directional_combination(&DirectionalKeys::Accept, &combo_17);
+                println!("18");
+                let combo_19 = get_directional_combination(&DirectionalKeys::Accept, &combo_18);
+                println!("19");
+                let combo_20 = get_directional_combination(&DirectionalKeys::Accept, &combo_19);
+                println!("20");
+                let combo_21 = get_directional_combination(&DirectionalKeys::Accept, &combo_20);
+                println!("21");
+                let combo_22 = get_directional_combination(&DirectionalKeys::Accept, &combo_21);
+                println!("22");
+                let combo_23 = get_directional_combination(&DirectionalKeys::Accept, &combo_22);
+                println!("23");
+                let combo_24 = get_directional_combination(&DirectionalKeys::Accept, &combo_23);
+                println!("24");
+                let combo_25 = get_directional_combination(&DirectionalKeys::Accept, &combo_24);
+                println!("25");
+                let combo_26 = get_directional_count(&DirectionalKeys::Accept, &combo_25);
+
+                cache[cache_pos] = combo_26;
+                sum += combo_26;
+            });
+            // println!(
+            //     "{:?}",
+            //     a.iter()
+            //         .map(|c| format!("{:?}", c))
+            //         .collect::<Vec<String>>()
+            //         .join(", ")
+            // );
+
+            // println!("{:?}", cache);
+            code.1 * sum
+        })
+        .sum()
+}
 
 #[cfg(test)]
 mod tests {
