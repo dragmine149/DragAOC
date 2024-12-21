@@ -100,53 +100,29 @@ impl Position {
         self.1 * grid_size.1 + self.0
     }
 
-    // credit: https://stackoverflow.com/a/15856549/
+    // Thanks to guy_732: https://github.com/guy-732/aoc-2024/blob/01da016705b2be4cbbb199603d2cf32fcbcd0fda/src/day20.rs#L15-L34
     #[allow(dead_code)]
-    pub fn get_points_in_radius(&self, radius: usize) -> Vec<Position> {
-        let mut points = vec![];
-        for x in (self.0 as isize) - (radius as isize)..(self.0 as isize + 1) {
-            for y in (self.1 as isize) - (radius as isize)..(self.1 as isize + 1) {
-                // println!("x: {:?}, y: {:?}", x, y);
-                if (x - self.0 as isize).pow(2) + (y - self.1 as isize).pow(2)
-                    <= radius.pow(2) as isize
-                {
-                    let x_sym = self.0 as isize - (x - self.0 as isize);
-                    let y_sym = self.1 as isize - (y - self.1 as isize);
+    pub fn manhattan_distance(&self, other: &Self) -> u64 {
+        (self.0.abs_diff(other.0) + self.1.abs_diff(other.1)) as u64
+    }
 
-                    if x >= 0 && y >= 0 {
-                        let a = Position(x as usize, y as usize);
-                        if !points.contains(&a) {
-                            // println!("a: {:?}", a);
-                            points.push(a);
-                        }
-                    }
-                    if x >= 0 && y_sym >= 0 {
-                        let b = Position(x as usize, y_sym as usize);
-                        if !points.contains(&b) {
-                            // println!("b: {:?}", b);
-                            points.push(b);
-                        }
-                    }
-                    if x_sym >= 0 && y >= 0 {
-                        let c = Position(x_sym as usize, y as usize);
-                        if !points.contains(&c) {
-                            // println!("c: {:?}", c);
-                            points.push(c);
-                        }
-                    }
-                    if x_sym >= 0 && y_sym >= 0 {
-                        let d = Position(x_sym as usize, y_sym as usize);
-                        if !points.contains(&d) {
-                            // println!("d: {:?}", d);
-                            points.push(d);
-                        }
-                    }
-
-                    // points.push(Position(self.0 - (x - self.0), self.1 - (y - self.1)));
-                }
-            }
-        }
-        points
+    #[allow(dead_code)]
+    pub fn iter_positions_within(
+        &self,
+        max_distance: usize,
+        grid_size: Position,
+    ) -> impl IntoIterator<Item = (Position, u64)> + '_ {
+        let max_isize = max_distance as isize;
+        // generate all points within a max_distance * 2 + 1 area
+        ((self.0 as isize - max_isize)..=(self.0 as isize + max_isize))
+            .flat_map(move |x_dist| {
+                ((self.1 as isize - max_isize)..=(self.1 as isize + max_isize))
+                    .map(move |y_dist| Position(x_dist as usize, y_dist as usize))
+            })
+            .map(|position| (position, self.manhattan_distance(&position)))
+            // filter out those not in the area
+            .filter(move |(_, dist)| (*dist as usize) <= max_distance)
+            .filter(move |(pos, _)| pos.0 < grid_size.0 && pos.1 < grid_size.1)
     }
 }
 
