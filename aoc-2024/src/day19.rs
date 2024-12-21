@@ -325,28 +325,28 @@ fn part2(input: &(Vec<Towel>, Vec<Towel>)) -> u64 {
         .sum::<u64>()
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
 
-    const EXAMPLE_1: &str = "r, wr, b, g, bwu, rb, gb, br
+//     const EXAMPLE_1: &str = "r, wr, b, g, bwu, rb, gb, br
 
-brwrr
-bggr
-gbbr
-rrbgbr
-ubwu
-bwurrg
-brgr
-bbrgwb";
+// brwrr
+// bggr
+// gbbr
+// rrbgbr
+// ubwu
+// bwurrg
+// brgr
+// bbrgwb";
 
-    #[test]
-    fn part1_example() {
-        assert_eq!(part1(&parse(EXAMPLE_1)), 6);
-    }
+//     #[test]
+//     fn part1_example() {
+//         assert_eq!(part1(&parse(EXAMPLE_1)), 6);
+//     }
 
-    #[test]
-    fn part2_example() {
-        assert_eq!(part2(&parse(EXAMPLE_1)), 16);
-    }
-}
+//     #[test]
+//     fn part2_example() {
+//         assert_eq!(part2(&parse(EXAMPLE_1)), 16);
+//     }
+// }

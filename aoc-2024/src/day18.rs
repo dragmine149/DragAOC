@@ -67,7 +67,7 @@ impl Grid<Cell> {
     fn reset(&mut self, size: &Position) {
         for y in 0..size.1 {
             for x in 0..size.0 {
-                let cell = self.get_cell(Position(x, y));
+                let cell = self.get_cell(&Position(x, y));
                 cell.score = 0;
                 cell.visited = false;
             }
@@ -76,7 +76,7 @@ impl Grid<Cell> {
 }
 
 fn parse(input: &str, map_size: Position, byte_count: usize) -> Grid<Cell> {
-    let mut grid = Grid::new(map_size, Cell::new(CellType::Empty)); // make a big empty grid
+    let mut grid = Grid::new(&map_size, Cell::new(CellType::Empty)); // make a big empty grid
     for (line_index, line) in input.lines().enumerate() {
         // loop though all lines
         if line_index >= byte_count {
@@ -91,7 +91,7 @@ fn parse(input: &str, map_size: Position, byte_count: usize) -> Grid<Cell> {
 
         // set that cell to the memory type
         let position = Position::from(&pos);
-        let cell = grid.get_cell(position);
+        let cell = grid.get_cell(&position);
         cell.tpe = CellType::Memory;
     }
 
@@ -109,7 +109,7 @@ fn pathfinding(grid: &mut Grid<Cell>, size: Position) {
         let pos = info.0 .0;
         let score = info.0 .1;
         // println!("Looking at: {:?}", pos);
-        let cell = grid.get_cell(pos);
+        let cell = grid.get_cell(&pos);
         if cell.visited && cell.score <= score {
             continue;
         }
@@ -135,7 +135,7 @@ fn process_part1(input: &str, size: Position, byte_count: usize) -> u64 {
     pathfinding(&mut grid, size);
     // grid.debug_score();
     // return the end cell location as the score
-    grid.get_cell(Position(size.0 - 1, size.1 - 1)).score as u64
+    grid.get_cell(&Position(size.0 - 1, size.1 - 1)).score as u64
 }
 
 #[aoc(day18, part1)]
@@ -170,18 +170,18 @@ fn get_path(grid: &mut Grid<Cell>, size: Position) -> Vec<Position> {
     let end_cell = Position(size.0 - 1, size.1 - 1);
     let mut pos = end_cell;
     // if we have no score at the end, then the path did not computer, hence break.
-    if grid.get_cell(pos).score == 0 {
+    if grid.get_cell(&pos).score == 0 {
         return vec![];
     }
 
     let mut path = vec![pos];
 
     // start at the end and work to the front
-    let mut score = grid.get_cell(pos).score;
+    let mut score = grid.get_cell(&pos).score;
     while score != 0 {
         let options = pos.get_valid_positions(&end_cell);
         for option in options {
-            let cell = grid.get_cell(option);
+            let cell = grid.get_cell(&option);
             // println!("{:?} opt: {:?}", pos, option);
             // println!(
             //     "cell: {:?} score: {:?}, t: {:?} type: {:?}",
@@ -233,7 +233,7 @@ fn speed_part2(input: &str, size: Position, mut byte_count: usize) -> String {
                 .collect::<Vec<usize>>(),
         );
         // println!("{:?}", pos);
-        grid.get_cell(pos).tpe = CellType::Memory;
+        grid.get_cell(&pos).tpe = CellType::Memory;
 
         if path.contains(&pos) {
             // println!("Regenerating path...");
