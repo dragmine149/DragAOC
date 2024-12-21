@@ -1,2 +1,7 @@
 # Part 1
 1375 - Correct
+
+# Part 2
+1631956 - Too High
+1442856 - Too High
+1618605 - Too High

@@ -68,10 +68,10 @@ impl Position {
         if self.1 >= 1 {
             valid.push(Direction::West);
         }
-        if self.0 < grid_size.1 {
+        if self.0 < grid_size.0 {
             valid.push(Direction::South);
         }
-        if self.1 < grid_size.0 {
+        if self.1 < grid_size.1 {
             valid.push(Direction::East);
         }
         valid
@@ -86,13 +86,67 @@ impl Position {
         if self.1 >= 1 {
             valid.push((Direction::West, Position(self.0, self.1 - 1)));
         }
-        if self.0 < grid_size.1 {
+        if self.0 < grid_size.0 {
             valid.push((Direction::South, Position(self.0 + 1, self.1)));
         }
-        if self.1 < grid_size.0 {
+        if self.1 < grid_size.1 {
             valid.push((Direction::East, Position(self.0, self.1 + 1)));
         }
         valid
+    }
+
+    #[allow(dead_code)]
+    pub fn get_as_number(&self, grid_size: &Position) -> usize {
+        self.1 * grid_size.1 + self.0
+    }
+
+    // credit: https://stackoverflow.com/a/15856549/
+    #[allow(dead_code)]
+    pub fn get_points_in_radius(&self, radius: usize) -> Vec<Position> {
+        let mut points = vec![];
+        for x in (self.0 as isize) - (radius as isize)..(self.0 as isize + 1) {
+            for y in (self.1 as isize) - (radius as isize)..(self.1 as isize + 1) {
+                // println!("x: {:?}, y: {:?}", x, y);
+                if (x - self.0 as isize).pow(2) + (y - self.1 as isize).pow(2)
+                    <= radius.pow(2) as isize
+                {
+                    let x_sym = self.0 as isize - (x - self.0 as isize);
+                    let y_sym = self.1 as isize - (y - self.1 as isize);
+
+                    if x >= 0 && y >= 0 {
+                        let a = Position(x as usize, y as usize);
+                        if !points.contains(&a) {
+                            // println!("a: {:?}", a);
+                            points.push(a);
+                        }
+                    }
+                    if x >= 0 && y_sym >= 0 {
+                        let b = Position(x as usize, y_sym as usize);
+                        if !points.contains(&b) {
+                            // println!("b: {:?}", b);
+                            points.push(b);
+                        }
+                    }
+                    if x_sym >= 0 && y >= 0 {
+                        let c = Position(x_sym as usize, y as usize);
+                        if !points.contains(&c) {
+                            // println!("c: {:?}", c);
+                            points.push(c);
+                        }
+                    }
+                    if x_sym >= 0 && y_sym >= 0 {
+                        let d = Position(x_sym as usize, y_sym as usize);
+                        if !points.contains(&d) {
+                            // println!("d: {:?}", d);
+                            points.push(d);
+                        }
+                    }
+
+                    // points.push(Position(self.0 - (x - self.0), self.1 - (y - self.1)));
+                }
+            }
+        }
+        points
     }
 }
 
@@ -175,22 +229,22 @@ impl<T> std::ops::DerefMut for Grid<T> {
 
 impl<T: std::clone::Clone> Grid<T> {
     #[allow(dead_code)]
-    pub fn new(size: Position, default_arg: T) -> Self {
+    pub fn new(size: &Position, default_arg: T) -> Self {
         Self(vec![vec![default_arg; size.1]; size.0])
     }
 
     #[allow(dead_code)]
-    pub fn set_cell(&mut self, pos: Position, value: T) {
+    pub fn set_cell(&mut self, pos: &Position, value: T) {
         self[pos.1][pos.0] = value;
     }
 
     #[allow(dead_code)]
-    pub fn get_cell(&mut self, pos: Position) -> &mut T {
+    pub fn get_cell(&mut self, pos: &Position) -> &mut T {
         &mut self[pos.1][pos.0]
     }
 
     #[allow(dead_code)]
-    pub fn get_unmut_cell(&self, pos: Position) -> T {
+    pub fn get_unmut_cell(&self, pos: &Position) -> T {
         self[pos.1][pos.0].to_owned()
     }
 
