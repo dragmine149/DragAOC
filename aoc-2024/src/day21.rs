@@ -38,6 +38,7 @@ impl fmt::Debug for NumberKeys {
 }
 
 impl NumberKeys {
+    // hard code values to translate which buttons need to be pressed to press a button
     fn path(&self, destination: &Self) -> Vec<DirectionalKeys> {
         let mut keys = match self {
             Self::Zero => match destination {
@@ -419,6 +420,7 @@ impl fmt::Debug for DirectionalKeys {
 }
 
 impl DirectionalKeys {
+    // hard code values to translate which buttons need to be pressed to press a button
     fn path(&self, destination: &Self) -> Vec<DirectionalKeys> {
         let mut keys = match self {
             Self::Up => match destination {
@@ -502,7 +504,7 @@ fn parse(input: &str) -> Vec<(Vec<NumberKeys>, u64)> {
             let keys = line
                 .trim()
                 .chars()
-                .map(|char| NumberKeys::from(char))
+                .map(NumberKeys::from)
                 .collect::<Vec<NumberKeys>>();
 
             let num = line
@@ -516,6 +518,7 @@ fn parse(input: &str) -> Vec<(Vec<NumberKeys>, u64)> {
         .collect::<Vec<(Vec<NumberKeys>, u64)>>()
 }
 
+// translate the num pad into directional keys
 fn get_number_combination(input: &[NumberKeys]) -> Vec<DirectionalKeys> {
     let mut pos = &NumberKeys::Accept;
     let mut directions = vec![];
@@ -525,6 +528,7 @@ fn get_number_combination(input: &[NumberKeys]) -> Vec<DirectionalKeys> {
     }
     directions
 }
+// translate the direction keys into more directional keys
 fn get_directional_combination(
     start: &DirectionalKeys,
     input: &[DirectionalKeys],
@@ -542,6 +546,7 @@ fn get_directional_combination(
     }
     directions
 }
+// translates the directional keys into numbers. Use of last one to save memory.
 fn get_directional_count(start: &DirectionalKeys, input: &[DirectionalKeys]) -> u64 {
     let mut pos = start;
     let mut count: u64 = 0;
@@ -552,6 +557,7 @@ fn get_directional_count(start: &DirectionalKeys, input: &[DirectionalKeys]) -> 
     count
 }
 
+// simple version
 #[aoc(day21, part1)]
 fn part1(input: &[(Vec<NumberKeys>, u64)]) -> u64 {
     input
@@ -559,7 +565,7 @@ fn part1(input: &[(Vec<NumberKeys>, u64)]) -> u64 {
         .map(|code| {
             let depressurized = &code.0;
             // println!("{:?}", depressurized);
-            let radiation = get_number_combination(&depressurized);
+            let radiation = get_number_combination(depressurized);
             // println!("{:?}", radiation);
             let cold = get_directional_combination(&DirectionalKeys::Accept, &radiation);
             // println!("{:?}", cold);
@@ -572,6 +578,7 @@ fn part1(input: &[(Vec<NumberKeys>, u64)]) -> u64 {
         .sum()
 }
 
+// NOTE: In order to run this part, you need 48 odd minutes and (recommended) 10GiB of RAM.
 #[aoc(day21, part2)]
 fn part2(input: &[(Vec<NumberKeys>, u64)]) -> u64 {
     // < A
@@ -598,25 +605,30 @@ fn part2(input: &[(Vec<NumberKeys>, u64)]) -> u64 {
 
     let mut cache = [u64::MAX; 25];
 
+    // for each input
     input
         .iter()
         // .par_iter()
         .map(|code| {
+            // for each char in the input
             println!("Computing: {:?}", code);
             let keypad = &code.0;
             // println!("{:?}", keypad);
-            let combo_1 = get_number_combination(&keypad);
+            // calculate the first set of directional keys
+            let combo_1 = get_number_combination(keypad);
             // println!("{:?}", combo_1);
             // println!("1");
             // ^ A < v >
             let mut sum: u64 = 0;
             let mut previous = &DirectionalKeys::Accept;
             // let mut a = vec![];
+            // split up the work load, one char at a time
             combo_1.iter().for_each(|char| {
                 // println!("Calculating: prev({:?}) to next({:?})", previous, char);
                 let c = char.to_owned();
                 let pos = c.index();
                 let cache_pos = pos + (previous.index() * 5);
+                // check if we haven't come across this combination before
                 if cache[cache_pos] != u64::MAX {
                     sum += cache[cache_pos];
                     previous = char;
@@ -628,6 +640,8 @@ fn part2(input: &[(Vec<NumberKeys>, u64)]) -> u64 {
                     return;
                 }
 
+                // calculate all the combinations
+
                 // println!("Prev: {:?} Char: {:?}", previous, char);
                 let combo_2 = get_directional_combination(previous, &[DirectionalKeys::from(pos)]);
                 // println!("2");
@@ -635,7 +649,7 @@ fn part2(input: &[(Vec<NumberKeys>, u64)]) -> u64 {
                 let combo_3 = get_directional_combination(&DirectionalKeys::Accept, &combo_2);
                 // println!("3");
                 // let combo_3 = get_directional_count(&DirectionalKeys::Accept, &combo_2);
-                previous = char;
+                previous = char; // doesn't actuall matter where this happens, as long as it's after combo_2
 
                 // for i in combo_3.iter() {
                 //     a.push(DirectionalKeys::from(i.index()));
@@ -688,8 +702,10 @@ fn part2(input: &[(Vec<NumberKeys>, u64)]) -> u64 {
                 println!("24");
                 let combo_25 = get_directional_combination(&DirectionalKeys::Accept, &combo_24);
                 println!("25");
+                // saves memory by reducing the list. And well, we don't also need a big long list here.
                 let combo_26 = get_directional_count(&DirectionalKeys::Accept, &combo_25);
 
+                // add to cache and sum
                 cache[cache_pos] = combo_26;
                 sum += combo_26;
             });
