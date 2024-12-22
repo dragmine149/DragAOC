@@ -560,22 +560,101 @@ fn get_directional_count(start: &DirectionalKeys, input: &[DirectionalKeys]) -> 
 // simple version
 #[aoc(day21, part1)]
 fn part1(input: &[(Vec<NumberKeys>, u64)]) -> u64 {
+    // input
+    //     .iter()
+    //     .map(|code| {
+    //         let depressurized = &code.0;
+    //         println!("{:?}", depressurized);
+    //         let radiation = get_number_combination(depressurized);
+    //         println!("{:?}", radiation);
+    //         let cold = get_directional_combination(&DirectionalKeys::Accept, &radiation);
+    //         println!("{:?}", cold);
+    //         let you = get_directional_combination(&DirectionalKeys::Accept, &cold);
+    //         println!("{:?}", you);
+
+    //         // println!("Num: {:?}. You: {:?} ({:?})", code.1, you, you.len());
+    //         code.1 * you.len() as u64
+    //     })
+    //     .sum::<u64>();
+
+    // ^ A                                  =  A ^ (2)  d=0
+    // <, A, >, A                           =  A ^ (4)  d=1
+    // v, <, <, A, >, >, ^, A, v, A, ^, A   =  A ^ (12) d=2
+
+    let mut cache = vec![u64::MAX; 25];
+    cache.resize(25 * input.len(), u64::MAX);
     input
         .iter()
+        .map(|code| (get_number_combination(&code.0), code.1))
         .map(|code| {
-            let depressurized = &code.0;
-            // println!("{:?}", depressurized);
-            let radiation = get_number_combination(depressurized);
-            // println!("{:?}", radiation);
-            let cold = get_directional_combination(&DirectionalKeys::Accept, &radiation);
-            // println!("{:?}", cold);
-            let you = get_directional_combination(&DirectionalKeys::Accept, &cold);
-            // println!("{:?}", you);
-
-            // println!("Num: {:?}. You: {:?} ({:?})", code.1, you, you.len());
-            code.1 * you.len() as u64
+            let score = code
+                .0
+                .iter()
+                .map(|c| {
+                    println!("start {:?}", c);
+                    let s = generate_level_score(&DirectionalKeys::Accept, c, &mut cache, 0, 2);
+                    println!("A to {:?} gives {:?}", c, s);
+                    s
+                })
+                .sum::<u64>();
+            score * code.1
         })
-        .sum()
+        .sum::<u64>()
+    // println!("Cache: {:?}", cache);
+    // 0
+}
+
+fn generate_level_score(
+    previous: &DirectionalKeys,
+    next: &DirectionalKeys,
+    cache: &mut [u64],
+    depth: u64,
+    max_depth: u64,
+) -> u64 {
+    if depth > max_depth {
+        return 0;
+    }
+
+    let cache_pos = (previous.index() + next.index() * 5) + depth as usize * 25;
+    if cache[cache_pos] != u64::MAX {
+        println!(
+            "Cache! (depth: {:?} {:?} to {:?}) {:?} ({:?})",
+            depth, previous, next, cache_pos, cache[cache_pos]
+        );
+        return cache[cache_pos];
+    }
+    let combos = previous.path(next);
+    println!("{:?} to {:?} combos: {:?}", previous, next, combos);
+    // let score = combos
+    //     .iter()
+    //     .map(|key| {
+    //         println!("k: {:?}", key);
+    //         generate_level_score(previous, key, cache, depth + 1, max_depth)
+    //     })
+    //     .sum::<u64>();
+    let mut score: u64 = 0;
+    combos.iter().for_each(|key| {
+        println!("k: {:?}", key);
+        let mut l_prev = &DirectionalKeys::Accept;
+        if depth <= 1 {
+            l_prev = previous;
+        }
+        score += generate_level_score(l_prev, key, cache, depth + 1, max_depth)
+    });
+
+    println!(
+        "(depth: {:?}) {:?} to {:?} gives {:?} + {:?} ({:?}) stored at {:?}",
+        depth,
+        previous,
+        next,
+        score,
+        combos.len() as u64,
+        combos,
+        cache_pos
+    );
+
+    cache[cache_pos] = score + combos.len() as u64;
+    cache[cache_pos]
 }
 
 // NOTE: In order to run this part, you need 48 odd minutes and (recommended) 10GiB of RAM.
@@ -603,7 +682,7 @@ fn part2(input: &[(Vec<NumberKeys>, u64)]) -> u64 {
 
     // v, <, <, A, >, >, ^, A, A, v, A, ^, A, v, <, <, A, >, A, ^, >, A, <, A, v, >, A, ^, A, <, v, A, <, A, A, >, >, ^, A, v, A, <, ^, A, >, A, <, v, A, ^, >, A, A, v, A, ^, A, <, A, >, A
 
-    let mut cache = [u64::MAX; 25];
+    let mut level_cache = [u64::MAX; 650];
 
     // for each input
     input
@@ -629,8 +708,8 @@ fn part2(input: &[(Vec<NumberKeys>, u64)]) -> u64 {
                 let pos = c.index();
                 let cache_pos = pos + (previous.index() * 5);
                 // check if we haven't come across this combination before
-                if cache[cache_pos] != u64::MAX {
-                    sum += cache[cache_pos];
+                if level_cache[cache_pos] != u64::MAX {
+                    sum += level_cache[cache_pos];
                     previous = char;
                     println!("Cache!");
                     // println!(
@@ -706,7 +785,7 @@ fn part2(input: &[(Vec<NumberKeys>, u64)]) -> u64 {
                 let combo_26 = get_directional_count(&DirectionalKeys::Accept, &combo_25);
 
                 // add to cache and sum
-                cache[cache_pos] = combo_26;
+                level_cache[cache_pos] = combo_26;
                 sum += combo_26;
             });
             // println!(
