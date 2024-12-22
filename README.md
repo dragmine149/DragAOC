@@ -17,7 +17,7 @@
 ## Scores
 <!-- AOC TILES BEGIN -->
 <h1 align="center">
-  Advent of Code - 117/492 ⭐
+  Advent of Code - 117/494 ⭐
 </h1>
 <h1 align="center">
   2024 - 42 ⭐ - Rust
