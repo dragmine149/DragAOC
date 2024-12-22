@@ -1,5 +1,6 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 use rayon::iter::{IntoParallelRefIterator, IntoParallelRefMutIterator, ParallelIterator};
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 struct Secret {
@@ -47,8 +48,6 @@ impl Secret {
             self.store_price(prev);
             prev = self.number;
         }
-        // println!("{:?}", self.prices);
-        // println!("{:?}", self.price_dif);
     }
 
     fn get_sequences(&self) -> Vec<(i8, i8, i8, i8)> {
@@ -61,12 +60,6 @@ impl Secret {
                 break;
             }
 
-            // let sequence = (
-            //     self.prices[index + 1] as i8 - self.prices[index + 0] as i8,
-            //     self.prices[index + 2] as i8 - self.prices[index + 1] as i8,
-            //     self.prices[index + 3] as i8 - self.prices[index + 2] as i8,
-            //     self.prices[index + 4] as i8 - self.prices[index + 3] as i8,
-            // );
             let sequence = (
                 self.price_dif[index],
                 self.price_dif[index + 1],
@@ -136,43 +129,32 @@ fn part2(input: &[Secret]) -> u128 {
     secrets
         .par_iter_mut()
         .for_each(|secret| secret.evolve_x(2000));
+    let mut unique = HashMap::new();
     let a = secrets
-        // .iter()
         .par_iter_mut()
         .map(|secret| secret.get_sequences())
         .collect::<Vec<Vec<(i8, i8, i8, i8)>>>();
-    // .map(|sequence| sequence.len())
-    // .collect::<Vec<usize>>();
-    // println!("{:?}", a);
-    let mut unique_count: Vec<((i8, i8, i8, i8), u8)> = vec![];
+
     for b in a {
         for sequence in b {
-            let pos = unique_count.iter().position(|x| x.0 == sequence);
-            if pos.is_none() {
-                unique_count.push((sequence, 1));
+            let count = unique.get(&sequence);
+            if count.is_none() {
+                unique.insert(sequence, 1);
                 continue;
             }
-            unique_count[pos.unwrap()].1 += 1;
+            unique.insert(sequence, count.unwrap() + 1);
         }
     }
-    // let unique_count2 = unique_count
-    //     .iter()
-    //     .filter(|x| x.1 > 2)
-    //     .collect::<Vec<&((i8, i8, i8, i8), u8)>>();
-    // println!("{:?}", unique_count2);
-    // let m = unique_count2.par_iter().map(|u| u.1 as u64).sum::<u64>();
-    // println!("{:?}", m);
-    println!("E");
 
-    let total: u128 = unique_count
+    unique
         .par_iter()
-        .filter(|seq| seq.1 > 2)
+        .filter(|seq| *seq.1 > 2)
         .map(|seq| {
             secrets
                 .to_vec()
                 .par_iter()
                 .map(|monkey| {
-                    let price = monkey.get_sequence_price(seq.0);
+                    let price = monkey.get_sequence_price(*seq.0);
                     if price == usize::MAX {
                         0
                     } else {
@@ -182,9 +164,7 @@ fn part2(input: &[Secret]) -> u128 {
                 .sum::<u128>()
         })
         .max()
-        .expect("Failed to get max value of sequences");
-
-    total
+        .expect("Failed to get max value of sequences")
 }
 
 #[cfg(test)]
