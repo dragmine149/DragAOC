@@ -1,5 +1,3 @@
-use std::usize;
-
 use aoc_runner_derive::{aoc, aoc_generator};
 use rayon::iter::{IntoParallelRefIterator, IntoParallelRefMutIterator, ParallelIterator};
 
@@ -70,7 +68,7 @@ impl Secret {
             //     self.prices[index + 4] as i8 - self.prices[index + 3] as i8,
             // );
             let sequence = (
-                self.price_dif[index + 0],
+                self.price_dif[index],
                 self.price_dif[index + 1],
                 self.price_dif[index + 2],
                 self.price_dif[index + 3],
@@ -78,12 +76,8 @@ impl Secret {
             let sum1 = sequence.0 + sequence.1;
             let sum2 = sum1 + sequence.1;
             let sum3 = sum2 + sequence.2;
-            if -9 <= sum1 && sum1 <= 9 {
-                if -9 <= sum2 && sum2 <= 9 {
-                    if -9 <= sum3 && sum3 <= 9 {
-                        sequences.push(sequence);
-                    }
-                }
+            if (-9..=9).contains(&sum1) && (-9..=9).contains(&sum2) && (-9..=9).contains(&sum3) {
+                sequences.push(sequence);
             }
         }
         sequences
@@ -95,7 +89,7 @@ impl Secret {
                 continue;
             }
 
-            if self.price_dif[index + 0] != sequence.0 {
+            if self.price_dif[index] != sequence.0 {
                 continue;
             }
             if self.price_dif[index + 1] != sequence.1 {
@@ -190,7 +184,7 @@ fn part2(input: &[Secret]) -> u128 {
         .max()
         .expect("Failed to get max value of sequences");
 
-    total as u128
+    total
 }
 
 #[cfg(test)]
