@@ -161,17 +161,18 @@ fn part2(input: &[Secret]) -> u128 {
             unique_count[pos.unwrap()].1 += 1;
         }
     }
-    let unique_count2 = unique_count
-        .iter()
-        .filter(|x| x.1 > 2)
-        .collect::<Vec<&((i8, i8, i8, i8), u8)>>();
+    // let unique_count2 = unique_count
+    //     .iter()
+    //     .filter(|x| x.1 > 2)
+    //     .collect::<Vec<&((i8, i8, i8, i8), u8)>>();
     // println!("{:?}", unique_count2);
     // let m = unique_count2.par_iter().map(|u| u.1 as u64).sum::<u64>();
     // println!("{:?}", m);
     println!("E");
 
-    let total: u128 = unique_count2
+    let total: u128 = unique_count
         .par_iter()
+        .filter(|seq| seq.1 > 2)
         .map(|seq| {
             secrets
                 .to_vec()
