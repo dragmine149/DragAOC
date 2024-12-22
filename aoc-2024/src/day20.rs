@@ -200,15 +200,13 @@ fn improved_cheat(grid: &Grid<Cell>, location: &Position, picoseconds: usize) ->
             if cell.cell_type == CellType::Wall {
                 // segment error
                 u64::MAX
+            } else if cell.score < local_score {
+                0
             } else {
-                if cell.score < local_score {
-                    0
-                } else {
-                    // How much would we get from us to the cell minus the cheat time
-                    cell.score
-                        .saturating_sub(local_score)
-                        .saturating_sub(distance as u64)
-                }
+                // How much would we get from us to the cell minus the cheat time
+                cell.score
+                    .saturating_sub(local_score)
+                    .saturating_sub(distance)
             }
         })
         // .filter(|option| option != &0)
