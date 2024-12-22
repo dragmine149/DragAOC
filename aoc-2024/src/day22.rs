@@ -10,14 +10,15 @@ struct Secret {
 }
 
 impl Secret {
+    // mix numbers
     fn mix(&mut self, value: u128) {
         self.number ^= value;
     }
-
+    // prune numbers
     fn prune(&mut self) {
         self.number %= 16777216;
     }
-
+    // evolve numbers
     fn evolve(&mut self) {
         let r1 = self.number * 64;
         self.mix(r1);
@@ -32,6 +33,7 @@ impl Secret {
         self.prune();
     }
 
+    // store a list of prices and the differences
     fn store_price(&mut self, previous: u128) {
         // println!("{:?} -> {:?}", self.number, self.number % 10);
         let current = (self.number % 10) as i8;
@@ -40,8 +42,9 @@ impl Secret {
         self.price_dif.push(current - prev);
     }
 
+    // evolve the number how every many times
     fn evolve_x(&mut self, times: u128) {
-        self.store_price(self.number);
+        self.store_price(self.number); // pre save
         let mut prev = self.number;
         for _ in 0..times {
             self.evolve();
@@ -50,6 +53,7 @@ impl Secret {
         }
     }
 
+    // get all the possible valid sequences
     fn get_sequences(&self) -> Vec<(i8, i8, i8, i8)> {
         let mut sequences = vec![];
         for (index, _) in self.prices.iter().enumerate() {
@@ -69,6 +73,7 @@ impl Secret {
             let sum1 = sequence.0 + sequence.1;
             let sum2 = sum1 + sequence.1;
             let sum3 = sum2 + sequence.2;
+            // these sequences where `-9 <= sum <= 9` is false will never happen.
             if (-9..=9).contains(&sum1) && (-9..=9).contains(&sum2) && (-9..=9).contains(&sum3) {
                 sequences.push(sequence);
             }
@@ -76,8 +81,10 @@ impl Secret {
         sequences
     }
 
+    // get the price after a sequence
     fn get_sequence_price(&self, sequence: (i8, i8, i8, i8)) -> usize {
-        for (index, _) in self.price_dif.iter().enumerate() {
+        for index in 0..self.price_dif.len() {
+            // for (index, _) in self.price_dif.iter().enumerate() {
             if index < 4 || index + 5 > self.price_dif.len() {
                 continue;
             }
@@ -96,6 +103,7 @@ impl Secret {
             }
             return index + 3;
         }
+        // could have been 0 but makes more sense, tells us we have no chance of getting anything with you kind monkey.
         usize::MAX
     }
 }
@@ -119,8 +127,6 @@ fn part1(input: &[Secret]) -> u128 {
         .par_iter_mut()
         .for_each(|secret| secret.evolve_x(2000));
     secrets.par_iter().map(|secret| secret.number).sum::<u128>()
-    // + 1
-    // 0
 }
 
 #[aoc(day22, part2)]
@@ -129,25 +135,29 @@ fn part2(input: &[Secret]) -> u128 {
     secrets
         .par_iter_mut()
         .for_each(|secret| secret.evolve_x(2000));
+
+    // hashmap
     let mut unique = HashMap::new();
     let a = secrets
         .par_iter_mut()
         .map(|secret| secret.get_sequences())
-        .collect::<Vec<Vec<(i8, i8, i8, i8)>>>();
+        .flatten()
+        .collect::<Vec<(i8, i8, i8, i8)>>();
 
-    for b in a {
-        for sequence in b {
-            let count = unique.get(&sequence);
-            if count.is_none() {
-                unique.insert(sequence, 1);
-                continue;
-            }
-            unique.insert(sequence, count.unwrap() + 1);
+    // translate all possible sequences into hashmap format.
+    for sequence in a {
+        let count = unique.get(&sequence);
+        if count.is_none() {
+            unique.insert(sequence, 1);
+            continue;
         }
+        unique.insert(sequence, count.unwrap() + 1);
     }
 
+    // process all monkeys and sequences
     unique
         .par_iter()
+        // filter based on the assumption that if a sequence only appears once or twice only one or two monkeys have it, there will be better sequences in the 1.5k odd monkeys.
         .filter(|seq| *seq.1 > 2)
         .map(|seq| {
             secrets
