@@ -121,19 +121,19 @@ fn part1(input: &str) -> u64 {
 }
 
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
-struct Node {
-    name: String,
-    neighbours: Vec<String>,
+struct Node<'a> {
+    name: &'a str,
+    neighbours: Vec<&'a str>,
 }
 
-impl Node {
+impl<'a> Node<'a> {
     // check if this node has another node as it's neighbour
     fn has_node_as_neighbours(&self, other: &Self) -> bool {
         self.neighbours.contains(&other.name)
     }
 }
 
-impl std::fmt::Debug for Node {
+impl<'a> std::fmt::Debug for Node<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.name)
     }
@@ -141,7 +141,11 @@ impl std::fmt::Debug for Node {
 
 // Modified from: https://iq.opengenus.org/bron-kerbosch-algorithm/
 // well translated and slightly modified
-fn find_cliques(potenital: Vec<Node>, remaining: Vec<Node>, mut skip: Vec<Node>) -> Vec<Vec<Node>> {
+fn find_cliques<'a>(
+    potenital: Vec<Node<'a>>,
+    remaining: Vec<Node<'a>>,
+    mut skip: Vec<Node<'a>>,
+) -> Vec<Vec<Node<'a>>> {
     if remaining.is_empty() && skip.is_empty() {
         // println!("Clique found: {:?}", potenital);
         // Clique has been found, we can then return the list of cliques.
@@ -200,11 +204,11 @@ fn part2(input: &str) -> String {
         match node {
             Some(v) => {
                 let comp = &mut computer_nodes[v];
-                comp.neighbours.push(b.to_string());
+                comp.neighbours.push(b);
             }
             None => computer_nodes.push(Node {
-                name: a.to_string(),
-                neighbours: vec![b.to_string()],
+                name: a,
+                neighbours: vec![b],
             }),
         }
 
@@ -212,11 +216,11 @@ fn part2(input: &str) -> String {
         match node2 {
             Some(v) => {
                 let comp = &mut computer_nodes[v];
-                comp.neighbours.push(a.to_string());
+                comp.neighbours.push(a);
             }
             None => computer_nodes.push(Node {
-                name: b.to_string(),
-                neighbours: vec![a.to_string()],
+                name: b,
+                neighbours: vec![a],
             }),
         }
     });
