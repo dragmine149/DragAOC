@@ -2,9 +2,9 @@ use aoc_runner_derive::aoc;
 
 // store the three way computer loop
 struct ComputerConnections {
-    computer_1: String,
-    computer_2: String,
-    computer_3: String,
+    computer_1: usize,
+    computer_2: usize,
+    computer_3: usize,
 }
 
 impl std::fmt::Debug for ComputerConnections {
@@ -29,10 +29,10 @@ impl std::fmt::Debug for ComputerConnections {
 
 impl ComputerConnections {
     // check if the computer has a 't', aka it's our historian.
-    fn has_t(&self) -> bool {
-        self.computer_1.starts_with('t')
-            || self.computer_2.starts_with('t')
-            || self.computer_3.starts_with('t')
+    fn has_t(&self, mapping: &Vec<String>) -> bool {
+        mapping[self.computer_1].starts_with('t')
+            || mapping[self.computer_2].starts_with('t')
+            || mapping[self.computer_3].starts_with('t')
     }
 
     // checks if the computer is already connected to this computer
@@ -49,57 +49,82 @@ impl ComputerConnections {
     }
 }
 
-fn parse_p1(input: &str) -> Vec<ComputerConnections> {
+#[aoc_generator(day23, part1)]
+fn parse(input: &str) -> (Vec<String>, Vec<(usize, usize)>) {
+    let mut keys = vec![];
+    let indexs = input
+        .lines()
+        .map(|line| {
+            let mut computers = line.trim().split("-");
+            let a = computers.next().expect("Failed to get first computer");
+            let a_pos = keys.iter().position(|key| key == &a);
+            let a_index = match a_pos {
+                Some(v) => v,
+                None => {
+                    keys.push(a.to_string());
+                    keys.len() - 1
+                }
+            };
+
+            let b = computers.next().expect("Failed to get second computer");
+            let b_pos = keys.iter().position(|key| key == &b);
+            let b_index = match b_pos {
+                Some(v) => v,
+                None => {
+                    keys.push(b.to_string());
+                    keys.len() - 1
+                }
+            };
+
+            (a_index, b_index)
+        })
+        .collect();
+    (keys, indexs)
+}
+
+fn parse_p1(input: &Vec<(usize, usize)>) -> Vec<ComputerConnections> {
     let mut connections: Vec<ComputerConnections> = vec![];
 
-    // go though all lines and make the connections
-    input.lines().for_each(|line| {
-        // println!("Line: {:?}", line);
-        let mut computers = line.trim().split("-");
-        // get the computers
-        let a = computers.next().expect("Failed to parse A");
-        let b = computers.next().expect("Failed to parse B");
+    input.iter().for_each(|computer_set| {
+        let a = computer_set.0;
+        let b = computer_set.1;
 
-        // get the computer connections
         let a_connections = input
-            .lines()
-            .filter(|line| line.contains(a))
-            .map(|line| {
-                let mut options = line
-                    .trim()
-                    .split("-")
-                    // make sure to only include unique computers
-                    .filter(|a_con| *a_con != a && *a_con != b);
-                options.next().unwrap_or("")
+            .iter()
+            .filter(|c| c.0 == a || c.1 == a)
+            .map(|c| {
+                if c.0 != a && c.0 != b {
+                    c.0
+                } else if c.1 != a && c.1 != b {
+                    c.1
+                } else {
+                    usize::MAX
+                }
             })
-            .filter(|l| !l.is_empty());
+            .filter(|c| *c != usize::MAX);
         let b_connections = input
-            .lines()
-            .filter(|line| line.contains(b))
-            .map(|line| {
-                let mut options = line
-                    .trim()
-                    .split("-")
-                    .filter(|b_con| *b_con != b && *b_con != a);
-                options.next().unwrap_or("")
+            .iter()
+            .filter(|c| c.0 == b || c.1 == b)
+            .map(|c| {
+                if c.0 != a && c.0 != b {
+                    c.0
+                } else if c.1 != a && c.1 != b {
+                    c.1
+                } else {
+                    usize::MAX
+                }
             })
-            .filter(|l| !l.is_empty())
-            .collect::<Vec<&str>>();
-        // println!("{:?}, {:?}", a_connections, b_connections);
+            .filter(|c| *c != usize::MAX)
+            .collect::<Vec<usize>>();
 
-        // loop though all connections a and b has
         for a_con in a_connections {
-            for b_con in b_connections.iter() {
-                // check if they have any in common
+            for b_con in &b_connections {
                 if a_con == *b_con {
-                    // make a new computer
                     let computer = ComputerConnections {
-                        computer_1: a.to_string(),
-                        computer_2: b.to_string(),
-                        computer_3: a_con.to_string(),
+                        computer_1: a,
+                        computer_2: b,
+                        computer_3: a_con,
                     };
-
-                    // semi-lazy, check if this computer hasn't been made before
                     if !connections.iter().any(|comp| comp.exists(&computer)) {
                         connections.push(computer);
                     }
@@ -112,12 +137,15 @@ fn parse_p1(input: &str) -> Vec<ComputerConnections> {
 }
 
 #[aoc(day23, part1)]
-fn part1(input: &str) -> u64 {
-    let computers = parse_p1(input);
+fn part1(input: &(Vec<String>, Vec<(usize, usize)>)) -> u64 {
+    let computers = parse_p1(&input.1);
     // println!("{:?}", computers);
 
     // filter and count
-    computers.iter().filter(|computer| computer.has_t()).count() as u64
+    computers
+        .iter()
+        .filter(|computer| computer.has_t(&input.0))
+        .count() as u64
 }
 
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -341,7 +369,7 @@ td-yn
 
     #[test]
     fn part1_example() {
-        assert_eq!(part1(EXAMPLE_1), 7);
+        assert_eq!(part1(&parse(EXAMPLE_1)), 7);
     }
 
     #[test]
