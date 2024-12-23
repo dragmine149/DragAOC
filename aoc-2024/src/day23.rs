@@ -1,5 +1,6 @@
 use aoc_runner_derive::aoc;
 
+// store the three way computer loop
 struct ComputerConnections {
     computer_1: String,
     computer_2: String,
@@ -27,12 +28,14 @@ impl std::fmt::Debug for ComputerConnections {
 }
 
 impl ComputerConnections {
+    // check if the computer has a 't', aka it's our historian.
     fn has_t(&self) -> bool {
         self.computer_1.starts_with('t')
             || self.computer_2.starts_with('t')
             || self.computer_3.starts_with('t')
     }
 
+    // checks if the computer is already connected to this computer
     fn exists(&self, other: &Self) -> bool {
         (self.computer_1 == other.computer_1
             || self.computer_2 == other.computer_1
@@ -46,16 +49,18 @@ impl ComputerConnections {
     }
 }
 
-// #[aoc_generator(day23)]
 fn parse_p1(input: &str) -> Vec<ComputerConnections> {
     let mut connections: Vec<ComputerConnections> = vec![];
 
+    // go though all lines and make the connections
     input.lines().for_each(|line| {
         // println!("Line: {:?}", line);
         let mut computers = line.trim().split("-");
+        // get the computers
         let a = computers.next().expect("Failed to parse A");
         let b = computers.next().expect("Failed to parse B");
 
+        // get the computer connections
         let a_connections = input
             .lines()
             .filter(|line| line.contains(a))
@@ -63,14 +68,11 @@ fn parse_p1(input: &str) -> Vec<ComputerConnections> {
                 let mut options = line
                     .trim()
                     .split("-")
+                    // make sure to only include unique computers
                     .filter(|a_con| *a_con != a && *a_con != b);
-                match options.next() {
-                    Some(v) => v,
-                    None => "",
-                }
+                options.next().unwrap_or("")
             })
-            .filter(|l| *l != "");
-        // .collect::<Vec<&str>>();
+            .filter(|l| !l.is_empty());
         let b_connections = input
             .lines()
             .filter(|line| line.contains(b))
@@ -79,27 +81,26 @@ fn parse_p1(input: &str) -> Vec<ComputerConnections> {
                     .trim()
                     .split("-")
                     .filter(|b_con| *b_con != b && *b_con != a);
-                match options.next() {
-                    Some(v) => v,
-                    None => "",
-                }
+                options.next().unwrap_or("")
             })
-            .filter(|l| *l != "")
+            .filter(|l| !l.is_empty())
             .collect::<Vec<&str>>();
         // println!("{:?}, {:?}", a_connections, b_connections);
+
+        // loop though all connections a and b has
         for a_con in a_connections {
             for b_con in b_connections.iter() {
+                // check if they have any in common
                 if a_con == *b_con {
+                    // make a new computer
                     let computer = ComputerConnections {
                         computer_1: a.to_string(),
                         computer_2: b.to_string(),
                         computer_3: a_con.to_string(),
                     };
-                    if connections
-                        .iter()
-                        .find(|comp| comp.exists(&computer))
-                        .is_none()
-                    {
+
+                    // semi-lazy, check if this computer hasn't been made before
+                    if !connections.iter().any(|comp| comp.exists(&computer)) {
                         connections.push(computer);
                     }
                 }
@@ -114,6 +115,8 @@ fn parse_p1(input: &str) -> Vec<ComputerConnections> {
 fn part1(input: &str) -> u64 {
     let computers = parse_p1(input);
     // println!("{:?}", computers);
+
+    // filter and count
     computers.iter().filter(|computer| computer.has_t()).count() as u64
 }
 
@@ -124,6 +127,7 @@ struct Node {
 }
 
 impl Node {
+    // check if this node has another node as it's neighbour
     fn has_node_as_neighbours(&self, other: &Self) -> bool {
         self.neighbours.contains(&other.name)
     }
@@ -136,42 +140,48 @@ impl std::fmt::Debug for Node {
 }
 
 // Modified from: https://iq.opengenus.org/bron-kerbosch-algorithm/
-fn find_cliques(
-    potenital: Vec<Node>,
-    remaining: Vec<Node>,
-    mut skip: Vec<Node>,
-    depth: usize,
-) -> Vec<Vec<Node>> {
-    if remaining.len() == 0 && skip.len() == 0 {
-        println!("Clique found: {:?}", potenital);
+// well translated and slightly modified
+fn find_cliques(potenital: Vec<Node>, remaining: Vec<Node>, mut skip: Vec<Node>) -> Vec<Vec<Node>> {
+    if remaining.is_empty() && skip.is_empty() {
+        // println!("Clique found: {:?}", potenital);
+        // Clique has been found, we can then return the list of cliques.
         return vec![potenital];
     }
 
+    // store the found cliques
     let mut found_cliques: Vec<Vec<Node>> = vec![];
+    // for all remaining nodes to check
     for node in remaining.iter() {
+        // the current node will always be a potenital clique
         let mut new_potential = potenital.to_vec();
         new_potential.push(node.clone());
 
+        // make the new remaning list
         let mut new_remaining = vec![];
         for n in &remaining {
+            // ignore ones that we have already skipped
             if skip.contains(n) {
                 continue;
             }
-            if node.has_node_as_neighbours(&n) {
+            // only add the node if it's a neighbours of ours
+            if node.has_node_as_neighbours(n) {
                 new_remaining.push(n.clone());
             }
         }
 
+        // skip nodes that are neighbours of ours as well, we added them in remaining
         let mut new_skip = vec![];
         for n in &skip {
-            if node.has_node_as_neighbours(&n) {
+            if node.has_node_as_neighbours(n) {
                 new_skip.push(n.clone());
             }
         }
 
-        let mut cliques = find_cliques(new_potential, new_remaining, new_skip, depth + 1);
+        // recurrsion
+        let mut cliques = find_cliques(new_potential, new_remaining, new_skip);
         found_cliques.append(&mut cliques);
 
+        // stores the nodes we've already done
         skip.push(node.clone());
     }
     found_cliques
@@ -180,6 +190,7 @@ fn find_cliques(
 #[aoc(day23, part2)]
 fn part2(input: &str) -> String {
     let mut computer_nodes: Vec<Node> = vec![];
+    // generate a list of nodes and all their neighbours
     input.lines().for_each(|line| {
         let mut computers = line.trim().split("-");
         let a = computers.next().expect("Failed to get first computer");
@@ -210,8 +221,9 @@ fn part2(input: &str) -> String {
         }
     });
 
-    println!("{:?}", computer_nodes);
-    println!("{:?}", computer_nodes.len());
+    // This list is the examples from the website mentioned above, used for testing.
+    // println!("{:?}", computer_nodes);
+    // println!("{:?}", computer_nodes.len());
     // let computer_nodes: Vec<Node> = vec![
     //     Node {
     //         name: "A".to_string(),
@@ -254,20 +266,25 @@ fn part2(input: &str) -> String {
     //     },
     // ];
 
-    let cliques = find_cliques(vec![], computer_nodes, vec![], 0);
-    println!("{:?}", cliques);
-    println!("{:?}", cliques.len());
+    let cliques = find_cliques(vec![], computer_nodes, vec![]);
+    // println!("{:?}", cliques);
+    // println!("{:?}", cliques.len());
 
+    // get the size of the longest
     let biggest = cliques
         .to_vec()
         .iter()
         .map(|clique| clique.len())
         .max()
         .expect("Failed to get max size");
+
+    // loop through all the cliques
     let biggest_v = cliques
         .iter()
+        // get the longest
         .filter(|clique| clique.len() == biggest)
         .map(|clique| {
+            // convert the clique into the output string
             let mut c = clique.to_owned();
             c.sort();
             c.iter()
