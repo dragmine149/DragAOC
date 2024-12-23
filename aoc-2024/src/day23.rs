@@ -29,35 +29,30 @@ impl std::fmt::Debug for ComputerConnections {
 
 impl ComputerConnections {
     // check if the computer has a 't', aka it's our historian.
-    fn has_t(&self, mapping: &Vec<String>) -> bool {
+    fn has_t(&self, mapping: &[String]) -> bool {
         mapping[self.computer_1].starts_with('t')
             || mapping[self.computer_2].starts_with('t')
             || mapping[self.computer_3].starts_with('t')
     }
 
     // checks if the computer is already connected to this computer
-    fn exists(&self, other: &Self) -> bool {
-        (self.computer_1 == other.computer_1
-            || self.computer_2 == other.computer_1
-            || self.computer_3 == other.computer_1)
-            && (self.computer_1 == other.computer_2
-                || self.computer_2 == other.computer_2
-                || self.computer_3 == other.computer_2)
-            && (self.computer_1 == other.computer_3
-                || self.computer_2 == other.computer_3
-                || self.computer_3 == other.computer_3)
+    fn exists(&self, con_1: usize, con_2: usize, con_3: usize) -> bool {
+        (self.computer_1 == con_1 || self.computer_2 == con_1 || self.computer_3 == con_1)
+            && (self.computer_1 == con_2 || self.computer_2 == con_2 || self.computer_3 == con_2)
+            && (self.computer_1 == con_3 || self.computer_2 == con_3 || self.computer_3 == con_3)
     }
 }
 
 #[aoc_generator(day23, part1)]
 fn parse(input: &str) -> (Vec<String>, Vec<(usize, usize)>) {
     let mut keys = vec![];
+    // create an index based
     let indexs = input
         .lines()
         .map(|line| {
             let mut computers = line.trim().split("-");
             let a = computers.next().expect("Failed to get first computer");
-            let a_pos = keys.iter().position(|key| key == &a);
+            let a_pos = keys.iter().position(|key| key == a);
             let a_index = match a_pos {
                 Some(v) => v,
                 None => {
@@ -67,7 +62,7 @@ fn parse(input: &str) -> (Vec<String>, Vec<(usize, usize)>) {
             };
 
             let b = computers.next().expect("Failed to get second computer");
-            let b_pos = keys.iter().position(|key| key == &b);
+            let b_pos = keys.iter().position(|key| key == b);
             let b_index = match b_pos {
                 Some(v) => v,
                 None => {
@@ -82,13 +77,15 @@ fn parse(input: &str) -> (Vec<String>, Vec<(usize, usize)>) {
     (keys, indexs)
 }
 
-fn parse_p1(input: &Vec<(usize, usize)>) -> Vec<ComputerConnections> {
+fn parse_p1(input: &[(usize, usize)]) -> Vec<ComputerConnections> {
     let mut connections: Vec<ComputerConnections> = vec![];
 
+    // for each computer pair
     input.iter().for_each(|computer_set| {
         let a = computer_set.0;
         let b = computer_set.1;
 
+        // get the connections
         let a_connections = input
             .iter()
             .filter(|c| c.0 == a || c.1 == a)
@@ -117,17 +114,16 @@ fn parse_p1(input: &Vec<(usize, usize)>) -> Vec<ComputerConnections> {
             .filter(|c| *c != usize::MAX)
             .collect::<Vec<usize>>();
 
+        // make and check the connections
         for a_con in a_connections {
             for b_con in &b_connections {
-                if a_con == *b_con {
+                if a_con == *b_con && !connections.iter().any(|comp| comp.exists(a, b, a_con)) {
                     let computer = ComputerConnections {
                         computer_1: a,
                         computer_2: b,
                         computer_3: a_con,
                     };
-                    if !connections.iter().any(|comp| comp.exists(&computer)) {
-                        connections.push(computer);
-                    }
+                    connections.push(computer);
                 }
             }
         }
