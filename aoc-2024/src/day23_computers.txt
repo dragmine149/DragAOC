@@ -1,0 +1,64 @@
+kh-tc
+  tc-wh
+  tc-td
+  tc-co
+qp-kh
+  kh-tc
+  kh-ub
+  kh-ta
+de-cg
+  cg-tb
+  cg-yn
+  cg-aq
+ka-co
+  co-ta
+  co-de
+  co-tc
+yn-aq
+  aq-cg
+  aq-wq
+  aq-vc
+qb-ub
+  ub-kh
+  ub-wq
+  ub-vc
+cg-tb
+  tb-ka
+  tb-wq
+  tb-vc
+vc-aq
+  vc-ub
+  vc-wq
+  vc-tb
+tb-ka
+  ka-co
+  ka-ta
+  ka-de
+wh-tc
+  wh-td
+  wh-yn
+  wh-qp
+yn-cg
+  yn-aq
+  yn-wh
+  yn-td
+ta-co
+  ta-ka
+  ta-de
+  ta-kh
+de-co
+  de-cg
+  de-ta
+  de-ka
+td-tc
+  td-wh
+  td-qp
+  td-yn
+wq-tb
+  wq-ub
+  wq-aq
+  wq-vc
+qp-td
+  qp-kh
+  qp-ub
+  qp-wh
