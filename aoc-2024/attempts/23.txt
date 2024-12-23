@@ -1,2 +1,5 @@
 # Part 1
 1238 - Correct
+
+# Part 2
+bg,bl,ch,fn,fv,gd,jn,kk,lk,pv,rr,tb,vw - Correct
