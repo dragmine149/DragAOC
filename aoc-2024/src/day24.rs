@@ -395,6 +395,11 @@ x05 AND y05 -> z00
     }
 
     #[test]
+    fn part2_example2() {
+        assert_eq!(part2(EXAMPLE_2), "error");
+    }
+
+    #[test]
     fn part2_example() {
         assert_eq!(part2(EXAMPLE_3), "z00,z01,z02,z05");
     }
