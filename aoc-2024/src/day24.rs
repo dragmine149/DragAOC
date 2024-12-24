@@ -1,14 +1,16 @@
+// A lot of imports today
 use aoc_runner_derive::aoc;
-use graphviz_rust::cmd::Format;
-use graphviz_rust::dot_generator::*;
-use graphviz_rust::dot_structures::*;
-use graphviz_rust::exec_dot;
-use graphviz_rust::printer::{DotPrinter, PrinterContext};
+use graphviz_rust::{
+    cmd::Format,
+    dot_generator::*,
+    dot_structures::*,
+    exec_dot,
+    printer::{DotPrinter, PrinterContext},
+};
 use itertools::Itertools;
-use std::collections::HashMap;
-use std::fs::File;
-use std::io::Write;
+use std::{collections::HashMap, fs::File, io::Write};
 
+// store an instruction
 #[derive(Debug, Clone, Copy)]
 struct Instruction<'a> {
     id_1: &'a str,
@@ -17,6 +19,7 @@ struct Instruction<'a> {
     out: &'a str,
 }
 
+// functions used in p2 mainly to have a better out of the instruction
 impl<'a> Instruction<'a> {
     fn get_operation(&self) -> String {
         match self.operation {
@@ -45,6 +48,7 @@ fn parse_p1(input: &str) -> (HashMap<&str, bool>, Vec<Instruction>) {
         .skip_while(|line| line.trim().is_empty())
         .for_each(|line| {
             if line.contains(":") {
+                // these are pre-set values
                 let mut info = line.split(":");
                 let id = info.next().expect("Failed to get line id").trim();
                 let value = info
@@ -59,10 +63,11 @@ fn parse_p1(input: &str) -> (HashMap<&str, bool>, Vec<Instruction>) {
                 return;
             }
 
+            // these are all the instructions
             if line.is_empty() {
                 return;
             }
-            let mut spaces = line.trim().split_whitespace();
+            let mut spaces = line.split_whitespace();
             let id_1 = spaces.next().expect("Failed to get first id");
             let op_str = spaces.next().expect("Failed to get operation");
             let operation = match op_str {
@@ -89,16 +94,20 @@ fn process_instruction<'a>(
     instruction: &Instruction<'a>,
     wires: &mut HashMap<&'a str, bool>,
 ) -> bool {
+    // get the wire states
     let state_a = wires.get(instruction.id_1);
     let state_b = wires.get(instruction.id_2);
 
+    // instructions ONLY HAPPEN when we have both states, so return if we don't
     if state_a.is_none() || state_b.is_none() {
         return false;
     }
 
+    // just translating them to get rid of the Option<>
     let state_a = state_a.expect("Failed to get state a");
     let state_b = state_b.expect("Failed to get state b");
 
+    // apply the operation
     match instruction.operation {
         0 => wires.insert(instruction.out, *state_a && *state_b),
         1 => wires.insert(instruction.out, *state_a || *state_b),
@@ -106,9 +115,10 @@ fn process_instruction<'a>(
         _ => panic!("Invalid operation"),
     };
 
-    return true;
+    true
 }
 
+// Probably a better way of doing this, but get all z numbers and calculate the output
 fn calculate_num(wires: &HashMap<&str, bool>) -> u64 {
     let mut id = 0;
     let mut bit_value = 0;
@@ -144,15 +154,19 @@ fn part1(input: &str) -> u64 {
     loop {
         let mut unprocessed = instructions.to_vec();
         let mut failed = vec![];
+        // unpack one at a time
         while let Some(instruction) = unprocessed.pop() {
             let result = process_instruction(&instruction, &mut wires);
             if !result {
+                // add to fail
                 failed.push(instruction);
             }
         }
+        // if fail empty, we are at end
         if failed.is_empty() {
             break;
         }
+        // recycle failed into processed.
         unprocessed = failed;
     }
 
@@ -161,6 +175,8 @@ fn part1(input: &str) -> u64 {
     calculate_num(&wires)
 }
 
+// generate a graph so we can manually find the stuff
+// This was not fun to make
 fn generate_graph(instructions: &Vec<Instruction>) {
     let mut g = graph!(strict di id!("Instructions"));
     for instruction in instructions {
@@ -229,7 +245,8 @@ fn generate_graph(instructions: &Vec<Instruction>) {
     let graph = exec_dot(dot, vec![format.into()]).unwrap();
 
     let mut file = File::create("day24_graph.png").expect("Failed to open file");
-    file.write(graph.as_slice())
+    let _ = file
+        .write(graph.as_slice())
         .expect("Failed to write to file");
 }
 
@@ -244,6 +261,7 @@ fn part2(input: &str) -> String {
     "".to_string()
 }
 
+// Thanks guy_732 once again, and for helping find the anomalies.
 #[allow(unused)]
 #[aoc(day24, part2, hard_coded)]
 fn part2_hard_coded(input: &str) -> String {
