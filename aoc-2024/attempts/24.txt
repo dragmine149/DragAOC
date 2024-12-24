@@ -1,3 +1,6 @@
 # Part 1
 38001937752622 - Too low
 51715173446832 - Correct
+
+# Part 2
+dpg,kmb,mmf,tvp,vdk,z10,z15,z25 - Correct

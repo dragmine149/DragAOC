@@ -1,5 +1,13 @@
 use aoc_runner_derive::aoc;
+use graphviz_rust::cmd::Format;
+use graphviz_rust::dot_generator::*;
+use graphviz_rust::dot_structures::*;
+use graphviz_rust::exec_dot;
+use graphviz_rust::printer::{DotPrinter, PrinterContext};
+use itertools::Itertools;
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::Write;
 
 #[derive(Debug, Clone, Copy)]
 struct Instruction<'a> {
@@ -7,6 +15,25 @@ struct Instruction<'a> {
     operation: u8,
     id_2: &'a str,
     out: &'a str,
+}
+
+impl<'a> Instruction<'a> {
+    fn get_operation(&self) -> String {
+        match self.operation {
+            0 => "AND".to_string(),
+            1 => "OR".to_string(),
+            2 => "XOR".to_string(),
+            _ => panic!("Invalid operation"),
+        }
+    }
+    fn get_operation_shape(&self) -> String {
+        match self.operation {
+            0 => "diamond".to_string(),
+            1 => "box".to_string(),
+            2 => "hexagon".to_string(),
+            _ => panic!("Invalid operation"),
+        }
+    }
 }
 
 fn parse_p1(input: &str) -> (HashMap<&str, bool>, Vec<Instruction>) {
@@ -106,6 +133,7 @@ fn calculate_num(wires: &HashMap<&str, bool>) -> u64 {
 }
 
 #[aoc(day24, part1)]
+#[allow(unused_assignments)]
 fn part1(input: &str) -> u64 {
     let data = parse_p1(input);
     let mut wires = data.0;
@@ -133,10 +161,125 @@ fn part1(input: &str) -> u64 {
     calculate_num(&wires)
 }
 
-// #[aoc(day24, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+fn generate_graph(instructions: &Vec<Instruction>) {
+    let mut g = graph!(strict di id!("Instructions"));
+    for instruction in instructions {
+        let id_1 = NodeId(Id::Plain(instruction.id_1.to_string()), None);
+        let id_2 = NodeId(Id::Plain(instruction.id_2.to_string()), None);
+        let out = NodeId(Id::Plain(instruction.out.to_string()), None);
+        let operation = NodeId(
+            Id::Plain(instruction.get_operation() + instruction.out),
+            None,
+        );
+
+        g.add_stmt(graphviz_rust::dot_structures::Stmt::Node(Node::new(
+            id_1.clone(),
+            vec![Attribute(
+                Id::Plain("color".to_string()),
+                Id::Plain("red".to_string()),
+            )],
+        )));
+        g.add_stmt(graphviz_rust::dot_structures::Stmt::Node(Node::new(
+            id_2.clone(),
+            vec![Attribute(
+                Id::Plain("color".to_string()),
+                Id::Plain("yellow".to_string()),
+            )],
+        )));
+        g.add_stmt(graphviz_rust::dot_structures::Stmt::Node(Node::new(
+            out.clone(),
+            vec![Attribute(
+                Id::Plain("color".to_string()),
+                Id::Plain("green".to_string()),
+            )],
+        )));
+        g.add_stmt(graphviz_rust::dot_structures::Stmt::Node(Node::new(
+            operation.clone(),
+            vec![
+                Attribute(
+                    Id::Plain("color".to_string()),
+                    Id::Plain("cyan".to_string()),
+                ),
+                Attribute(
+                    Id::Plain("shape".to_string()),
+                    Id::Plain(instruction.get_operation_shape()),
+                ),
+                Attribute(
+                    Id::Plain("label".to_string()),
+                    Id::Plain(instruction.get_operation()),
+                ),
+            ],
+        )));
+        g.add_stmt(graphviz_rust::dot_structures::Stmt::Edge(Edge {
+            ty: EdgeTy::Pair(Vertex::N(id_1), Vertex::N(operation.clone())),
+            attributes: vec![],
+        }));
+        g.add_stmt(graphviz_rust::dot_structures::Stmt::Edge(Edge {
+            ty: EdgeTy::Pair(Vertex::N(id_2), Vertex::N(operation.clone())),
+            attributes: vec![],
+        }));
+        g.add_stmt(graphviz_rust::dot_structures::Stmt::Edge(Edge {
+            ty: EdgeTy::Pair(Vertex::N(operation.clone()), Vertex::N(out)),
+            attributes: vec![],
+        }));
+    }
+    let dot = g.print(&mut PrinterContext::default());
+    println!("{}", dot);
+    let format = Format::Png;
+    let graph = exec_dot(dot, vec![format.into()]).unwrap();
+
+    let mut file = File::create("day24_graph.png").expect("Failed to open file");
+    file.write(graph.as_slice())
+        .expect("Failed to write to file");
+}
+
+#[aoc(day24, part2)]
+fn part2(input: &str) -> String {
+    let data = parse_p1(input);
+    // let mut wires = data.0;
+    let instructions = data.1;
+
+    generate_graph(&instructions);
+
+    "".to_string()
+}
+
+#[allow(unused)]
+#[aoc(day24, part2, hard_coded)]
+fn part2_hard_coded(input: &str) -> String {
+    // Those were found by manually inspecting the graphviz output of the connections
+    const SWAPPED_PAIRS: [(&str, &str); 4] = [
+        // Anomaly near x10, y10 and z10
+        ("kmb", "z10"),
+        // Anomaly near x15, y15 and z15
+        ("tvp", "z15"),
+        // Anomaly near x25, y25 and z25
+        ("dpg", "z25"),
+        // Anomaly near x35, y35 and z35
+        ("mmf", "vdk"),
+    ];
+
+    // let gates = parse(input);
+    // gates
+    // .dump_to_file("input.gv")
+    // .expect("Could not write graph to external file");
+
+    let mut swapped: [&str; 8] = SWAPPED_PAIRS
+        .into_iter()
+        .flat_map(|(a, b)| [a, b])
+        .collect_vec()
+        .try_into()
+        .expect("SWAPPED_PAIRS did not generate 8 values");
+
+    swapped.sort_unstable();
+    let mut result = swapped[0].to_owned();
+    for el in &swapped[1..] {
+        result.push(',');
+        result.push_str(el);
+    }
+
+    result
+}
 
 #[cfg(test)]
 mod tests {
@@ -203,6 +346,27 @@ tgd XOR rvg -> z12
 tnw OR pbm -> gnj
 ";
 
+    const EXAMPLE_3: &str = "x00: 0
+x01: 1
+x02: 0
+x03: 1
+x04: 0
+x05: 1
+y00: 0
+y01: 0
+y02: 1
+y03: 1
+y04: 0
+y05: 1
+
+x00 AND y00 -> z05
+x01 AND y01 -> z02
+x02 AND y02 -> z01
+x03 AND y03 -> z03
+x04 AND y04 -> z04
+x05 AND y05 -> z00
+";
+
     #[test]
     fn part1_example() {
         assert_eq!(part1(EXAMPLE_1), 4);
@@ -213,8 +377,8 @@ tnw OR pbm -> gnj
         assert_eq!(part1(EXAMPLE_2), 2024);
     }
 
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
+    #[test]
+    fn part2_example() {
+        assert_eq!(part2(EXAMPLE_3), "z00,z01,z02,z05");
+    }
 }
