@@ -143,7 +143,6 @@ fn calculate_num(wires: &HashMap<&str, bool>) -> u64 {
 }
 
 #[aoc(day24, part1)]
-#[allow(unused_assignments)]
 fn part1(input: &str) -> u64 {
     let data = parse_p1(input);
     let mut wires = data.0;
@@ -153,21 +152,21 @@ fn part1(input: &str) -> u64 {
     // println!("{:?}", instructions);
     loop {
         let mut unprocessed = instructions.to_vec();
-        let mut failed = vec![];
+        let mut failed = false;
         // unpack one at a time
         while let Some(instruction) = unprocessed.pop() {
             let result = process_instruction(&instruction, &mut wires);
             if !result {
-                // add to fail
-                failed.push(instruction);
+                // set fail to loop again
+                failed = true;
             }
         }
-        // if fail empty, we are at end
-        if failed.is_empty() {
+        // if fail is false then yay
+        if !failed {
             break;
         }
         // recycle failed into processed.
-        unprocessed = failed;
+        // unprocessed = failed;
     }
 
     // println!("{:?}", wires);
@@ -240,7 +239,7 @@ fn generate_graph(instructions: &Vec<Instruction>) {
         }));
     }
     let dot = g.print(&mut PrinterContext::default());
-    println!("{}", dot);
+    // println!("{}", dot);
     let format = Format::Png;
     let graph = exec_dot(dot, vec![format.into()]).unwrap();
 
