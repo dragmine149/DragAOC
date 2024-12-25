@@ -18,6 +18,7 @@ struct KeyLock {
 }
 
 impl Debug for KeyLock {
+    //  Custom debug just so we can see it easier.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let c1 = self.column_1.map(|v| if v == 1 { '#' } else { '.' });
         let c2 = self.column_2.map(|v| if v == 1 { '#' } else { '.' });
@@ -43,6 +44,7 @@ impl Debug for KeyLock {
 }
 
 impl KeyLock {
+    // create a blank slate
     fn new() -> Self {
         Self {
             column_1: [u8::MAX; 7],
@@ -54,9 +56,12 @@ impl KeyLock {
     }
 
     fn insert_from_string(&mut self, string: &str) {
+        // as we do stuff in rows and require it columns, easier to do a row by row isnert
         let row = self.column_1.iter().position(|p| *p == u8::MAX);
         match row {
             Some(r) => {
+                // for all chacters
+                // although probably a better way of doing this, maybe a 2d array?
                 for i in 0..5 {
                     match i {
                         0 => {
@@ -92,6 +97,7 @@ impl KeyLock {
         }
     }
 
+    // get the type based off the first row (because the last row will be the opposite)
     fn get_type(&self) -> KeyLockType {
         if self.column_1[0] == 1
             && self.column_2[0] == 1
@@ -105,6 +111,7 @@ impl KeyLock {
         }
     }
 
+    // get the column pattern
     fn get_pattern(&self) -> [u8; 5] {
         [
             self.column_1[0]
@@ -150,22 +157,15 @@ impl KeyLock {
         ]
     }
 
+    // test to see if any column when combined with any other column is above 6, aka something must overlap.
     fn test_with_opposite(&self, other: &Self) -> bool {
         let pattern_a = self.get_pattern();
         let pattern_b = other.get_pattern();
-        if pattern_a[0] + pattern_b[0] >= 6 {
-            false
-        } else if pattern_a[1] + pattern_b[1] >= 6 {
-            false
-        } else if pattern_a[2] + pattern_b[2] >= 6 {
-            false
-        } else if pattern_a[3] + pattern_b[3] >= 6 {
-            false
-        } else if pattern_a[4] + pattern_b[4] >= 6 {
-            false
-        } else {
-            true
-        }
+        !(pattern_a[0] + pattern_b[0] >= 6
+            || pattern_a[1] + pattern_b[1] >= 6
+            || pattern_a[2] + pattern_b[2] >= 6
+            || pattern_a[3] + pattern_b[3] >= 6
+            || pattern_a[4] + pattern_b[4] >= 6)
     }
 }
 
@@ -178,11 +178,13 @@ fn parse(input: &str) -> (Vec<KeyLock>, Vec<KeyLock>) {
     input.lines().for_each(|line| {
         // println!("Line: {:?}", line);
         if line.trim().is_empty() {
+            // insert into seperate vectors
             match current.get_type() {
                 KeyLockType::Key => keys.push(current),
                 KeyLockType::Lock => locks.push(current),
             }
 
+            // reser ready for next one
             current = KeyLock::new();
             return;
         }
@@ -190,6 +192,7 @@ fn parse(input: &str) -> (Vec<KeyLock>, Vec<KeyLock>) {
         current.insert_from_string(line.trim());
     });
 
+    // add the left over one
     match current.get_type() {
         KeyLockType::Key => keys.push(current),
         KeyLockType::Lock => locks.push(current),
@@ -203,28 +206,18 @@ fn part1(input: &(Vec<KeyLock>, Vec<KeyLock>)) -> u64 {
     let keys = &input.0;
     let locks = &input.1;
 
+    // for all lock and keys
     locks
         .par_iter()
         // .iter()
         .map(|lock| {
-            let mut c = 0;
-            for key in keys.to_owned() {
-                // println!("{:?}", lock);
-                // println!("{:?}", key);
-                // println!("{:?}", lock.test_with_opposite(&key));
-                if lock.test_with_opposite(&key) {
-                    c += 1;
-                }
-            }
-            c
+            // keys.iter()
+            keys.par_iter()
+                .map(|key| if lock.test_with_opposite(key) { 1 } else { 0 })
+                .sum::<u64>()
         })
         .sum::<u64>()
 }
-
-// #[aoc(day25, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
 
 #[cfg(test)]
 mod tests {
@@ -275,9 +268,4 @@ mod tests {
     fn part1_example() {
         assert_eq!(part1(&parse(EXAMPLE_1)), 3);
     }
-
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
 }
