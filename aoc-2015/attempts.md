@@ -13,3 +13,10 @@
 
 ### Part 2
 3842356 - Correct
+
+## Day 3
+### Part 1
+2081 - Correct
+
+### Part 2
+2341 - Correct
