@@ -239,9 +239,9 @@
   <img src=".aoc_tiles/tiles/2019/01.png" width="161px">
 </a>
 <h1 align="center">
-  2015 - 1 ⭐ - JavaScript
+  2015 - 1 ⭐ - JavaScript/Rust
 </h1>
-<a href="BitBurnerAOC/Data/2015/1/main.js">
+<a href="aoc-2015/src/day1.rs">
   <img src=".aoc_tiles/tiles/2015/01.png" width="161px">
 </a>
 <!-- AOC TILES END -->
