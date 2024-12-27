@@ -20,3 +20,9 @@
 
 ### Part 2
 2341 - Correct
+
+## Day 4
+### Part 1
+282749 - Correct
+
+### Part 2
