@@ -9,5 +9,7 @@
 
 ## Day 2
 ### Part 1
+1606483 - Correct
 
 ### Part 2
+3842356 - Correct
