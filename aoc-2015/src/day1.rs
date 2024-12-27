@@ -18,10 +18,20 @@ fn part1(input: &[i64]) -> i64 {
     input.iter().sum()
 }
 
-// #[aoc(day1, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+#[aoc(day1, part2)]
+fn part2(input: &[i64]) -> usize {
+    let mut floor = 0;
+    let mut result = 0;
+    for (pos, dir) in input.iter().enumerate() {
+        floor += dir;
+        if floor == -1 {
+            result = pos;
+            break;
+        }
+    }
+
+    result + 1
+}
 
 #[cfg(test)]
 mod tests {
@@ -52,8 +62,13 @@ mod tests {
         assert_eq!(part1(&parse(")())())")), -3);
     }
 
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
+    #[test]
+    fn part2_example_1() {
+        assert_eq!(part2(&parse(")")), 1);
+    }
+
+    #[test]
+    fn part2_example_5() {
+        assert_eq!(part2(&parse("()())")), 5);
+    }
 }
