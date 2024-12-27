@@ -21,10 +21,19 @@ fn part1(input: &str) -> usize {
     }
 }
 
-// #[aoc(day4, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+#[aoc(day4, part2)]
+fn part2(input: &str) -> usize {
+    let mut index = 1;
+    loop {
+        let hasher = Md5::new_with_prefix(format!("{}{}", input.trim(), index).as_bytes());
+        let fin = hasher.finalize();
+        let hex = format!("{:#x}", fin);
+        if hex.starts_with("000000") {
+            break index;
+        }
+        index += 1;
+    }
+}
 
 #[cfg(test)]
 mod tests {
