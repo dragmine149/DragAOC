@@ -27,3 +27,9 @@
 
 ### Part 2
 9962624 - Correct
+
+## Day 5
+### Part 1
+238 - Correct
+
+### Part 2
