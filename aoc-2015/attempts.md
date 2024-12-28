@@ -33,3 +33,5 @@
 238 - Correct
 
 ### Part 2
+509 - Too High
+69 - Correct

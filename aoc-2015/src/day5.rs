@@ -1,4 +1,5 @@
 use aoc_runner_derive::aoc;
+use pcre::Pcre;
 use rayon::iter::ParallelIterator;
 use rayon::str::ParallelString;
 use regex::bytes::Regex;
@@ -30,10 +31,26 @@ fn part1(input: &str) -> u64 {
         .sum()
 }
 
-// #[aoc(day5, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+#[aoc(day5, part2)]
+fn part2(input: &str) -> u64 {
+    let mut p2r1 = Pcre::compile(r"(..).*\1").unwrap();
+    let mut p2r2 = Pcre::compile(r"(.).\1").unwrap();
+
+    input
+        // .par_lines()
+        .lines()
+        .map(|line| {
+            let r1 = p2r1.exec(line).is_some();
+            let r2 = p2r2.exec(line).is_some();
+
+            if r1 && r2 {
+                1
+            } else {
+                0
+            }
+        })
+        .sum()
+}
 
 #[cfg(test)]
 mod tests {
