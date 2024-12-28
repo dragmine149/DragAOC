@@ -140,7 +140,25 @@ fn part1(input: &[Instruction]) -> u64 {
         .sum()
 }
 
-// #[aoc(day6, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+#[aoc(day6, part2)]
+fn part2(input: &[Instruction]) -> u64 {
+    let mut grid = Grid::new(&Position(1000, 1000), 0_u64);
+
+    input
+        .iter()
+        .for_each(|instruction| match instruction.instruction_type {
+            InstructionType::On => {
+                grid.get_set_cell_range(&instruction.start, &instruction.end, |v| *v + 1)
+            }
+            InstructionType::Off => {
+                grid.get_set_cell_range(&instruction.start, &instruction.end, |v| {
+                    v.saturating_sub(1)
+                })
+            }
+            InstructionType::Toggle => {
+                grid.get_set_cell_range(&instruction.start, &instruction.end, |v| *v + 2)
+            }
+        });
+
+    grid.0.iter().map(|a| a.iter().sum::<u64>()).sum()
+}
