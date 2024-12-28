@@ -35,3 +35,10 @@
 ### Part 2
 509 - Too High
 69 - Correct
+
+## Day 6
+### Part 1
+406662 - Too Low
+543903 - Correct
+
+### Part 2
