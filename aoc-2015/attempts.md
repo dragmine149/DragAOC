@@ -43,3 +43,9 @@
 
 ### Part 2
 14687245 - Correct
+
+## Day 7
+### Part 1
+3176 - Correct
+
+### Part 2
