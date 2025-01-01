@@ -312,14 +312,14 @@ fn part1(input: &str) -> u16 {
     let mut instructions = parse(input).to_vec();
     let mut skipped: Vec<Instruction<'_>> = vec![];
     // println!("{:?}", wires);
-    println!("{:?}", instructions);
+    // println!("{:?}", instructions);
 
     while let Some(instruction) = instructions.pop() {
-        println!("Processing instruction: {:?}", instruction);
+        // println!("Processing instruction: {:?}", instruction);
         // println!("{:?}", skipped);
         let result = instruction.process(&mut wires);
         if !result {
-            println!("Failed");
+            // println!("Failed");
             skipped.push(instruction);
         }
 
@@ -333,17 +333,24 @@ fn part1(input: &str) -> u16 {
     //     instruction.process(&mut wires);
     // });
 
-    debug_wires(&wires);
+    // debug_wires(&wires);
 
     *wires
         .get("a".as_bytes())
         .expect("Failed to get value of wire a")
 }
 
-// #[aoc(day7, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+#[aoc(day7, part2)]
+fn part2(input: &str) -> u16 {
+    let r = part1(input);
+    let input = input.replace(
+        "44430 -> b",
+        (r.to_string().as_str().to_owned() + " -> b")
+            .to_string()
+            .as_str(),
+    );
+    part1(&input)
+}
 
 #[cfg(test)]
 mod tests {
