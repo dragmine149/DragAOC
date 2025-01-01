@@ -15,6 +15,7 @@ enum Action {
     RShift,
 }
 
+// Custom because this day is annoying and sometimes its a value, sometimes its a gate
 #[derive(Clone, Copy)]
 struct InsturctionParamter<'a> {
     gate: &'a [u8],
@@ -23,6 +24,7 @@ struct InsturctionParamter<'a> {
 
 impl<'a> InsturctionParamter<'a> {
     fn new(info: &'a str) -> Self {
+        // parse the string
         let a = info.parse::<u16>();
         if let Ok(value) = a {
             Self { gate: &[], value }
@@ -41,6 +43,7 @@ impl<'a> InsturctionParamter<'a> {
         }
     }
 
+    // get the value to use
     fn get_value(&self, wires: &'a HashMap<&'a [u8], u16>) -> Option<&u16> {
         if self.value != u16::MAX {
             Some(&self.value)
@@ -49,6 +52,7 @@ impl<'a> InsturctionParamter<'a> {
         }
     }
 
+    // print the value for debug purposes
     fn as_debug(&self) -> String {
         if self.value != u16::MAX {
             self.value.to_string()
@@ -67,6 +71,7 @@ struct Instruction<'a> {
 }
 
 impl<'a> Instruction<'a> {
+    // process the instructions and set them to wires.
     fn process(&self, wires: &mut HashMap<&'a [u8], u16>) -> bool {
         match self.action {
             Action::Set => {
@@ -200,6 +205,7 @@ impl fmt::Debug for Instruction<'_> {
 }
 
 fn parse(input: &str) -> Vec<Instruction> {
+    // massive regex parsing.
     let regex_a = Regex::new(r"(?m)((?P<num>\w+) -> (?P<char>\w+))").unwrap();
     let regex_b = Regex::new(r"(?m)((?P<a>\w+) AND (?P<b>\w+) -> (?P<c>\w+))").unwrap();
     let regex_c = Regex::new(r"(?m)((?P<a>\w+) OR (?P<b>\w+) -> (?P<c>\w+))").unwrap();
@@ -359,6 +365,8 @@ fn part1(input: &str) -> u16 {
 
 #[aoc(day7, part2)]
 fn part2(input: &str) -> u16 {
+    // this is stupid ish
+    // aka, calculate part 1 then replace it for p2.
     let r = part1(input);
     let input = input.replace(
         "44430 -> b",
