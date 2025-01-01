@@ -3,7 +3,7 @@ use core::fmt;
 use itertools::Itertools;
 use regex::Regex;
 use std::collections::HashMap;
-use std::{str, u16};
+use std::str;
 
 #[derive(Clone, Copy)]
 enum Action {
@@ -24,7 +24,7 @@ struct InsturctionParamter<'a> {
 impl<'a> InsturctionParamter<'a> {
     fn new(info: &'a str) -> Self {
         let a = info.parse::<u16>();
-        if let Some(value) = a.ok() {
+        if let Ok(value) = a {
             Self { gate: &[], value }
         } else {
             Self {
@@ -71,65 +71,81 @@ impl<'a> Instruction<'a> {
         match self.action {
             Action::Set => {
                 let a_value = self.gate_a.get_value(wires);
-                if a_value.is_none() {
-                    false
-                } else {
-                    wires.insert(self.gate_b.gate, *a_value.unwrap());
+                if let Some(v) = a_value {
+                    wires.insert(self.gate_b.gate, *v);
                     true
+                } else {
+                    false
                 }
             }
             Action::Or => {
                 let a_value = self.gate_a.get_value(wires);
                 let b_value = self.gate_b.get_value(wires);
 
-                if a_value.is_none() || b_value.is_none() {
-                    false
+                if let Some(a) = a_value {
+                    if let Some(b) = b_value {
+                        wires.insert(self.gate_c.gate, a | b);
+                        true
+                    } else {
+                        false
+                    }
                 } else {
-                    wires.insert(self.gate_c.gate, a_value.unwrap() | b_value.unwrap());
-                    true
+                    false
                 }
             }
             Action::Not => {
                 let a_value = self.gate_a.get_value(wires);
 
-                if a_value.is_none() {
-                    false
-                } else {
-                    wires.insert(self.gate_b.gate, !a_value.unwrap());
+                if let Some(v) = a_value {
+                    wires.insert(self.gate_b.gate, !v);
                     true
+                } else {
+                    false
                 }
             }
             Action::And => {
                 let a_value = self.gate_a.get_value(wires);
                 let b_value = self.gate_b.get_value(wires);
 
-                if a_value.is_none() || b_value.is_none() {
-                    false
+                if let Some(a) = a_value {
+                    if let Some(b) = b_value {
+                        wires.insert(self.gate_c.gate, a & b);
+                        true
+                    } else {
+                        false
+                    }
                 } else {
-                    wires.insert(self.gate_c.gate, a_value.unwrap() & b_value.unwrap());
-                    true
+                    false
                 }
             }
             Action::LShift => {
                 let a_value = self.gate_a.get_value(wires);
                 let b_value = self.gate_b.get_value(wires);
 
-                if a_value.is_none() || b_value.is_none() {
-                    false
+                if let Some(a) = a_value {
+                    if let Some(b) = b_value {
+                        wires.insert(self.gate_c.gate, a << b);
+                        true
+                    } else {
+                        false
+                    }
                 } else {
-                    wires.insert(self.gate_c.gate, a_value.unwrap() << b_value.unwrap());
-                    true
+                    false
                 }
             }
             Action::RShift => {
                 let a_value = self.gate_a.get_value(wires);
                 let b_value = self.gate_b.get_value(wires);
 
-                if a_value.is_none() || b_value.is_none() {
-                    false
+                if let Some(a) = a_value {
+                    if let Some(b) = b_value {
+                        wires.insert(self.gate_c.gate, a >> b);
+                        true
+                    } else {
+                        false
+                    }
                 } else {
-                    wires.insert(self.gate_c.gate, a_value.unwrap() >> b_value.unwrap());
-                    true
+                    false
                 }
             }
         }
@@ -294,6 +310,7 @@ fn parse(input: &str) -> Vec<Instruction> {
         .collect_vec()
 }
 
+#[allow(dead_code)]
 fn debug_wires(wires: &HashMap<&[u8], u16>) {
     let keys = wires.keys();
     for wire in keys.sorted() {
