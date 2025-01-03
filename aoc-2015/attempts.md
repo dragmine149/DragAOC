@@ -50,3 +50,9 @@
 
 ### Part 2
 14710 - Correct
+
+## Day 8
+### Part 1
+1371 - Correct
+
+### Part 2
