@@ -1,10 +1,5 @@
 use aoc_runner_derive::aoc;
 
-// Returns true if either "i", "o" or "u" exists.
-fn check_iou(input: &[u8]) -> bool {
-    input.contains(&105) || input.contains(&108) || input.contains(&111)
-}
-
 // Returns true if input contains a double (e.g. "aa", "bb", etc)
 fn check_double(input: &[u8]) -> bool {
     let mut double = 0;
@@ -30,8 +25,10 @@ fn check_run(input: &[u8]) -> bool {
     let mut run = false;
     input.iter().enumerate().for_each(|(i, c)| {
         if i + 1 >= input.len() || i + 2 >= input.len() {
+            // checks if we are in range
             return;
         }
+        // counts the run
         if *c + 1 == input[i + 1] && *c + 2 == input[i + 2] {
             run = true;
         }
@@ -41,17 +38,7 @@ fn check_run(input: &[u8]) -> bool {
 }
 
 fn valid_password(input: &[u8]) -> bool {
-    !check_iou(input) && check_double(input) && check_run(input)
-}
-
-#[allow(dead_code)]
-fn overflow(input: &mut [u8], position: usize) {
-    let mut s = input[position] + 1;
-    if s >= 123 {
-        s = 97;
-        overflow(input, position - 1);
-    }
-    input[position] = s;
+    check_double(input) && check_run(input)
 }
 
 fn overflow_exclusion(input: &mut [u8], position: usize) {
@@ -65,6 +52,7 @@ fn overflow_exclusion(input: &mut [u8], position: usize) {
         }
     }
 
+    // normall overflow
     if s >= 123 {
         s = 97;
         overflow_exclusion(input, position - 1);
@@ -72,25 +60,28 @@ fn overflow_exclusion(input: &mut [u8], position: usize) {
     input[position] = s;
 }
 
-fn next_password(input: &str) -> String {
-    let mut password = input.as_bytes().to_owned();
+// keep looping until the next password has been generated
+fn next_password(password: &mut [u8]) {
     let end = password.len() - 1;
-    overflow_exclusion(&mut password, end);
-    while !valid_password(&password) {
-        overflow_exclusion(&mut password, end);
+    overflow_exclusion(password, end);
+    while !valid_password(password) {
+        overflow_exclusion(password, end);
     }
-
-    String::from_utf8(password.to_vec()).expect("e")
 }
 
 #[aoc(day11, part1)]
 fn part1(input: &str) -> String {
-    next_password(input)
+    let mut password = input.as_bytes().to_owned();
+    next_password(&mut password);
+    String::from_utf8(password).expect("e")
 }
 
 #[aoc(day11, part2)]
 fn part2(input: &str) -> String {
-    next_password(&next_password(input))
+    let mut password = input.as_bytes().to_owned();
+    next_password(&mut password);
+    next_password(&mut password);
+    String::from_utf8(password).expect("e")
 }
 
 #[cfg(test)]
@@ -99,11 +90,6 @@ mod tests {
 
     #[test]
     fn part1_example() {
-        assert_eq!(next_password(&"abcdefgh"), "abcdffaa");
+        assert_eq!(part1(&"abcdefgh"), "abcdffaa");
     }
-
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
 }
