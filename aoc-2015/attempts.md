@@ -79,3 +79,9 @@ hepxxyzz - Correct
 
 ### Part 2
 heqaabcc - Correct
+
+## Day 12
+### Part 1
+156366 - Correct
+
+### Part 2
