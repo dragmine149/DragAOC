@@ -46,10 +46,10 @@ fn part1(input: &[u32]) -> usize {
     process_x_lines(input.to_vec(), 40).len()
 }
 
-// #[aoc(day10, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+#[aoc(day10, part2)]
+fn part2(input: &[u32]) -> usize {
+    process_x_lines(input.to_vec(), 50).len()
+}
 
 #[cfg(test)]
 mod tests {
@@ -75,9 +75,4 @@ mod tests {
     fn part1_example_5() {
         assert_eq!(process_x_lines(vec![1, 1, 1, 2, 2, 1], 1), "312211");
     }
-
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
 }
