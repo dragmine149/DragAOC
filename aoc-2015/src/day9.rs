@@ -58,7 +58,7 @@ fn create_shortest(
     start: &str,
     exclude: Vec<String>,
 ) -> u64 {
-    println!("{:?}", start);
+    // println!("{:?}", start);
     map.get(start)
         .unwrap()
         .iter()
@@ -81,10 +81,33 @@ fn part1(input: &HashMap<String, HashMap<String, u64>>) -> u64 {
         .unwrap()
 }
 
-// #[aoc(day9, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+fn create_longest(
+    map: &HashMap<String, HashMap<String, u64>>,
+    start: &str,
+    exclude: Vec<String>,
+) -> u64 {
+    // println!("{:?}", start);
+    map.get(start)
+        .unwrap()
+        .iter()
+        .filter(|n| !exclude.iter().contains(n.0))
+        .map(|n| {
+            let mut e = exclude.to_owned();
+            e.push(start.to_string());
+            n.1 + create_longest(map, n.0, e)
+        })
+        .max()
+        .unwrap_or(0)
+}
+
+#[aoc(day9, part2)]
+fn part2(input: &HashMap<String, HashMap<String, u64>>) -> u64 {
+    input
+        .keys()
+        .map(|node| create_longest(&input, node, vec![]))
+        .max()
+        .unwrap()
+}
 
 #[cfg(test)]
 mod tests {
@@ -100,8 +123,8 @@ Dublin to Belfast = 141
         assert_eq!(part1(&parse(EXAMPLE_1)), 605);
     }
 
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(EXAMPLE_1), 19);
-    // }
+    #[test]
+    fn part2_example() {
+        assert_eq!(part2(&parse(EXAMPLE_1)), 982);
+    }
 }
