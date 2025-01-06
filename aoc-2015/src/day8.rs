@@ -15,6 +15,7 @@ fn process(input: &mut dyn Iterator<Item = String>) -> u64 {
             while let Some(c) = iter.next() {
                 if c == '\\' {
                     let x = iter.next();
+                    // if hex, just keep skipping as hex although len 3 is technically just len 1
                     if x.unwrap() == 'x' {
                         // true_size += 3;
                         // true_size += 1;

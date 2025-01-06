@@ -1,27 +1,29 @@
 use aoc_runner_derive::aoc;
 use itertools::Itertools;
 use regex::Regex;
-use std::{collections::HashMap, u64};
+use std::collections::HashMap;
 
 #[aoc_generator(day9)]
 fn parse(input: &str) -> HashMap<String, HashMap<String, u64>> {
     let mut distances: HashMap<String, HashMap<String, u64>> = HashMap::new();
 
+    // create a map of maps of distances
     input.lines().for_each(|line| {
         let regex = Regex::new(r"(?m)(?P<start>\w+) to (?P<end>\w+) = (?P<dist>\d+)").unwrap();
         let info = regex.captures(line).unwrap();
         let start = info.name("start").unwrap().as_str();
 
+        // get the start location map
         let temp = distances.get_mut(start);
-        let loc: &mut HashMap<String, u64>;
-        if temp.is_none() {
+        let loc: &mut HashMap<String, u64> = if let Some(v) = temp {
+            v
+        } else {
             let tloc = HashMap::new();
             distances.insert(start.to_string(), tloc);
-            loc = distances.get_mut(start).unwrap();
-        } else {
-            loc = temp.unwrap();
-        }
+            distances.get_mut(start).unwrap()
+        };
 
+        // insert the distance to the end location
         let end_str = info.name("end").unwrap().as_str();
         let distance = info
             .name("dist")
@@ -31,16 +33,17 @@ fn parse(input: &str) -> HashMap<String, HashMap<String, u64>> {
             .expect("Failed to parse distance");
         loc.insert(end_str.to_string(), distance);
 
+        // get the end location map
         let e_temp = distances.get_mut(end_str);
-        let e_loc: &mut HashMap<String, u64>;
-        if e_temp.is_none() {
+        let e_loc: &mut HashMap<String, u64> = if let Some(v) = e_temp {
+            v
+        } else {
             let e_tloc = HashMap::new();
             distances.insert(end_str.to_string(), e_tloc);
-            e_loc = distances.get_mut(end_str).unwrap();
-        } else {
-            e_loc = e_temp.unwrap();
-        }
+            distances.get_mut(end_str).unwrap()
+        };
 
+        // insert the end location distance
         let distance = info
             .name("dist")
             .unwrap()
@@ -59,24 +62,26 @@ fn create_shortest(
     exclude: Vec<String>,
 ) -> u64 {
     // println!("{:?}", start);
+    // return the distance by
     map.get(start)
-        .unwrap()
+        .unwrap() // getting the distances
         .iter()
-        .filter(|n| !exclude.iter().contains(n.0))
+        .filter(|n| !exclude.iter().contains(n.0)) // ignoring those we've already been to
         .map(|n| {
+            // assign the rest the map of what is left
             let mut e = exclude.to_owned();
             e.push(start.to_string());
             n.1 + create_shortest(map, n.0, e)
         })
-        .min()
-        .unwrap_or(0)
+        .min() // getting the minium
+        .unwrap_or(0) // or 0 if at end of journey
 }
 
 #[aoc(day9, part1)]
 fn part1(input: &HashMap<String, HashMap<String, u64>>) -> u64 {
     input
         .keys()
-        .map(|node| create_shortest(&input, node, vec![]))
+        .map(|node| create_shortest(input, node, vec![]))
         .min()
         .unwrap()
 }
@@ -104,7 +109,7 @@ fn create_longest(
 fn part2(input: &HashMap<String, HashMap<String, u64>>) -> u64 {
     input
         .keys()
-        .map(|node| create_longest(&input, node, vec![]))
+        .map(|node| create_longest(input, node, vec![]))
         .max()
         .unwrap()
 }

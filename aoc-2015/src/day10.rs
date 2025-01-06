@@ -2,6 +2,7 @@ use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 #[aoc_generator(day10)]
 fn parse(input: &str) -> Vec<u32> {
+    // convert into a vector of numbers
     input
         .trim()
         .chars()
@@ -14,15 +15,20 @@ fn process_line(line: Vec<u32>) -> Vec<u32> {
     let mut num: u32 = u32::MAX;
     let mut count: u32 = 0;
 
+    // for each number
     for line_num in line.iter() {
         if *line_num != num {
+            // if we have reached a different number
             if num != u32::MAX {
+                // push to list if not the max (default) value
                 numbers.push(count);
                 numbers.push(num);
             }
+            // reset
             count = 0;
             num = *line_num;
         }
+        // add to count
         count += 1;
     }
     numbers.push(count);
@@ -31,11 +37,13 @@ fn process_line(line: Vec<u32>) -> Vec<u32> {
     numbers
 }
 
+// repeat the above x times, used for testing.
 fn process_x_lines(mut start_line: Vec<u32>, count: u16) -> String {
     for _ in 0..count {
         start_line = process_line(start_line);
     }
 
+    // combine into a string
     start_line
         .iter()
         .fold(String::new(), |acc, x| acc + x.to_string().as_str())
