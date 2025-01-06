@@ -65,3 +65,9 @@
 ### Part 2
 391 - Too Low
 804 - Correct
+
+## Day 10
+### Part 1
+329356 - Correct
+
+### Part 2
