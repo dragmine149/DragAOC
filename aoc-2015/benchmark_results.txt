@@ -1,0 +1,103 @@
+Day1 - Part1/(default)  time:   [647.65 ns 649.86 ns 652.39 ns]
+Found 6 outliers among 100 measurements (6.00%)
+  5 (5.00%) high mild
+  1 (1.00%) high severe
+
+Day1 - Part2/(default)  time:   [538.02 ns 544.85 ns 552.40 ns]
+Found 3 outliers among 100 measurements (3.00%)
+  3 (3.00%) high mild
+
+Day2 - Part1/(default)  time:   [1.3032 µs 1.3199 µs 1.3456 µs]
+Found 12 outliers among 100 measurements (12.00%)
+  2 (2.00%) low severe
+  5 (5.00%) low mild
+  2 (2.00%) high mild
+  3 (3.00%) high severe
+
+Day2 - Part2/(default)  time:   [1.5233 µs 1.5344 µs 1.5481 µs]
+Found 6 outliers among 100 measurements (6.00%)
+  5 (5.00%) high mild
+  1 (1.00%) high severe
+
+Day3 - Part1/(default)  time:   [370.71 µs 371.63 µs 372.62 µs]
+Found 6 outliers among 100 measurements (6.00%)
+  1 (1.00%) low mild
+  4 (4.00%) high mild
+  1 (1.00%) high severe
+
+Day3 - Part2/(default)  time:   [311.84 µs 313.33 µs 314.93 µs]
+Found 8 outliers among 100 measurements (8.00%)
+  2 (2.00%) low mild
+  5 (5.00%) high mild
+  1 (1.00%) high severe
+
+Day4 - Part1/(default)  time:   [57.948 ms 71.823 ms 89.670 ms]
+Found 12 outliers among 100 measurements (12.00%)
+  5 (5.00%) high mild
+  7 (7.00%) high severe
+
+Day4 - Part2/(default)  time:   [1.9302 s 2.0243 s 2.1330 s]
+Found 17 outliers among 100 measurements (17.00%)
+  4 (4.00%) high mild
+  13 (13.00%) high severe
+
+Day5 - Part1/(default)  time:   [1.1984 ms 1.2784 ms 1.3612 ms]
+Found 3 outliers among 100 measurements (3.00%)
+  3 (3.00%) high mild
+
+Day5 - Part2/(default)  time:   [2.2603 ms 2.8158 ms 3.5054 ms]
+Found 12 outliers among 100 measurements (12.00%)
+  7 (7.00%) high mild
+  5 (5.00%) high severe
+
+Day6 - Part1/(default)  time:   [25.221 ms 25.242 ms 25.267 ms]
+Found 10 outliers among 100 measurements (10.00%)
+  2 (2.00%) high mild
+  8 (8.00%) high severe
+
+Day6 - Part2/(default)  time:   [46.990 ms 48.682 ms 50.506 ms]
+
+Day7 - Part1/(default)  time:   [6.5752 ms 6.6151 ms 6.6560 ms]
+
+Day7 - Part2/(default)  time:   [13.394 ms 13.470 ms 13.548 ms]
+
+Day8 - Part1/(default)  time:   [10.818 µs 12.224 µs 14.095 µs]
+Found 7 outliers among 100 measurements (7.00%)
+  7 (7.00%) high severe
+
+Day8 - Part2/(default)  time:   [70.610 µs 84.036 µs 101.97 µs]
+Found 9 outliers among 100 measurements (9.00%)
+  4 (4.00%) high mild
+  5 (5.00%) high severe
+
+Day9 - Part1/(default)  time:   [32.261 ms 40.088 ms 50.218 ms]
+Found 7 outliers among 100 measurements (7.00%)
+  7 (7.00%) high severe
+
+Day9 - Part2/(default)  time:   [36.910 ms 45.272 ms 55.887 ms]
+Found 5 outliers among 100 measurements (5.00%)
+  1 (1.00%) high mild
+  4 (4.00%) high severe
+
+Day10 - Part1/(default) time:   [11.139 ms 13.907 ms 17.486 ms]
+Found 5 outliers among 100 measurements (5.00%)
+  5 (5.00%) high severe
+
+Day10 - Part2/(default) time:   [165.00 ms 193.81 ms 233.66 ms]
+Found 6 outliers among 100 measurements (6.00%)
+  1 (1.00%) high mild
+  5 (5.00%) high severe
+
+Day11 - Part1/(default) time:   [2.5238 ms 2.5248 ms 2.5258 ms]
+                        change: [-4.7742% -4.2946% -3.8435%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) low mild
+
+Day11 - Part2/(default) time:   [9.1458 ms 9.1652 ms 9.1873 ms]
+                        change: [-0.3584% -0.1398% +0.1171%] (p = 0.27 > 0.05)
+                        No change in performance detected.
+Found 7 outliers among 100 measurements (7.00%)
+  5 (5.00%) high mild
+  2 (2.00%) high severe
+
