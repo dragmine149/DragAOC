@@ -3,6 +3,7 @@ use itertools::Itertools;
 use regex::Regex;
 use std::{collections::HashMap, u64};
 
+#[aoc_generator(day9)]
 fn parse(input: &str) -> HashMap<String, HashMap<String, u64>> {
     let mut distances: HashMap<String, HashMap<String, u64>> = HashMap::new();
 
@@ -72,13 +73,10 @@ fn create_shortest(
 }
 
 #[aoc(day9, part1)]
-fn part1(input: &str) -> u64 {
-    let distances = parse(input);
-    println!("{:?}", distances);
-
-    distances
+fn part1(input: &HashMap<String, HashMap<String, u64>>) -> u64 {
+    input
         .keys()
-        .map(|node| create_shortest(&distances, node, vec![]))
+        .map(|node| create_shortest(&input, node, vec![]))
         .min()
         .unwrap()
 }
@@ -99,7 +97,7 @@ Dublin to Belfast = 141
 
     #[test]
     fn part1_example() {
-        assert_eq!(part1(EXAMPLE_1), 605);
+        assert_eq!(part1(&parse(EXAMPLE_1)), 605);
     }
 
     // #[test]
