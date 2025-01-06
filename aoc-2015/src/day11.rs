@@ -88,10 +88,10 @@ fn part1(input: &str) -> String {
     next_password(input)
 }
 
-// #[aoc(day11, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+#[aoc(day11, part2)]
+fn part2(input: &str) -> String {
+    next_password(&next_password(input))
+}
 
 #[cfg(test)]
 mod tests {
