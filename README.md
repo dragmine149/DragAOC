@@ -241,31 +241,31 @@
 <h1 align="center">
   2015 - 24 ⭐ - Rust
 </h1>
-<a href="aoc-2015/src/day1.rs">
+<a href="aoc-2015/src/day01.rs">
   <img src=".aoc_tiles/tiles/2015/01.png" width="161px">
 </a>
-<a href="aoc-2015/src/day2.rs">
+<a href="aoc-2015/src/day02.rs">
   <img src=".aoc_tiles/tiles/2015/02.png" width="161px">
 </a>
-<a href="aoc-2015/src/day3.rs">
+<a href="aoc-2015/src/day03.rs">
   <img src=".aoc_tiles/tiles/2015/03.png" width="161px">
 </a>
-<a href="aoc-2015/src/day4.rs">
+<a href="aoc-2015/src/day04.rs">
   <img src=".aoc_tiles/tiles/2015/04.png" width="161px">
 </a>
-<a href="aoc-2015/src/day5.rs">
+<a href="aoc-2015/src/day05.rs">
   <img src=".aoc_tiles/tiles/2015/05.png" width="161px">
 </a>
-<a href="aoc-2015/src/day6.rs">
+<a href="aoc-2015/src/day06.rs">
   <img src=".aoc_tiles/tiles/2015/06.png" width="161px">
 </a>
-<a href="aoc-2015/src/day7.rs">
+<a href="aoc-2015/src/day07.rs">
   <img src=".aoc_tiles/tiles/2015/07.png" width="161px">
 </a>
-<a href="aoc-2015/src/day8.rs">
+<a href="aoc-2015/src/day08.rs">
   <img src=".aoc_tiles/tiles/2015/08.png" width="161px">
 </a>
-<a href="aoc-2015/src/day9.rs">
+<a href="aoc-2015/src/day09.rs">
   <img src=".aoc_tiles/tiles/2015/09.png" width="161px">
 </a>
 <a href="aoc-2015/src/day10.rs">
