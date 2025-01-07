@@ -1,5 +1,6 @@
 use aoc_runner_derive::aoc;
 use regex::Regex;
+use serde_json::Value;
 
 #[aoc(day12, part1)]
 fn part1(input: &str) -> i64 {
@@ -11,9 +12,36 @@ fn part1(input: &str) -> i64 {
         .sum()
 }
 
+// Borrowed from guy: https://github.com/guy-732/aoc-2015/blob/master/src/day12.rs
+fn is_red(value: &Value) -> bool {
+    // test to see if there is a red option
+    match value {
+        Value::String(s) => s == "red",
+        _ => false,
+    }
+}
+
+// Borrowed from guy: https://github.com/guy-732/aoc-2015/blob/master/src/day12.rs
+fn sum(value: &Value) -> i64 {
+    // do math depending on the value
+    match value {
+        Value::Number(number) => number.as_i64().unwrap(),
+        Value::Array(vec) => vec.iter().map(sum).sum(),
+        Value::Object(map) => {
+            if map.values().any(is_red) {
+                0
+            } else {
+                map.values().map(sum).sum()
+            }
+        }
+        _ => 0,
+    }
+}
+
 #[aoc(day12, part2)]
 fn part2(input: &str) -> i64 {
-    todo!()
+    let s: Value = serde_json::from_str(input).unwrap();
+    sum(&s)
 }
 
 #[cfg(test)]
