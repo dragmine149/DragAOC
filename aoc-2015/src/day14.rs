@@ -2,6 +2,7 @@ use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 use regex::Regex;
 
+// create a reindeer
 #[derive(Clone, Copy)]
 struct Reindeer {
     // name: String,
@@ -10,6 +11,7 @@ struct Reindeer {
     rest: u64,
 }
 
+// create a reindeer with more data
 struct ScoreReindeer {
     reindeer: Reindeer,
     current_distance: u64,
@@ -20,12 +22,13 @@ struct ScoreReindeer {
 
 impl Reindeer {
     fn calculate_distance_after_time(&self, time: u64) -> u64 {
+        // does some basic really simple maths to get the distance
         let cycle_time = self.time + self.rest;
         let cycles = time / cycle_time;
         let distance = (self.speed * self.time) * cycles;
         let left = time % cycle_time;
         let extra = self.speed * if left > self.time { self.time } else { left };
-        let total = distance + extra;
+        // let total = distance + extra;
 
         // println!(
         //     "A cycle takes {:?} ({:?} + {:?}) time",
@@ -42,11 +45,13 @@ impl Reindeer {
         // println!("equates to an extra: {:?}", extra);
         // println!("Hence we go: {:?}", total);
 
-        total
+        // total
+        distance + extra
     }
 }
 
 impl ScoreReindeer {
+    // create a score version of a reindeer
     fn from(reindeer: Reindeer) -> Self {
         let fly = reindeer.time;
         Self {
@@ -58,6 +63,7 @@ impl ScoreReindeer {
         }
     }
 
+    // increment a second
     fn increment_second(&mut self) {
         if self.resting == 0 {
             self.current_distance += self.reindeer.speed;
@@ -127,18 +133,22 @@ fn process_score_reindeer(input: &[Reindeer], time: u64) -> u64 {
     let mut reindeers = input.iter().map(|r| ScoreReindeer::from(*r)).collect_vec();
 
     for _ in 0..time {
+        // increment
         reindeers.iter_mut().for_each(|r| r.increment_second());
+        // get furthest
         let dist = reindeers
             .iter()
             .map(|r| r.current_distance)
             .max()
             .expect("Failed to get furthest distance");
+        // give all furthest a point
         reindeers
             .iter_mut()
             .filter(|r| r.current_distance == dist)
             .for_each(|r| r.current_score += 1);
     }
 
+    // calculate best
     reindeers
         .iter()
         .map(|r| r.current_score)
