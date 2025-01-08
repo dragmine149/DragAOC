@@ -2,11 +2,20 @@ use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 use regex::Regex;
 
+#[derive(Clone, Copy)]
 struct Reindeer {
     // name: String,
     speed: u64,
     time: u64,
     rest: u64,
+}
+
+struct ScoreReindeer {
+    reindeer: Reindeer,
+    current_distance: u64,
+    current_score: u64,
+    resting: u64,
+    flying: u64,
 }
 
 impl Reindeer {
@@ -34,6 +43,37 @@ impl Reindeer {
         // println!("Hence we go: {:?}", total);
 
         total
+    }
+}
+
+impl ScoreReindeer {
+    fn from(reindeer: Reindeer) -> Self {
+        let fly = reindeer.time;
+        Self {
+            reindeer,
+            current_score: 0,
+            current_distance: 0,
+            resting: 0,
+            flying: fly,
+        }
+    }
+
+    fn increment_second(&mut self) {
+        if self.resting == 0 {
+            self.current_distance += self.reindeer.speed;
+            self.flying -= 1;
+
+            if self.flying == 0 {
+                self.resting = self.reindeer.rest;
+            }
+
+            return;
+        }
+
+        self.resting -= 1;
+        if self.resting == 0 {
+            self.flying = self.reindeer.time;
+        }
     }
 }
 
@@ -83,10 +123,33 @@ fn part1(input: &[Reindeer]) -> u64 {
     process_reindeers(input, 2503)
 }
 
-// #[aoc(day14, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+fn process_score_reindeer(input: &[Reindeer], time: u64) -> u64 {
+    let mut reindeers = input.iter().map(|r| ScoreReindeer::from(*r)).collect_vec();
+
+    for _ in 0..time {
+        reindeers.iter_mut().for_each(|r| r.increment_second());
+        let dist = reindeers
+            .iter()
+            .map(|r| r.current_distance)
+            .max()
+            .expect("Failed to get furthest distance");
+        reindeers
+            .iter_mut()
+            .filter(|r| r.current_distance == dist)
+            .for_each(|r| r.current_score += 1);
+    }
+
+    reindeers
+        .iter()
+        .map(|r| r.current_score)
+        .max()
+        .expect("Failed to get best score")
+}
+
+#[aoc(day14, part2)]
+fn part2(input: &[Reindeer]) -> u64 {
+    process_score_reindeer(input, 2503)
+}
 
 #[cfg(test)]
 mod tests {
@@ -102,8 +165,8 @@ Dancer can fly 16 km/s for 11 seconds, but then must rest for 162 seconds.
         assert_eq!(process_reindeers(&parse(EXAMPLE_1), 1000), 1120);
     }
 
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
+    #[test]
+    fn part2_example() {
+        assert_eq!(process_score_reindeer(&parse(EXAMPLE_1), 1000), 689);
+    }
 }

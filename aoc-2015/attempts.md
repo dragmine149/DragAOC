@@ -90,3 +90,6 @@ heqaabcc - Correct
 ## Day 14
 ### Part 1
 2660 - Correct
+
+### Part 2
+1256 - Correct
