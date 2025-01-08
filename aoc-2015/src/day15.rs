@@ -109,9 +109,9 @@ fn better_increment(amounts: &mut [u64], position: usize) {
     // checks if the sum of all the values is more than 100, aka that combination won't do anything
     if amounts.iter().sum::<u64>() > 100 && position > 0 {
         // set itself and all the ones below it to 0, because no matter what we change here or below it will always be 100. Hence we can skip them
-        amounts[position] = 0;
+        amounts[position] = 1;
         for pi in position..(amounts.len() - 1) {
-            amounts[pi] = 0;
+            amounts[pi] = 1;
         }
 
         // call itself to increment the next digit, and to keep going in terms of number counting.
@@ -123,7 +123,8 @@ fn better_increment(amounts: &mut [u64], position: usize) {
 fn calculate(ingredients: &[Ingredient], care_calories: bool) -> u64 {
     // defaults and useable for other stuff
     let mut best = 0;
-    let mut amounts: Vec<u64> = vec![0; ingredients.len()];
+    // start at index of 1, because any index of 0 would just cause things to be 0 hence we skip those
+    let mut amounts: Vec<u64> = vec![1; ingredients.len()];
     let last_pos = amounts.len() - 1;
 
     while amounts[0] != 99 {
