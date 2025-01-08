@@ -17,7 +17,7 @@
 ## Scores
 <!-- AOC TILES BEGIN -->
 <h1 align="center">
-  Advent of Code - 149/500 ⭐
+  Advent of Code - 150/500 ⭐
 </h1>
 <h1 align="center">
   2024 - 50 ⭐ - Rust
@@ -239,7 +239,7 @@
   <img src=".aoc_tiles/tiles/2019/01.png" width="161px">
 </a>
 <h1 align="center">
-  2015 - 25 ⭐ - Rust
+  2015 - 26 ⭐ - Rust
 </h1>
 <a href="aoc-2015/src/day01.rs">
   <img src=".aoc_tiles/tiles/2015/01.png" width="161px">
