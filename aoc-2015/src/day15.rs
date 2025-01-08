@@ -54,7 +54,9 @@ fn parse(input: &str) -> Vec<Ingredient> {
         .collect_vec()
 }
 
+// calculate score
 fn calculate_score(ingredients: &[Ingredient], amounts: &[u64], care_calories: bool) -> u64 {
+    // calculate value of everything
     let capacity = ingredients
         .iter()
         .enumerate()
@@ -80,60 +82,66 @@ fn calculate_score(ingredients: &[Ingredient], amounts: &[u64], care_calories: b
         .enumerate()
         .map(|(i, v)| v.calories * amounts[i] as i64)
         .sum::<i64>();
+    // 0 if any are negative
     if capacity < 0 || durability < 0 || flavour < 0 || texture < 0 {
         return 0;
     }
 
+    // calories don't match, aka failed
     if care_calories && calories != 500 {
         return 0;
     }
 
+    // total
     let total_c: i64 = capacity * durability * flavour * texture;
     if total_c < 0 {
+        // and of cause, no negatives
         0
     } else {
-        // println!("{:?}", total);
         total_c as u64
     }
 }
 
+// incrementation system
 fn better_increment(amounts: &mut [u64], position: usize) {
     amounts[position] += 1;
-    // println!("{:?}", amounts);
+
+    // checks if the sum of all the values is more than 100, aka that combination won't do anything
     if amounts.iter().sum::<u64>() > 100 && position > 0 {
-        // println!(">= 100!");
+        // set itself and all the ones below it to 0, because no matter what we change here or below it will always be 100. Hence we can skip them
         amounts[position] = 0;
         for pi in position..(amounts.len() - 1) {
             amounts[pi] = 0;
         }
+
+        // call itself to increment the next digit, and to keep going in terms of number counting.
         better_increment(amounts, position - 1);
     }
 }
 
-#[aoc(day15, part1)]
-fn part1(input: &[Ingredient]) -> u64 {
+// calculate the best of the best
+fn calculate(ingredients: &[Ingredient], care_calories: bool) -> u64 {
+    // defaults and useable for other stuff
     let mut best = 0;
-    let mut amounts: Vec<u64> = vec![0; input.len()];
+    let mut amounts: Vec<u64> = vec![0; ingredients.len()];
     let last_pos = amounts.len() - 1;
+
     while amounts[0] != 99 {
-        let score = calculate_score(input, &amounts, false);
-        best = best.max(score);
-        better_increment(&mut amounts, last_pos);
+        better_increment(&mut amounts, last_pos); // increment before stuff to save a tad bit of time (due to 0 start)
+        let score = calculate_score(ingredients, &amounts, care_calories); // calculate
+        best = best.max(score); // and max for the best
     }
     best
 }
 
+#[aoc(day15, part1)]
+fn part1(input: &[Ingredient]) -> u64 {
+    calculate(input, false)
+}
+
 #[aoc(day15, part2)]
 fn part2(input: &[Ingredient]) -> u64 {
-    let mut best = 0;
-    let mut amounts: Vec<u64> = vec![0; input.len()];
-    let last_pos = amounts.len() - 1;
-    while amounts[0] != 99 {
-        let score = calculate_score(input, &amounts, true);
-        best = best.max(score);
-        better_increment(&mut amounts, last_pos);
-    }
-    best
+    calculate(input, true)
 }
 
 #[cfg(test)]
