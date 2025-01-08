@@ -55,42 +55,40 @@ fn parse(input: &str) -> Vec<Ingredient> {
 }
 
 fn calculate_score(ingredients: &[Ingredient], amounts: &[u64], care_calories: bool) -> u64 {
-    let total = Ingredient {
-        capacity: ingredients
-            .iter()
-            .enumerate()
-            .map(|(i, v)| v.capacity * amounts[i] as i64)
-            .sum(),
-        durability: ingredients
-            .iter()
-            .enumerate()
-            .map(|(i, v)| v.durability * amounts[i] as i64)
-            .sum(),
-        flavour: ingredients
-            .iter()
-            .enumerate()
-            .map(|(i, v)| v.flavour * amounts[i] as i64)
-            .sum(),
-        texture: ingredients
-            .iter()
-            .enumerate()
-            .map(|(i, v)| v.texture * amounts[i] as i64)
-            .sum(),
-        calories: ingredients
-            .iter()
-            .enumerate()
-            .map(|(i, v)| v.calories * amounts[i] as i64)
-            .sum(),
-    };
-    if total.capacity < 0 || total.durability < 0 || total.flavour < 0 || total.texture < 0 {
+    let capacity = ingredients
+        .iter()
+        .enumerate()
+        .map(|(i, v)| v.capacity * amounts[i] as i64)
+        .sum::<i64>();
+    let durability = ingredients
+        .iter()
+        .enumerate()
+        .map(|(i, v)| v.durability * amounts[i] as i64)
+        .sum::<i64>();
+    let flavour = ingredients
+        .iter()
+        .enumerate()
+        .map(|(i, v)| v.flavour * amounts[i] as i64)
+        .sum::<i64>();
+    let texture = ingredients
+        .iter()
+        .enumerate()
+        .map(|(i, v)| v.texture * amounts[i] as i64)
+        .sum::<i64>();
+    let calories = ingredients
+        .iter()
+        .enumerate()
+        .map(|(i, v)| v.calories * amounts[i] as i64)
+        .sum::<i64>();
+    if capacity < 0 || durability < 0 || flavour < 0 || texture < 0 {
         return 0;
     }
 
-    if care_calories && total.calories != 500 {
+    if care_calories && calories != 500 {
         return 0;
     }
 
-    let total_c = total.capacity * total.durability * total.flavour * total.texture;
+    let total_c: i64 = capacity * durability * flavour * texture;
     if total_c < 0 {
         0
     } else {
@@ -99,13 +97,16 @@ fn calculate_score(ingredients: &[Ingredient], amounts: &[u64], care_calories: b
     }
 }
 
-fn increment_amount(amounts: &mut Vec<u64>, position: usize) {
+fn better_increment(amounts: &mut [u64], position: usize) {
     amounts[position] += 1;
-    if amounts[position] >= 100 {
+    // println!("{:?}", amounts);
+    if amounts.iter().sum::<u64>() > 100 && position > 0 {
+        // println!(">= 100!");
         amounts[position] = 0;
-        if position > 0 {
-            increment_amount(amounts, position - 1);
+        for pi in position..(amounts.len() - 1) {
+            amounts[pi] = 0;
         }
+        better_increment(amounts, position - 1);
     }
 }
 
@@ -114,28 +115,10 @@ fn part1(input: &[Ingredient]) -> u64 {
     let mut best = 0;
     let mut amounts: Vec<u64> = vec![0; input.len()];
     let last_pos = amounts.len() - 1;
-    while !amounts.iter().all(|i| *i == 99) {
-        let score = if amounts.iter().sum::<u64>() == 100 {
-            // println!("{:?}", amounts.iter().sum::<u64>());
-            calculate_score(input, &amounts, false)
-        } else {
-            0
-        };
-
-        // if score > 0 {
-        //     println!("{:?} gives {:?}", amounts, score);
-        // }
-
+    while amounts[0] != 99 {
+        let score = calculate_score(input, &amounts, false);
         best = best.max(score);
-
-        // if score > best {
-        //     println!(
-        //         "NEW BEST! Amounts of: {:?} gives score of {:?}",
-        //         amounts, score
-        //     );
-        //     best = score;
-        // }
-        increment_amount(&mut amounts, last_pos);
+        better_increment(&mut amounts, last_pos);
     }
     best
 }
@@ -145,15 +128,10 @@ fn part2(input: &[Ingredient]) -> u64 {
     let mut best = 0;
     let mut amounts: Vec<u64> = vec![0; input.len()];
     let last_pos = amounts.len() - 1;
-    while !amounts.iter().all(|i| *i == 99) {
-        let score = if amounts.iter().sum::<u64>() == 100 {
-            calculate_score(input, &amounts, true)
-        } else {
-            0
-        };
-
+    while amounts[0] != 99 {
+        let score = calculate_score(input, &amounts, true);
         best = best.max(score);
-        increment_amount(&mut amounts, last_pos);
+        better_increment(&mut amounts, last_pos);
     }
     best
 }
