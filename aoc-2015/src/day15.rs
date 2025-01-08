@@ -54,7 +54,7 @@ fn parse(input: &str) -> Vec<Ingredient> {
         .collect_vec()
 }
 
-fn calculate_score(ingredients: &[Ingredient], amounts: &[u64]) -> u64 {
+fn calculate_score(ingredients: &[Ingredient], amounts: &[u64], care_calories: bool) -> u64 {
     let total = Ingredient {
         capacity: ingredients
             .iter()
@@ -76,9 +76,17 @@ fn calculate_score(ingredients: &[Ingredient], amounts: &[u64]) -> u64 {
             .enumerate()
             .map(|(i, v)| v.texture * amounts[i] as i64)
             .sum(),
-        calories: 0,
+        calories: ingredients
+            .iter()
+            .enumerate()
+            .map(|(i, v)| v.calories * amounts[i] as i64)
+            .sum(),
     };
     if total.capacity < 0 || total.durability < 0 || total.flavour < 0 || total.texture < 0 {
+        return 0;
+    }
+
+    if care_calories && total.calories != 500 {
         return 0;
     }
 
@@ -109,7 +117,7 @@ fn part1(input: &[Ingredient]) -> u64 {
     while !amounts.iter().all(|i| *i == 99) {
         let score = if amounts.iter().sum::<u64>() == 100 {
             // println!("{:?}", amounts.iter().sum::<u64>());
-            calculate_score(input, &amounts)
+            calculate_score(input, &amounts, false)
         } else {
             0
         };
@@ -132,10 +140,23 @@ fn part1(input: &[Ingredient]) -> u64 {
     best
 }
 
-// #[aoc(day15, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+#[aoc(day15, part2)]
+fn part2(input: &[Ingredient]) -> u64 {
+    let mut best = 0;
+    let mut amounts: Vec<u64> = vec![0; input.len()];
+    let last_pos = amounts.len() - 1;
+    while !amounts.iter().all(|i| *i == 99) {
+        let score = if amounts.iter().sum::<u64>() == 100 {
+            calculate_score(input, &amounts, true)
+        } else {
+            0
+        };
+
+        best = best.max(score);
+        increment_amount(&mut amounts, last_pos);
+    }
+    best
+}
 
 #[cfg(test)]
 mod tests {
@@ -149,5 +170,9 @@ Cinnamon: capacity 2, durability 3, flavor -2, texture -1, calories 3
     #[test]
     fn part1_example() {
         assert_eq!(part1(&parse(EXAMPLE_1)), 62842880);
+    }
+    #[test]
+    fn part2_example() {
+        assert_eq!(part2(&parse(EXAMPLE_1)), 57600000);
     }
 }
