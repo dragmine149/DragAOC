@@ -86,3 +86,7 @@ heqaabcc - Correct
 
 ### Part 2
 96852 - Correct
+
+## Day 14
+### Part 1
+2660 - Correct
