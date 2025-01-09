@@ -56,9 +56,9 @@ fn process_lights(lights: &mut Grid<u8>, steps: u64, p2: bool) -> u64 {
                     true
                 }
             })
-            .filter(|cell| lights.flip_check(&cell))
+            .filter(|cell| lights.flip_check(cell))
             .collect_vec();
-        positions.iter().for_each(|pos| lights.flip(&pos));
+        positions.iter().for_each(|pos| lights.flip(pos));
 
         // println!("step: {:?}", _step + 1);
         // println!("{:?}", lights);
