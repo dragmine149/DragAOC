@@ -9,20 +9,20 @@ fn solve_for_liters(containers: &[u32], liters: u32) -> u32 {
     let mut index: u32 = 0b0;
     let mut count: u32 = 0;
     // println!("{:?}", containers.len());
-    while index < 2_u32.pow(containers.len() as u32) {
+    let max = 2_u32.pow(containers.len() as u32);
+    while index < max {
         // println!("{:?}", index);
-        let mut use_containers = vec![];
+        let mut sum = 0;
         for (i, v) in containers.iter().enumerate() {
             if (index >> i) & 1 == 1 {
-                use_containers.push(*v);
+                sum += v;
+                if sum > liters {
+                    break;
+                }
             }
         }
         // println!("{:?}", use_containers);
-        count += if use_containers.iter().sum::<u32>() == liters {
-            1
-        } else {
-            0
-        };
+        count += if sum == liters { 1 } else { 0 };
         index += 0b1;
     }
 
@@ -36,25 +36,29 @@ fn solve_for_min_containers(containers: &[u32], liters: u32) -> u32 {
     // println!("{:?}", containers.len());
     while index < 2_u32.pow(containers.len() as u32) {
         // println!("{:?}", index);
-        let mut use_containers = vec![];
+        let mut sum = 0;
+        let mut count = 0;
         for (i, v) in containers.iter().enumerate() {
             if (index >> i) & 1 == 1 {
-                use_containers.push(*v);
+                sum += v;
+                count += 1;
+            }
+            if sum > liters {
+                break;
             }
         }
         // println!("{:?}", use_containers);
-        if use_containers.iter().sum::<u32>() == liters {
-            options.push(use_containers);
+        if sum == liters {
+            options.push(count);
         }
         index += 0b1;
     }
 
     let min = options
         .iter()
-        .map(|o| o.len())
         .min()
         .expect("Failed to get minimum amount of containers");
-    options.iter().filter(|o| o.len() == min).count() as u32
+    options.iter().filter(|o| *o == min).count() as u32
 }
 
 #[aoc(day17, part1)]
