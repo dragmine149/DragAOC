@@ -116,3 +116,7 @@ heqaabcc - Correct
 
 ### Part 2
 4 - Correct
+
+## Day 18
+### Part 1
+814 - Correct

@@ -1,6 +1,8 @@
 use core::fmt;
+use itertools::Itertools;
 use std::fmt::Write;
 
+// format: (X, Y)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Position(pub usize, pub usize);
 
@@ -24,10 +26,14 @@ impl Position {
     #[allow(dead_code)]
     pub fn next_pos(&self, direction: &Direction) -> Self {
         match direction {
-            Direction::North => Position(self.0 - 1, self.1),
-            Direction::East => Position(self.0, self.1 + 1),
-            Direction::South => Position(self.0 + 1, self.1),
-            Direction::West => Position(self.0, self.1 - 1),
+            Direction::West => Position(self.0 - 1, self.1),
+            Direction::South => Position(self.0, self.1 + 1),
+            Direction::East => Position(self.0 + 1, self.1),
+            Direction::North => Position(self.0, self.1 - 1),
+            Direction::SouthWest => Position(self.0 - 1, self.1 + 1),
+            Direction::SouthEast => Position(self.0 + 1, self.1 + 1),
+            Direction::NorthEast => Position(self.0 + 1, self.1 - 1),
+            Direction::NorthWest => Position(self.0 - 1, self.1 - 1),
         }
     }
 
@@ -42,57 +48,49 @@ impl Position {
         Self(0, 0)
     }
     #[allow(dead_code)]
-    pub fn get_valid_positions(&self, grid_size: &Position) -> Vec<Position> {
-        let mut valid: Vec<Position> = vec![];
-        if self.0 >= 1 {
-            valid.push(Position(self.0 - 1, self.1));
-        }
-        if self.1 >= 1 {
-            valid.push(Position(self.0, self.1 - 1));
-        }
-        if self.0 < grid_size.1 {
-            valid.push(Position(self.0 + 1, self.1));
-        }
-        if self.1 < grid_size.0 {
-            valid.push(Position(self.0, self.1 + 1));
-        }
-        valid
+    pub fn get_neighbours(&self, grid_size: &Position) -> Vec<Position> {
+        self.get_valid_directions(grid_size)
+            .iter()
+            .map(|v| self.next_pos(v))
+            .collect_vec()
     }
 
     #[allow(dead_code)]
     pub fn get_valid_directions(&self, grid_size: &Position) -> Vec<Direction> {
         let mut valid: Vec<Direction> = vec![];
         if self.0 >= 1 {
-            valid.push(Direction::North);
-        }
-        if self.1 >= 1 {
             valid.push(Direction::West);
         }
-        if self.0 < grid_size.0 {
+        if self.1 >= 1 {
+            valid.push(Direction::North);
+        }
+        if self.0 + 1 < grid_size.0 {
+            valid.push(Direction::East);
+        }
+        if self.1 + 1 < grid_size.1 {
             valid.push(Direction::South);
         }
-        if self.1 < grid_size.1 {
-            valid.push(Direction::East);
+        if self.0 >= 1 && self.1 + 1 < grid_size.1 {
+            valid.push(Direction::SouthWest);
+        }
+        if self.0 + 1 < grid_size.0 && self.1 + 1 < grid_size.1 {
+            valid.push(Direction::SouthEast);
+        }
+        if self.0 + 1 < grid_size.0 && self.1 >= 1 {
+            valid.push(Direction::NorthEast);
+        }
+        if self.0 >= 1 && self.1 >= 1 {
+            valid.push(Direction::NorthWest);
         }
         valid
     }
 
     #[allow(dead_code)]
     pub fn get_valid(&self, grid_size: &Position) -> Vec<(Direction, Position)> {
-        let mut valid: Vec<(Direction, Position)> = vec![];
-        if self.0 >= 1 {
-            valid.push((Direction::North, Position(self.0 - 1, self.1)));
-        }
-        if self.1 >= 1 {
-            valid.push((Direction::West, Position(self.0, self.1 - 1)));
-        }
-        if self.0 < grid_size.0 {
-            valid.push((Direction::South, Position(self.0 + 1, self.1)));
-        }
-        if self.1 < grid_size.1 {
-            valid.push((Direction::East, Position(self.0, self.1 + 1)));
-        }
-        valid
+        self.get_valid_directions(grid_size)
+            .iter()
+            .map(|v| (*v, self.next_pos(v)))
+            .collect_vec()
     }
 
     #[allow(dead_code)]
@@ -140,6 +138,10 @@ pub enum Direction {
     East,
     South,
     West,
+    NorthEast,
+    SouthEast,
+    SouthWest,
+    NorthWest,
 }
 
 impl Direction {
@@ -151,6 +153,10 @@ impl Direction {
             Direction::West => Direction::East,
             Direction::North => Direction::South,
             Direction::South => Direction::North,
+            Direction::NorthEast => Direction::SouthWest,
+            Direction::SouthEast => Direction::NorthWest,
+            Direction::SouthWest => Direction::NorthEast,
+            Direction::NorthWest => Direction::SouthEast,
         }
     }
 
@@ -258,5 +264,16 @@ impl<T: std::clone::Clone> Grid<T> {
             self.first().expect("Failed to get first row").len(),
             self.len(),
         )
+    }
+
+    pub fn iter_unmut_cells(&self) -> impl IntoIterator<Item = T> + '_ {
+        let size = self.get_size();
+        (0..size.1)
+            .flat_map(move |y| (0..size.0).map(move |x| self.get_unmut_cell(&Position(x, y))))
+    }
+
+    pub fn iter_positions(&self) -> impl IntoIterator<Item = Position> + '_ {
+        let size = self.get_size();
+        (0..size.1).flat_map(move |y| (0..size.0).map(move |x| Position(x, y)))
     }
 }

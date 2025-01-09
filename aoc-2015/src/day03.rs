@@ -8,6 +8,7 @@ pub fn next_pos(pos: (isize, isize), direction: &Direction) -> (isize, isize) {
         Direction::East => (pos.0, pos.1 + 1),
         Direction::South => (pos.0 + 1, pos.1),
         Direction::West => (pos.0, pos.1 - 1),
+        _ => panic!("Invalid direction!"),
     }
 }
 

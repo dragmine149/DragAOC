@@ -1,5 +1,3 @@
-mod day17;
-mod day16;
 extern crate aoc_runner;
 
 #[macro_use]
@@ -19,6 +17,9 @@ mod day11;
 mod day12;
 mod day14;
 mod day15;
+mod day16;
+mod day17;
+mod day18;
 mod utils;
 
 aoc_lib! {year = 2015}
