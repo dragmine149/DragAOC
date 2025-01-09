@@ -101,3 +101,11 @@ heqaabcc - Correct
 
 ### Part 2
 15862900 - Correct
+
+## Day 16
+### Part 1
+103 - Correct
+
+### Part 2
+103 - Too Low
+405 - Correct
