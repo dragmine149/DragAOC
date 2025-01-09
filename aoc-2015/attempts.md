@@ -120,3 +120,7 @@ heqaabcc - Correct
 ## Day 18
 ### Part 1
 814 - Correct
+
+### Part 2
+1381 - Too High
+924 - Correct

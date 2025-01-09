@@ -130,6 +130,13 @@ impl Position {
                 .map(move |y_dist| Position(x_dist as usize, y_dist as usize))
         })
     }
+
+    pub fn is_corner(&self, grid_size: &Position) -> bool {
+        (self.0 == 0 && self.1 == 0)
+            || (self.0 == 0 && self.1 == grid_size.1 - 1)
+            || (self.0 == grid_size.0 - 1 && self.1 == 0)
+            || (self.0 == grid_size.0 - 1 && self.1 == grid_size.1 - 1)
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -223,9 +230,30 @@ impl<T: std::clone::Clone> Grid<T> {
         Self(vec![vec![default_arg; size.1]; size.0])
     }
 
+    pub fn from_str<F: Fn(char) -> T>(s: &str, default_arg: T, translation: F) -> Self {
+        let mut grid = Self::new(
+            &Position::from(s.lines().nth(0).unwrap().len()),
+            default_arg,
+        );
+        s.lines().enumerate().for_each(|(y, line)| {
+            line.chars().enumerate().for_each(|(x, char)| {
+                grid.set_cell(&Position(x, y), translation(char));
+            });
+        });
+        grid
+    }
+
     #[allow(dead_code)]
     pub fn set_cell(&mut self, pos: &Position, value: T) {
         self[pos.1][pos.0] = value;
+    }
+
+    pub fn set_corners(&mut self, value: T) {
+        self[0][0] = value.to_owned();
+        let size = self.get_size();
+        self[0][size.0 - 1] = value.to_owned();
+        self[size.1 - 1][0] = value.to_owned();
+        self[size.1 - 1][size.0 - 1] = value.to_owned();
     }
 
     #[allow(dead_code)]

@@ -4,18 +4,11 @@ use itertools::Itertools;
 
 #[aoc_generator(day18)]
 fn parse(input: &str) -> Grid<u8> {
-    let mut g = Grid::new(&Position::from(input.lines().nth(0).unwrap().len()), 0);
-    input.lines().enumerate().for_each(|(y, line)| {
-        line.trim()
-            .chars()
-            .enumerate()
-            .for_each(|(x, char)| match char {
-                '#' => g.set_cell(&Position(x, y), 1),
-                '.' => g.set_cell(&Position(x, y), 0),
-                _ => panic!("Invalid character: '{:?}'", char),
-            });
-    });
-    g
+    Grid::from_str(input, 0, |c| match c {
+        '#' => 1,
+        '.' => 0,
+        _ => panic!("Invalid character: '{:?}'", c),
+    })
 }
 
 impl Grid<u8> {
@@ -51,11 +44,18 @@ impl Grid<u8> {
     }
 }
 
-fn process_lights(lights: &mut Grid<u8>, steps: u64) -> u64 {
+fn process_lights(lights: &mut Grid<u8>, steps: u64, p2: bool) -> u64 {
     for _step in 0..steps {
         let positions = lights
             .iter_positions()
             .into_iter()
+            .filter(|cell| {
+                if p2 {
+                    !cell.is_corner(&lights.get_size())
+                } else {
+                    true
+                }
+            })
             .filter(|cell| lights.flip_check(&cell))
             .collect_vec();
         positions.iter().for_each(|pos| lights.flip(&pos));
@@ -74,13 +74,15 @@ fn process_lights(lights: &mut Grid<u8>, steps: u64) -> u64 {
 #[aoc(day18, part1)]
 fn part1(input: &Grid<u8>) -> u64 {
     let mut g = input.to_owned();
-    process_lights(&mut g, 100)
+    process_lights(&mut g, 100, false)
 }
 
-// #[aoc(day18, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+#[aoc(day18, part2)]
+fn part2(input: &Grid<u8>) -> u64 {
+    let mut g = input.to_owned();
+    g.set_corners(1);
+    process_lights(&mut g, 100, true)
+}
 
 #[cfg(test)]
 mod tests {
@@ -98,11 +100,14 @@ mod tests {
     fn part1_example() {
         let input = &parse(EXAMPLE_1);
         let mut g = input.to_owned();
-        assert_eq!(process_lights(&mut g, 4), 4);
+        assert_eq!(process_lights(&mut g, 4, false), 4);
     }
 
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
+    #[test]
+    fn part2_example() {
+        let input = &parse(EXAMPLE_1);
+        let mut g = input.to_owned();
+        g.set_corners(1);
+        assert_eq!(process_lights(&mut g, 5, true), 17);
+    }
 }
