@@ -124,3 +124,8 @@ heqaabcc - Correct
 ### Part 2
 1381 - Too High
 924 - Correct
+
+## Day 19
+### Part 1
+193 - Too Low
+518 - Correct
