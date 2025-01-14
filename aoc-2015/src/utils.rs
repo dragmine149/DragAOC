@@ -5,7 +5,7 @@ use std::fmt::Write;
 /**
 Stores a position in a 2D array with the format of (X, Y)
 */
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Position(pub usize, pub usize);
 
 impl From<usize> for Position {
@@ -45,6 +45,20 @@ impl Position {
         }
     }
 
+    /// Checks if the next position is valid
+    pub fn is_next_valid(&self, direction: &Direction, grid_size: &Position) -> bool {
+        match direction {
+            Direction::North => self.1 >= 1,
+            Direction::East => self.0 + 1 < grid_size.0,
+            Direction::South => self.1 + 1 < grid_size.1,
+            Direction::West => self.0 >= 1,
+            Direction::NorthEast => self.0 + 1 < grid_size.0 && self.1 >= 1,
+            Direction::SouthEast => self.0 + 1 < grid_size.0 && self.1 + 1 < grid_size.1,
+            Direction::SouthWest => self.0 >= 1 && self.1 + 1 < grid_size.1,
+            Direction::NorthWest => self.0 >= 1 && self.1 >= 1,
+        }
+    }
+
     /// check if the current position is valid.
     pub fn is_valid(&self, grid_size: &Position) -> bool {
         // pos can never be negative as that would cause errors, hence no need to check for it.
@@ -55,6 +69,8 @@ impl Position {
     pub fn empty() -> Self {
         Self(0, 0)
     }
+
+    pub const MAX: Self = Self(usize::MAX, usize::MAX);
 
     /// get all our neighbours. (In all Directions)
     pub fn get_neighbours(&self, grid_size: &Position) -> Vec<Position> {
@@ -113,6 +129,7 @@ impl Position {
         (self.0.abs_diff(other.0) + self.1.abs_diff(other.1)) as u64
     }
 
+    // Thanks to guy_732: https://github.com/guy-732/aoc-2024/blob/01da016705b2be4cbbb199603d2cf32fcbcd0fda/src/day20.rs#L15-L34
     /// generate an iter of all positions within a radius of max_distance
     pub fn iter_positions_within(
         &self,
@@ -132,15 +149,17 @@ impl Position {
             .filter(move |(pos, _)| pos.0 < grid_size.0 && pos.1 < grid_size.1)
     }
 
-    // loop over all positions between two positions
+    /// loop over all positions between two positions
     pub fn iter_positions<'a>(&'a self, end: &'a Self) -> impl IntoIterator<Item = Position> + '_ {
-        ((self.0 as isize)..=(end.0 as isize)).flat_map(move |x_dist| {
-            ((self.1 as isize)..=(end.1 as isize))
+        let (a, b) = if self < end { (self, end) } else { (end, self) };
+
+        ((a.0 as isize)..=(b.0 as isize)).flat_map(move |x_dist| {
+            ((a.1 as isize)..=(b.1 as isize))
                 .map(move |y_dist| Position(x_dist as usize, y_dist as usize))
         })
     }
 
-    // check if itself is the corner of the grid
+    /// check if itself is the corner of the grid
     pub fn is_corner(&self, grid_size: &Position) -> bool {
         (self.0 == grid_size.0 - 1 || self.0 == 0) && (self.1 == grid_size.1 - 1 || self.1 == 0)
     }
@@ -193,6 +212,67 @@ impl Direction {
     /// useful for debugging
     pub fn index(&self) -> usize {
         *self as usize
+    }
+
+    pub fn rotate(&self, diagonal: bool) -> Self {
+        match self {
+            Self::North => {
+                if diagonal {
+                    Self::NorthEast
+                } else {
+                    Self::East
+                }
+            }
+            Self::East => {
+                if diagonal {
+                    Self::SouthEast
+                } else {
+                    Self::South
+                }
+            }
+            Self::South => {
+                if diagonal {
+                    Self::SouthWest
+                } else {
+                    Self::West
+                }
+            }
+            Self::West => {
+                if diagonal {
+                    Self::NorthWest
+                } else {
+                    Self::North
+                }
+            }
+            Self::NorthEast => {
+                if diagonal {
+                    Self::East
+                } else {
+                    Self::SouthEast
+                }
+            }
+            Self::SouthEast => {
+                if diagonal {
+                    Self::South
+                } else {
+                    Self::SouthWest
+                }
+            }
+            Self::SouthWest => {
+                if diagonal {
+                    Self::West
+                } else {
+                    Self::NorthWest
+                }
+            }
+            Self::NorthWest => {
+                if diagonal {
+                    Self::North
+                } else {
+                    Self::NorthEast
+                }
+            }
+        }
     }
 }
 
@@ -276,6 +356,12 @@ impl<T: std::clone::Clone> Grid<T> {
     /// Prefered use of [get_cell] to set data if data has already been set
     pub fn set_cell(&mut self, pos: &Position, value: T) {
         self[pos.1][pos.0] = value;
+    }
+
+    pub fn set_cells<'a>(&mut self, cells: impl IntoIterator<Item = &'a Position>, value: T) {
+        cells.into_iter().for_each(|&cell| {
+            self.set_cell(&cell, value.to_owned());
+        });
     }
 
     /// set all the corners of the grid.
