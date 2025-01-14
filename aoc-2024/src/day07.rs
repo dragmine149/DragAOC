@@ -1,5 +1,13 @@
+use crate::utils::Wrapper;
 use aoc_runner_derive::{aoc, aoc_generator};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+enum Operation {
+    Addition,
+    Multiplication,
+    Concatenation,
+}
 
 #[aoc_generator(day7)]
 fn parse(input: &str) -> Vec<(u64, Vec<u64>)> {
@@ -72,21 +80,11 @@ fn part1(input: &[(u64, Vec<u64>)]) -> u64 {
     total
 }
 
-// Vector and manual version of binary wrapping.
-fn warp_operators(operators: &mut [u8]) {
-    operators[0] += 1;
-    for index in 0..(operators.len() - 1) {
-        if operators[index] >= 3 {
-            operators[index] = 0;
-            operators[index + 1] += 1;
-        }
-    }
-}
-
 // The same as the previous check_if_calculate but uses vector wrapping and support for the third operator
-fn check_if_calculate_2(input: &(u64, Vec<u64>)) -> bool {
+fn check_if_calculate_2(input: &(u64, Vec<u64>), part2: bool) -> bool {
     let numbers = &input.1;
-    let mut operators: Vec<u8> = vec![0; numbers.len() + 2];
+    // let mut operators: Vec<u8> = vec![0; numbers.len() + 2];
+    let mut operators: Wrapper<Operation> = Wrapper::new(Operation::Addition, numbers.len());
 
     loop {
         // println!("---");
@@ -94,16 +92,16 @@ fn check_if_calculate_2(input: &(u64, Vec<u64>)) -> bool {
         for (index, number) in numbers.iter().enumerate() {
             // get operator
             let desired_operator = operators[index];
-            if desired_operator == 0 {
+            if desired_operator == Operation::Addition {
                 // println!("{:?} + {:?}", calculation, number);
                 calculation += number;
-            } else if desired_operator == 1 {
+            } else if desired_operator == Operation::Concatenation {
                 // println!("{:?} || {:?}", calculation, number);
                 // Does 10^(the ceiling of how many times 10 goes into the right hand side number).
                 calculation =
                     calculation * 10_u64.pow(((number + 1) as f64).log10().ceil() as u32) + number;
                 // Self::Concatenate => lhs * 10_u64.pow(((rhs + 1) as f64).log10().ceil() as u32) + rhs,
-            } else if desired_operator == 2 {
+            } else if desired_operator == Operation::Multiplication {
                 // println!("{:?} * {:?}", calculation, number);
                 calculation *= number;
             } else {
@@ -111,14 +109,22 @@ fn check_if_calculate_2(input: &(u64, Vec<u64>)) -> bool {
             }
         }
 
-        warp_operators(&mut operators);
+        let end = operators.wrap(|v: &Operation| match v {
+            Operation::Addition => Operation::Multiplication,
+            Operation::Multiplication => {
+                if part2 {
+                    Operation::Concatenation
+                } else {
+                    Operation::Addition
+                }
+            }
+            Operation::Concatenation => Operation::Addition,
+        });
 
-        // println!("{:?} ?= {:?}", calculation, input.0);
         if calculation == input.0 {
             break true;
         }
-
-        if operators[operators.len() - 1] >= 3 {
+        if end {
             break false;
         }
     }
@@ -130,14 +136,11 @@ fn part2(input: &[(u64, Vec<u64>)]) -> u64 {
         .par_iter()
         // .iter()
         .map(|calc| {
-            // println!("Attempting to check: {:?}", calc);
-            let calculated = check_if_calculate_2(calc);
-            // println!("Calculated: {:?}", calculated);
-            if calculated {
-                return calc.0;
+            if check_if_calculate_2(calc, true) {
+                calc.0
+            } else {
+                0
             }
-
-            0
         })
         .sum()
 }

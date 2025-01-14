@@ -424,3 +424,62 @@ impl<T: std::clone::Clone> Grid<T> {
         (0..size.1).flat_map(move |y| (0..size.0).map(move |x| Position(x, y)))
     }
 }
+
+/// Contains a list and default value. Designed to be used to wrap things around
+pub struct Wrapper<T> {
+    list: Vec<T>,
+    default: T,
+}
+
+impl<T: std::clone::Clone + std::cmp::PartialEq> Wrapper<T> {
+    /// Create a new wrapper of len x
+    pub fn new(default_value: T, length: usize) -> Self {
+        Self {
+            list: vec![default_value.clone(); length],
+            default: default_value,
+        }
+    }
+
+    /// Wrap the wrapper around
+    /// [next] is a function that takes in the current and gives the next. If the returned result is the same as the default value, then the next one moves along
+    /// Returns true once the loop starts again, false otherwise.
+    pub fn wrap<F: Fn(&T) -> T>(&mut self, next: F) -> bool {
+        let mut index = self.len() - 1;
+        loop {
+            let v = next(&self[index]);
+            self[index] = v;
+
+            if index == 0 && self.default == self[index] {
+                break true;
+            }
+
+            if self[index] != self.default {
+                // no need to as we didn't loop this time
+                break false;
+            }
+            if index == 0 {
+                // prevents from going into negatives
+                break false;
+            }
+            index -= 1;
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.list.len()
+    }
+}
+
+impl<T> std::ops::Index<usize> for Wrapper<T> {
+    type Output = T;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.list[index]
+    }
+}
+
+impl<T> std::ops::IndexMut<usize> for Wrapper<T> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.list[index]
+    }
+}
