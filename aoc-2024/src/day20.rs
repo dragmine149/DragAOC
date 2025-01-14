@@ -100,7 +100,7 @@ fn get_default_time(grid: &mut Grid<Cell>, start: Position, end: Position) -> (u
     let mut path: Vec<Position> = vec![current_pos];
     while current_pos != end {
         // println!("Cell: {:?}", current_pos);
-        let valid = current_pos.get_valid_positions(&grid.get_size());
+        let valid = current_pos.get_neighbours(&grid.get_size());
         for v in valid {
             let cell = grid.get_cell(&v);
             // println!("{:#?}", cell);

@@ -22,25 +22,30 @@ impl Direction {
                 Direction::East => 1001,
                 Direction::South => 2001,
                 Direction::West => 1001,
+                _ => panic!("Invalid direction"),
             },
             Direction::East => match new {
                 Direction::North => 1001,
                 Direction::East => 1,
                 Direction::South => 1001,
                 Direction::West => 2001,
+                _ => panic!("Invalid direction"),
             },
             Direction::South => match new {
                 Direction::North => 2001,
                 Direction::East => 1001,
                 Direction::South => 1,
                 Direction::West => 1001,
+                _ => panic!("Invalid direction"),
             },
             Direction::West => match new {
                 Direction::North => 1001,
                 Direction::East => 2001,
                 Direction::South => 1001,
                 Direction::West => 1,
+                _ => panic!("Invalid direction"),
             },
+            _ => panic!("Invalid direction"),
         }
     }
 }
@@ -70,6 +75,7 @@ impl MapData {
             Direction::East => self.east,
             Direction::South => self.south,
             Direction::West => self.west,
+            _ => panic!("Invalid direction"),
         }
     }
 
@@ -94,6 +100,7 @@ impl MapData {
             Direction::East => self.east = score,
             Direction::South => self.south = score,
             Direction::West => self.west = score,
+            _ => panic!("Invalid direction"),
         }
     }
 
