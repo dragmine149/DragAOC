@@ -246,7 +246,7 @@ fn part2(input: &(Grid<Cell>, Position)) -> u16 {
     move_and_path_guard(input)
         .par_iter()
         .map(|pos| {
-            if input.0.get_unmut_cell(&pos) == Cell::Obstruction {
+            if input.0.get_unmut_cell(pos) == Cell::Obstruction {
                 return 0;
             }
 

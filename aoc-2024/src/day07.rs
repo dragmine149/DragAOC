@@ -1,7 +1,7 @@
 use crate::utils::{Incrementer, Length};
 use aoc_runner_derive::{aoc, aoc_generator};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-use std::{collections::HashMap, u64};
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum Operation {
@@ -143,7 +143,7 @@ fn check_if_calculate_2(input: &(u64, Vec<u64>), part2: bool) -> bool {
 }
 
 #[allow(dead_code)]
-fn check_if_calculate_3(goal: u64, numbers: &Vec<u64>, part2: bool) -> bool {
+fn check_if_calculate_3(goal: u64, numbers: &[u64], part2: bool) -> bool {
     // println!("Goal: {:?}. Numbers: {:?}.", goal, numbers);
     let mut operations: Incrementer<Operation> =
         Incrementer::new(Operation::Addition, numbers.len() - 1);
@@ -160,7 +160,7 @@ fn check_if_calculate_3(goal: u64, numbers: &Vec<u64>, part2: bool) -> bool {
         //     &operations[0..operations.len().saturating_sub(count)]
         // );
         let cache_value = cache
-            .get(&operations[0..operations.len().saturating_sub(count)].to_vec())
+            .get(&operations[0..operations.len().saturating_sub(count)])
             .unwrap_or(&u64::MAX);
         if *cache_value != u64::MAX {
             // match operations[operations.len().saturating_sub(count)] {
