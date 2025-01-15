@@ -1,12 +1,29 @@
-use crate::utils::Wrapper;
+use crate::utils::{Incrementer, Length};
 use aoc_runner_derive::{aoc, aoc_generator};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+use std::{collections::HashMap, u64};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum Operation {
     Addition,
     Multiplication,
     Concatenation,
+}
+
+impl Operation {
+    fn wrap(&self, part2: bool) -> Self {
+        match self {
+            Operation::Addition => Operation::Multiplication,
+            Operation::Multiplication => {
+                if part2 {
+                    Operation::Concatenation
+                } else {
+                    Operation::Addition
+                }
+            }
+            Operation::Concatenation => Operation::Addition,
+        }
+    }
 }
 
 #[aoc_generator(day7)]
@@ -84,12 +101,17 @@ fn part1(input: &[(u64, Vec<u64>)]) -> u64 {
 fn check_if_calculate_2(input: &(u64, Vec<u64>), part2: bool) -> bool {
     let numbers = &input.1;
     // let mut operators: Vec<u8> = vec![0; numbers.len() + 2];
-    let mut operators: Wrapper<Operation> = Wrapper::new(Operation::Addition, numbers.len());
+    let mut operators: Incrementer<Operation> =
+        Incrementer::new(Operation::Addition, numbers.len());
 
     loop {
         // println!("---");
         let mut calculation = 0;
         for (index, number) in numbers.iter().enumerate() {
+            if calculation > input.0 {
+                break;
+            }
+
             // get operator
             let desired_operator = operators[index];
             if desired_operator == Operation::Addition {
@@ -109,22 +131,81 @@ fn check_if_calculate_2(input: &(u64, Vec<u64>), part2: bool) -> bool {
             }
         }
 
-        let end = operators.wrap(|v: &Operation| match v {
-            Operation::Addition => Operation::Multiplication,
-            Operation::Multiplication => {
-                if part2 {
-                    Operation::Concatenation
-                } else {
-                    Operation::Addition
-                }
-            }
-            Operation::Concatenation => Operation::Addition,
-        });
+        let end = operators.wrap(|v: &Operation| v.wrap(part2));
 
         if calculation == input.0 {
             break true;
         }
-        if end {
+        if end == operators.len() {
+            break false;
+        }
+    }
+}
+
+#[allow(dead_code)]
+fn check_if_calculate_3(goal: u64, numbers: &Vec<u64>, part2: bool) -> bool {
+    // println!("Goal: {:?}. Numbers: {:?}.", goal, numbers);
+    let mut operations: Incrementer<Operation> =
+        Incrementer::new(Operation::Addition, numbers.len() - 1);
+    let mut cache: HashMap<Vec<Operation>, u64> = HashMap::new();
+    let mut count = numbers.len();
+    loop {
+        let mut calculation = 0;
+        let mut iter = numbers.iter().enumerate();
+        calculation += iter.next().unwrap().1;
+        // iter.next();
+
+        // println!(
+        //     "Cache: {:?}",
+        //     &operations[0..operations.len().saturating_sub(count)]
+        // );
+        let cache_value = cache
+            .get(&operations[0..operations.len().saturating_sub(count)].to_vec())
+            .unwrap_or(&u64::MAX);
+        if *cache_value != u64::MAX {
+            // match operations[operations.len().saturating_sub(count)] {
+            //     Operation::Addition => calculation = *cache_value,
+            //     Operation::Multiplication => calculation = *cache_value,
+            //     Operation::Concatenation => {
+            //         calculation = cache_value.number_length() as u64 + cache_value
+            //     }
+            // }
+            calculation = *cache_value;
+
+            iter.nth(operations.len().saturating_sub(count) - 1);
+        }
+        // println!("{:?}", calculation);
+        // println!("{:?}", operations);
+
+        for (index, number) in iter {
+            // println!("op: {:?}", operations[index - 1]);
+            // println!("idx: {:?}, num: {:?}", index, number);
+            match operations[index - 1] {
+                Operation::Addition => calculation += number,
+                Operation::Multiplication => calculation *= number,
+                Operation::Concatenation => {
+                    calculation = calculation * number.number_length() as u64 + number
+                }
+            }
+            // println!("{:?}", calculation);
+            if calculation > goal {
+                break;
+            }
+            if index != operations.len() {
+                // prevents having "useless ones" included
+                cache.insert(operations[0..index].to_vec(), calculation);
+            }
+        }
+
+        // println!("{:?}", calculation);
+        // println!("{:?}", cache);
+
+        if calculation == goal {
+            break true;
+        }
+        count = operations.wrap(|v| v.wrap(part2));
+
+        if count == operations.len() + 1 {
             break false;
         }
     }
@@ -137,6 +218,7 @@ fn part2(input: &[(u64, Vec<u64>)]) -> u64 {
         // .iter()
         .map(|calc| {
             if check_if_calculate_2(calc, true) {
+                // if check_if_calculate_3(calc.0, &calc.1, true) {
                 calc.0
             } else {
                 0
@@ -168,5 +250,42 @@ mod tests {
     #[test]
     fn part2_example() {
         assert_eq!(part2(&parse(EXAMPLE_1)), 11387);
+    }
+
+    #[test]
+    fn part2_example_1() {
+        assert_eq!(part2(&parse("190: 10 19")), 190);
+    }
+    #[test]
+    fn part2_example_2() {
+        assert_eq!(part2(&parse("3267: 81 40 27")), 3267);
+    }
+    #[test]
+    fn part2_example_3() {
+        assert_eq!(part2(&parse("83: 17 5")), 0);
+    }
+    #[test]
+    fn part2_example_4() {
+        assert_eq!(part2(&parse("156: 15 6")), 156);
+    }
+    #[test]
+    fn part2_example_5() {
+        assert_eq!(part2(&parse("7290: 6 8 6 15")), 7290);
+    }
+    #[test]
+    fn part2_example_6() {
+        assert_eq!(part2(&parse("161011: 16 10 13")), 0);
+    }
+    #[test]
+    fn part2_example_7() {
+        assert_eq!(part2(&parse("192: 17 8 14")), 192);
+    }
+    #[test]
+    fn part2_example_8() {
+        assert_eq!(part2(&parse("21037: 9 7 18 13")), 0);
+    }
+    #[test]
+    fn part2_example_9() {
+        assert_eq!(part2(&parse("292: 11 6 16 20")), 292);
     }
 }

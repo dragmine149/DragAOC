@@ -100,7 +100,7 @@ fn get_default_time(grid: &mut Grid<Cell>, start: Position, end: Position) -> (u
     let mut path: Vec<Position> = vec![current_pos];
     while current_pos != end {
         // println!("Cell: {:?}", current_pos);
-        let valid = current_pos.get_neighbours(&grid.get_size());
+        let valid = current_pos.get_neighbours(&grid.get_size(), false);
         for v in valid {
             let cell = grid.get_cell(&v);
             // println!("{:#?}", cell);
@@ -118,7 +118,7 @@ fn get_default_time(grid: &mut Grid<Cell>, start: Position, end: Position) -> (u
 
 fn cheat(grid: &Grid<Cell>, location: &Position) -> Vec<u64> {
     let grid_size: Position = grid.get_size();
-    let valid = location.get_valid(&grid_size);
+    let valid = location.get_valid(&grid_size, false);
     let local_score = grid.get_unmut_cell(location).score;
     let mut score: Vec<u64> = vec![0, 0, 0, 0];
 
@@ -129,7 +129,7 @@ fn cheat(grid: &Grid<Cell>, location: &Position) -> Vec<u64> {
             continue;
         }
 
-        if !pos.get_valid_directions(&grid_size).contains(&dir) {
+        if !pos.get_valid_directions(&grid_size, false).contains(&dir) {
             score[dir.index()] = u64::MAX;
             continue;
         }
