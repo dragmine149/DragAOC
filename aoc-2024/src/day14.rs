@@ -1,5 +1,4 @@
 use aoc_runner_derive::{aoc, aoc_generator};
-use rayon::iter::{IntoParallelRefIterator, IntoParallelRefMutIterator, ParallelIterator};
 use regex::Regex;
 use std::fmt;
 
@@ -158,7 +157,7 @@ fn check_for_line(robots: &[Robot], grid_size: Position) -> bool {
 #[allow(dead_code)]
 fn check_quadrant(robots: &[Robot], grid_size: Position) -> bool {
     let robots_in_quadrants = robots
-        .par_iter()
+        .iter()
         .map(|robot| robot.get_quadrant(grid_size))
         .collect::<Vec<u8>>();
 
@@ -225,14 +224,14 @@ fn process_robots(input: &[Robot], grid_size: Position) -> usize {
     // debug_grid(&robots, grid_size, false);
     for _second in 0..100 {
         robots
-            .par_iter_mut()
+            .iter_mut()
             .for_each(|robot| robot.move_robot(grid_size));
         // println!("Second: {:?}", second);
         // debug_grid(&robots, grid_size, false);
     }
 
     let robots_in_quadrants = robots
-        .par_iter()
+        .iter()
         .map(|robot| robot.get_quadrant(grid_size))
         .collect::<Vec<u8>>();
 
@@ -255,7 +254,7 @@ fn find_tree(input: &[Robot], grid_size: Position) -> bool {
     while !line {
         // time += 1;
         robots
-            .par_iter_mut()
+            .iter_mut()
             .for_each(|robot| robot.move_robot(grid_size));
         // line = check_for_line(&robots, grid_size);
         line = check_quadrant(&robots, grid_size);
