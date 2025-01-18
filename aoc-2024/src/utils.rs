@@ -157,8 +157,12 @@ impl Position {
         // generate all points within a max_distance * 2 + 1 area
         ((self.0 as isize - max_isize)..=(self.0 as isize + max_isize))
             .flat_map(move |x_dist| {
-                ((self.1 as isize - max_isize)..=(self.1 as isize + max_isize))
-                    .map(move |y_dist| Position(x_dist as usize, y_dist as usize))
+                ((self.1 as isize - max_isize)..=(self.1 as isize + max_isize)).map(move |y_dist| {
+                    Position(
+                        (x_dist as usize).clamp(0, grid_size.0),
+                        (y_dist as usize).clamp(0, grid_size.1),
+                    )
+                })
             })
             .map(|position| (position, self.manhattan_distance(&position)))
             // filter out those not in the area
