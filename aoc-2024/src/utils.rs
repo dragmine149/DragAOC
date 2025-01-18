@@ -70,6 +70,13 @@ impl Position {
         Self(0, 0)
     }
 
+    pub fn from_id(id: &usize, max_size: &usize) -> Self {
+        Position(id % max_size, id / max_size)
+    }
+    pub fn to_id(self, max_size: usize) -> usize {
+        self.1 * max_size + self.0
+    }
+
     pub const MAX: Self = Self(usize::MAX, usize::MAX);
 
     /// get all our neighbours. (In all Directions)
@@ -175,7 +182,7 @@ impl Position {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash)]
 pub enum Direction {
     North,
     East,
@@ -284,6 +291,28 @@ impl Direction {
             }
         }
     }
+
+    pub fn all(diagonal: bool) -> Vec<Direction> {
+        if !diagonal {
+            vec![
+                Direction::North,
+                Direction::East,
+                Direction::South,
+                Direction::West,
+            ]
+        } else {
+            vec![
+                Direction::North,
+                Direction::NorthEast,
+                Direction::East,
+                Direction::SouthEast,
+                Direction::South,
+                Direction::SouthWest,
+                Direction::West,
+                Direction::NorthWest,
+            ]
+        }
+    }
 }
 
 pub struct Grid<T>(pub Vec<Vec<T>>);
@@ -348,14 +377,12 @@ impl<T: std::clone::Clone> Grid<T> {
     /// create a grid from a string. Useful for loading from files.
     ///
     /// [translation] is a user-provided method to take the char and translate it into whatever the grid needs to be.
-    pub fn from_str<F: Fn(char) -> T>(s: &str, default_arg: T, translation: F) -> Self {
-        let mut grid = Self::new(
-            &Position::from(s.lines().nth(0).unwrap().len()),
-            default_arg,
-        );
+    pub fn from_str<F: Fn(&char) -> T>(s: &str, default_arg: T, translation: F) -> Self {
+        let size = s.lines().count().max(s.lines().nth(0).unwrap().len());
+        let mut grid = Self::new(&Position::from(size), default_arg);
         s.lines().enumerate().for_each(|(y, line)| {
             line.chars().enumerate().for_each(|(x, char)| {
-                grid.set_cell(&Position(x, y), translation(char));
+                grid.set_cell(&Position(x, y), translation(&char));
             });
         });
         grid
@@ -413,12 +440,27 @@ impl<T: std::clone::Clone> Grid<T> {
         self[pos.1][pos.0].to_owned()
     }
 
+    pub fn get_cell_refrence(&self, pos: &Position) -> &T {
+        &self[pos.1][pos.0]
+    }
+
     /// returns the size of the grid
     pub fn get_size(&self) -> Position {
         Position(
             self.first().expect("Failed to get first row").len(),
             self.len(),
         )
+    }
+
+    pub fn find_cell<P: FnMut(&T) -> bool>(&self, predicate: P) -> Option<T> {
+        self.iter_unmut_cells().into_iter().find(predicate)
+    }
+
+    pub fn cell_position<P: FnMut(T) -> bool>(&self, predicate: P) -> Option<Position> {
+        self.iter_unmut_cells()
+            .into_iter()
+            .position(predicate)
+            .map(|v| Position::from_id(&v, &self.get_size().1))
     }
 
     /// loop over all unmutable cell values
@@ -575,4 +617,10 @@ impl Length for usize {
     fn number_length(&self) -> u8 {
         10_u64.pow(((self + 1) as f64).log10().ceil() as u32) as u8
     }
+}
+
+#[allow(dead_code)]
+pub fn print_and_return<T: std::fmt::Debug>(v: T) -> T {
+    println!("{:?}", v);
+    v
 }

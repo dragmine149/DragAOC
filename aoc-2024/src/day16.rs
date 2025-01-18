@@ -1,16 +1,34 @@
+use crate::utils::{Direction, Grid, Position};
 use aoc_runner_derive::{aoc, aoc_generator};
-use core::fmt;
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use itertools::Itertools;
+use std::{
+    cmp::Ordering,
+    collections::{BinaryHeap, HashMap, HashSet},
+};
 
-use crate::utils::{Direction, Position};
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 enum Cell {
     Empty,
     Wall,
     Visited,
     Start,
     End,
+}
+
+impl std::fmt::Debug for Cell {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Cell::Empty => '.',
+                Cell::Wall => '#',
+                Cell::Visited => 'O',
+                Cell::Start => 'S',
+                Cell::End => 'E',
+            }
+        )
+    }
 }
 
 impl Direction {
@@ -49,444 +67,208 @@ impl Direction {
         }
     }
 }
-// Stores each cell direction and the value assigned to this cell from that direction.
-#[derive(Debug, Clone, Copy)]
-struct MapData {
-    north: u64,
-    east: u64,
-    south: u64,
-    west: u64,
+
+trait Count {
+    fn corner_count(&self) -> u64;
+    fn forward_score(&self) -> u64;
 }
 
-impl MapData {
-    fn new() -> Self {
-        // using max values as we can then replace them with lower values (and not have 0 everywhere which will cause issues)
-        MapData {
-            north: u64::MAX,
-            east: u64::MAX,
-            south: u64::MAX,
-            west: u64::MAX,
-        }
+impl Count for u64 {
+    fn corner_count(&self) -> u64 {
+        self / 1000
     }
 
-    fn get_direction_score(self, direction: Direction) -> u64 {
-        match direction {
-            Direction::North => self.north,
-            Direction::East => self.east,
-            Direction::South => self.south,
-            Direction::West => self.west,
-            _ => panic!("Invalid direction"),
-        }
-    }
-
-    fn get_smallest_num(&self) -> u64 {
-        let mut smallest = self.north;
-        if self.east < smallest {
-            smallest = self.east;
-        }
-        if self.south < smallest {
-            smallest = self.south;
-        }
-        if self.west < smallest {
-            smallest = self.west;
-        }
-        smallest
-    }
-
-    // set the direction and the score that came with it
-    fn set_direction(&mut self, direction: Direction, score: u64) {
-        match direction {
-            Direction::North => self.north = score,
-            Direction::East => self.east = score,
-            Direction::South => self.south = score,
-            Direction::West => self.west = score,
-            _ => panic!("Invalid direction"),
-        }
-    }
-
-    // using the current score, check if any path is either the same or 1 turn away and is either the same or 1 score away
-    fn get_directions_from_score(&self, score: u64) -> Vec<Direction> {
-        let corners = get_corner_count(score);
-        let score = get_forward_score(score);
-        let mut directions = vec![];
-
-        // println!();
-        // println!("Score: {:?}, Corners: {:?}", score, corners);
-        // println!("Self: {:?}", self);
-        // println!();
-
-        if (get_forward_score(self.north) == score || get_forward_score(self.north) == score - 1)
-            && (get_corner_count(self.north) == corners
-                || get_corner_count(self.north) == corners - 1)
-        {
-            directions.push(Direction::South);
-        }
-        if (get_forward_score(self.east) == score || get_forward_score(self.east) == score - 1)
-            && (get_corner_count(self.east) == corners
-                || get_corner_count(self.east) == corners - 1)
-        {
-            directions.push(Direction::West);
-        }
-        if (get_forward_score(self.south) == score || get_forward_score(self.south) == score - 1)
-            && (get_corner_count(self.south) == corners
-                || get_corner_count(self.south) == corners - 1)
-        {
-            directions.push(Direction::North);
-        }
-        if (get_forward_score(self.west) == score || get_forward_score(self.west) == score - 1)
-            && (get_corner_count(self.west) == corners
-                || get_corner_count(self.west) == corners - 1)
-        {
-            directions.push(Direction::East);
-        }
-
-        directions
+    fn forward_score(&self) -> u64 {
+        self % 1000
     }
 }
 
-#[derive(Clone)]
-struct Map {
-    grid: Vec<Vec<Cell>>,
-    score: Vec<Vec<MapData>>,
-}
-
-impl fmt::Debug for Map {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            self.grid
-                .to_owned()
-                .into_par_iter()
-                .map(|line| {
-                    let mut a = line
-                        .into_par_iter()
-                        .map(|pos| match pos {
-                            Cell::Wall => "#",
-                            Cell::Empty => " ",
-                            Cell::Start => "S",
-                            Cell::End => "E",
-                            Cell::Visited => "*",
-                        })
-                        .collect::<String>();
-                    a.push('\n');
-                    a
-                })
-                .collect::<String>()
-        )
-    }
-}
-
-fn get_corner_count(num: u64) -> u64 {
-    num / 1000
-}
-
-fn get_forward_score(num: u64) -> u64 {
-    num % 1000
-}
-
-impl Map {
-    fn new(input: &str) -> Self {
-        let grid = input
-            .trim()
-            .lines()
-            .map(|line| {
-                line.chars()
-                    .map(|char| match char {
-                        '#' => Cell::Wall,
-                        '.' => Cell::Empty,
-                        'S' => Cell::Start,
-                        'E' => Cell::End,
-                        _ => panic!("Invalid character in maze input"),
-                    })
-                    .collect::<Vec<Cell>>()
-            })
-            .collect::<Vec<Vec<Cell>>>();
-        let score = vec![
-            vec![MapData::new(); grid.first().expect("Failed to get first row").len()];
-            grid.len()
-        ];
-        Map { grid, score }
-    }
-
-    #[allow(dead_code)]
-    fn debug_score(&self, digit_count: usize) {
-        for line in self.score.iter() {
-            let info = line
+// using the current score, check if any path is either the same or 1 turn away and is either the same or 1 score away
+fn get_directions_from_score<'a>(
+    cells: &'a HashMap<(Position, Direction), u64>,
+    position: &'a Position,
+    score: u64,
+) -> impl IntoIterator<Item = (Position, Direction, u64)> + 'a {
+    Direction::all(false)
+        .into_iter()
+        .flat_map(|dir| {
+            let p = position.next_pos(&dir.inverse());
+            cells
                 .iter()
-                .map(|cell| {
-                    let cell_score = cell.get_smallest_num();
-                    if cell_score == 0 {
-                        " ".repeat(digit_count + 1)
-                    } else {
-                        format!("{:0>width$} ", cell_score, width = digit_count).to_string()
-                    }
-                })
-                .collect::<String>();
-            println!("{:?}", info);
-        }
-    }
-
-    // visit a cell
-    fn visit_cell(&mut self, pos: &Position, score: u64, from_dir: &Direction) {
-        if self.get_cell(pos) != Cell::Start && self.get_cell(pos) != Cell::End {
-            // don't override the start and end pos
-            self.grid[pos.0][pos.1] = Cell::Visited;
-        }
-        if score != u64::MAX {
-            // don't set the score if it's insanely high. Aka for p2
-            self.score[pos.0][pos.1].set_direction(*from_dir, score);
-        }
-    }
-
-    fn has_visited(&mut self, pos: &Position) -> bool {
-        self.grid[pos.0][pos.1] == Cell::Visited
-    }
-
-    // reset the map of all visited cells
-    fn clear_map(&mut self) {
-        let y_size = self.grid.len();
-        let x_size = self.grid.first().expect("Failed to get first row").len();
-
-        for y in 0..y_size {
-            for x in 0..x_size {
-                let pos = &Position(y, x);
-                if self.get_cell(pos) == Cell::Visited {
-                    self.grid[y][x] = Cell::Empty;
-                }
-            }
-        }
-    }
-
-    // find the first cell in the map of the specified type
-    fn find_first_cell_of_type(&self, cell_type: &Cell) -> Position {
-        for (line_index, line) in self.grid.iter().enumerate() {
-            for (pos_index, pos) in line.iter().enumerate() {
-                if pos == cell_type {
-                    return Position(line_index, pos_index);
-                }
-            }
-        }
-
-        Position(0, 0)
-    }
-
-    fn get_cell(&self, pos: &Position) -> Cell {
-        self.grid[pos.0][pos.1]
-    }
-
-    fn get_score(&self, pos: &Position) -> u64 {
-        self.score[pos.0][pos.1].get_smallest_num()
-    }
-
-    fn get_score_data(&self, pos: &Position) -> MapData {
-        self.score[pos.0][pos.1]
-    }
-
-    // check if the cell isn't a wall...
-    fn can_move(&self, pos: &Position, dir: &Direction) -> bool {
-        let destination = pos.next_pos(dir);
-        // println!("{:?}", pos);
-        // println!("{:?}", destination);
-        self.get_cell(&destination) != Cell::Wall
-    }
-
-    // get all possible directions of movement
-    fn get_possible_directions(&self, pos: &Position, from_dir: &Direction) -> Vec<Direction> {
-        // println!("{:?}", self);
-
-        let north = self.can_move(pos, &Direction::North);
-        let east = self.can_move(pos, &Direction::East);
-        let south = self.can_move(pos, &Direction::South);
-        let west = self.can_move(pos, &Direction::West);
-
-        // println!(
-        //     "N: {:?}, E: {:?}, S: {:?}, W: {:?}",
-        //     north, east, south, west
-        // );
-
-        let mut directions: Vec<Direction> = vec![];
-        if north && from_dir != &Direction::North {
-            directions.push(Direction::North);
-        }
-        if east && from_dir != &Direction::East {
-            directions.push(Direction::East);
-        }
-        if south && from_dir != &Direction::South {
-            directions.push(Direction::South);
-        }
-        if west && from_dir != &Direction::West {
-            directions.push(Direction::West);
-        }
-
-        directions
-    }
-
-    // a messy function, start from the end and keep going until we found all points to the start.
-    fn get_best_path_count(
-        &mut self,
-        mut pos: Position,
-        from_dir: &Direction,
-        start_score: u64,
-    ) -> u64 {
-        if self.has_visited(&pos) {
-            return 0;
-        }
-
-        let score = get_forward_score(self.get_score(&pos));
-
-        if score == 0 {
-            return 1; // reached our destination.
-        }
-
-        let mut count = 1; // 1, aka ourselfs
-        self.visit_cell(&pos, u64::MAX, from_dir);
-
-        // println!("Score: {:?}", self.get_score(&pos));
-        // println!("Cell: {:?}", self.get_score_data(&pos));
-
-        let mut path: Vec<(Position, Direction, u64)> = vec![];
-        for dir in self
-            .get_score_data(&pos)
-            .get_directions_from_score(start_score)
-        {
-            path.push((pos, dir, start_score));
-        }
-
-        // println!("Directions: {:?}", path);
-        while let Some(info) = path.pop() {
-            pos = info.0.next_pos(&info.1);
-
-            // println!("Processing: {:?}", info);
-            if self.has_visited(&pos) {
-                // println!("Visited: {:?}", info);
-                continue;
-            }
-            if get_forward_score(self.get_score(&pos)) == 0 {
-                // println!("Info is start: {:?}", info);
-                continue;
-            }
-
-            self.visit_cell(&pos, u64::MAX, &Direction::North);
-            count += 1;
-
-            // println!("Data: {:?}", self.get_score_data(&pos));
-            // println!(
-            //     "Directions: {:?}",
-            //     self.get_score_data(&pos).get_directions_from_score(info.2)
-            // );
-            for dir in self.get_score_data(&pos).get_directions_from_score(info.2) {
-                // println!("Adding dir '{:?}' to list", dir);
-                path.push((
-                    pos,
-                    dir,
-                    self.get_score_data(&pos).get_direction_score(dir.inverse()),
-                ));
-            }
-        }
-
-        count + 1
-    }
+                .filter(|c| c.0 .0 == p)
+                .map(|c| (c.0 .0, c.0 .1, *c.1))
+                .collect_vec()
+        })
+        .filter(move |(_pos, _dir, dir_score)| {
+            (dir_score.forward_score() == score.forward_score()
+                || dir_score.forward_score() == score.forward_score() - 1)
+                && (dir_score.corner_count() == score.corner_count()
+                    || dir_score.corner_count() == score.corner_count() - 1)
+        })
 }
 
-#[derive(Debug, Clone, Copy)]
-struct Reindeer {
+// Search in reverse to get the count of all the best paths
+fn get_best_path_count(cells: HashMap<(Position, Direction), u64>, goal: Position) -> u64 {
+    let valid_cells = cells
+        .iter()
+        .filter(|c| {
+            c.1 <= cells
+                .iter()
+                .filter(|c| c.0 .0 == goal)
+                .map(|c| c.1)
+                .min()
+                .unwrap_or(&0)
+        })
+        .map(|((p, d), s)| ((*p, *d), *s))
+        .collect::<HashMap<(Position, Direction), u64>>();
+
+    let mut path: BinaryHeap<(Position, Direction)> = BinaryHeap::new();
+    let mut visited: HashSet<(Position, Direction)> = HashSet::new();
+    valid_cells.iter().filter(|c| c.0 .0 == goal).for_each(|c| {
+        path.push(*c.0);
+    });
+
+    while let Some((pos, dir)) = path.pop() {
+        visited.insert((pos, dir));
+        let cell_score = valid_cells
+            .iter()
+            .filter(|c| c.0 .0 == pos && c.0 .1 == dir)
+            .map(|c| *c.1)
+            .min()
+            .unwrap_or(u64::MAX);
+        if cell_score == 0 {
+            // well, we've reached a 0 cell. Most likely the start
+            continue;
+        }
+
+        get_directions_from_score(&valid_cells, &pos, cell_score)
+            .into_iter()
+            .filter(|(pos, dir, _)| !visited.contains(&(*pos, *dir)))
+            .for_each(|(pos, dir, _)| {
+                path.push((pos, dir));
+            });
+    }
+
+    let mut result: HashSet<Position> = HashSet::new();
+    visited.iter().for_each(|v| {
+        result.insert(v.0);
+    });
+
+    result.len() as u64
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+struct Data {
     pos: Position,
-    rot: Direction,
+    dir: Direction,
+    score: u64,
 }
 
-impl Reindeer {
-    // move the reindeer everywhere, aka make the map.
-    fn move_reindeer(&mut self, map: &mut Map, score: u64) {
-        if map.get_cell(&self.pos) == Cell::End {
-            // println!("Found end of map!");
-            map.visit_cell(&self.pos, score, &self.rot);
-            return;
-        }
-
-        if map.has_visited(&self.pos)
-            && map.get_score_data(&self.pos).get_direction_score(self.rot) <= score
-        {
-            return;
-        }
-
-        map.visit_cell(&self.pos, score, &self.rot);
-
-        let directions = map.get_possible_directions(&self.pos, &self.rot.inverse());
-        // println!("Possible directions to go: {:?}", directions);
-        if directions.is_empty() {
-            // println!("Dead end reached!");
-            return;
-        }
-
-        if directions.len() == 1 {
-            // println!("Heading {:?} (only option)", directions[0]);
-            let cost = self.rot.get_score_from_rotation(directions[0]);
-            self.rot = directions[0];
-            self.pos = self.pos.next_pos(&self.rot);
-
-            self.move_reindeer(map, score + cost);
-            return;
-        }
-
-        let original_dir = self.rot;
-        let original_pos = self.pos;
-        for direction in directions.iter() {
-            // println!("Searching: {:?}", direction);
-
-            let cost = original_dir.get_score_from_rotation(*direction);
-            self.rot = *direction;
-            self.pos = self.pos.next_pos(direction);
-
-            self.move_reindeer(map, score + cost);
-            self.pos = original_pos;
-            self.rot = original_dir;
-        }
+impl Ord for Data {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.score.cmp(&other.score).reverse()
     }
+}
+impl PartialOrd for Data {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+// Visits every single cell and gives them a score
+fn get_cells(map: &Grid<Cell>) -> HashMap<(Position, Direction), u64> {
+    // find the start cell and map size
+    let s = map.cell_position(|v: Cell| v == Cell::Start).unwrap();
+    let grid_size = &map.get_size();
+
+    // set up the storages
+    let mut positions: HashMap<(Position, Direction), u64> = HashMap::new();
+    let mut to_seach = BinaryHeap::new();
+    let mut previous: Data = Data {
+        pos: Position::empty(),
+        dir: Direction::East,
+        score: 0,
+    };
+    to_seach.push(Data {
+        pos: s,
+        dir: Direction::East,
+        score: 0,
+    });
+    // looping, using smallest score first
+    while let Some(data) = to_seach.pop() {
+        // In case it gets added during the loop, just check the score once again here.
+        // Otherwise we get some really weird cases.
+        // Would love to check during the loop, but that is harder to do without making things overly complicated.
+        if positions.get(&(data.pos, data.dir)).unwrap_or(&u64::MAX) < &data.score {
+            continue;
+        }
+
+        // valid cell and searched hence add
+        positions.insert((data.pos, data.dir), data.score);
+        data.pos
+            // get possible directions
+            .get_valid_directions(grid_size, false)
+            .iter()
+            // map with position
+            .map(|dir| (data.pos.next_pos(dir), dir))
+            // remove those positions which end up being blocked
+            .filter(|(pos, _)| *map.get_cell_refrence(pos) != Cell::Wall)
+            // Ignore the square we just came from. Kinda no need to back track.
+            .filter(|(pos, _)| *pos != previous.pos)
+            // remove those positions where we have already visited from that direction.
+            // Score is not worried due to an eariler check and score being processed by smallest first.
+            .filter(|(pos, dir)| !positions.contains_key(&(*pos, **dir)))
+            // map everything
+            .map(|(pos, new_dir)| {
+                (
+                    pos,
+                    new_dir,
+                    data.score + data.dir.get_score_from_rotation(*new_dir),
+                )
+            })
+            // insert it back into the list
+            .for_each(|(pos, dir, score)| {
+                to_seach.push(Data {
+                    pos,
+                    dir: *dir,
+                    score,
+                });
+            });
+        previous = data;
+    }
+    positions
 }
 
 #[aoc_generator(day16)]
-fn parse(input: &str) -> (Map, Reindeer) {
-    let map = Map::new(input);
-    let reindeer_pos = map.find_first_cell_of_type(&Cell::Start);
-
-    (
-        map,
-        Reindeer {
-            pos: reindeer_pos,
-            rot: Direction::East,
-        },
-    )
+fn parse(input: &str) -> Grid<Cell> {
+    Grid::from_str(input, Cell::Empty, |c| match c {
+        '#' => Cell::Wall,
+        '.' => Cell::Empty,
+        'S' => Cell::Start,
+        'E' => Cell::End,
+        'O' => Cell::Visited,
+        _ => panic!("Invalid cell!"),
+    })
 }
 
 #[aoc(day16, part1)]
-fn part1(input: &(Map, Reindeer)) -> u64 {
-    let mut map = input.0.to_owned();
-    let mut reindeer = input.1.to_owned();
-
-    reindeer.move_reindeer(&mut map, 0);
-
-    let goal = map.find_first_cell_of_type(&Cell::End);
-    // println!("{:#?}", map.score);
-    // println!("Goal: {:?}", goal);
-    // map.debug_score(6);
-    map.get_score(&goal)
+fn part1(input: &Grid<Cell>) -> u64 {
+    let goal = input.cell_position(|v: Cell| v == Cell::End).unwrap();
+    let cells = get_cells(input);
+    *cells
+        .iter()
+        .filter(|c| c.0 .0 == goal)
+        .map(|c| c.1)
+        .min()
+        .unwrap_or(&0)
 }
 
 #[aoc(day16, part2)]
-fn part2(input: &(Map, Reindeer)) -> u64 {
-    let mut map = input.0.to_owned();
-    let mut reindeer = input.1.to_owned();
+fn part2(input: &Grid<Cell>) -> u64 {
+    let goal = input.cell_position(|v: Cell| v == Cell::End).unwrap();
+    let cells = get_cells(input);
 
-    reindeer.move_reindeer(&mut map, 0);
-    map.clear_map(); // clear the map of visited cells ready to be visited by scoring algorithm.
-
-    let goal = map.find_first_cell_of_type(&Cell::End);
-    // map.debug_score(5);
-
-    // println!("Goal: {:?}", goal);
-    map.get_best_path_count(goal, &Direction::East, map.get_score(&goal))
-    // 0
+    get_best_path_count(cells, goal)
 }
 
 #[cfg(test)]
@@ -529,6 +311,30 @@ mod tests {
 #################
 ";
 
+    const TEST_1: &str = "###########
+#.#.#E....#
+#.#.#####.#
+#...#...#.#
+###.#.#.#.#
+#...#.#.#.#
+#####.#.#.#
+#...#.....#
+#.#.#.###.#
+#.#...#...#
+#.###.#.#.#
+#...#.#...#
+#.#.#.###.#
+#.#.#.....#
+#.#.#####.#
+#.#.#...#.#
+###.#.#.#.#
+#...#.#...#
+#.#.#.###.#
+#.#.#.#...#
+#.###.#.#.#
+#S......#.#
+###########";
+
     #[test]
     fn part1_example1() {
         assert_eq!(part1(&parse(EXAMPLE_1)), 7036);
@@ -547,5 +353,15 @@ mod tests {
     #[test]
     fn part2_example2() {
         assert_eq!(part2(&parse(EXAMPLE_2)), 64);
+    }
+
+    #[test]
+    fn part1_test1() {
+        assert_eq!(part1(&parse(TEST_1)), 4032);
+    }
+
+    #[test]
+    fn part2_test1() {
+        assert_eq!(part2(&parse(TEST_1)), 33);
     }
 }
