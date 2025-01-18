@@ -109,16 +109,15 @@ fn get_directions_from_score<'a>(
 
 // Search in reverse to get the count of all the best paths
 fn get_best_path_count(cells: HashMap<(Position, Direction), u64>, goal: Position) -> u64 {
+    let goal_score = cells
+        .iter()
+        .filter(|c| c.0 .0 == goal)
+        .map(|c| c.1)
+        .min()
+        .unwrap_or(&u64::MAX);
     let valid_cells = cells
         .iter()
-        .filter(|c| {
-            c.1 <= cells
-                .iter()
-                .filter(|c| c.0 .0 == goal)
-                .map(|c| c.1)
-                .min()
-                .unwrap_or(&0)
-        })
+        .filter(|c| c.1 <= goal_score)
         .map(|((p, d), s)| ((*p, *d), *s))
         .collect::<HashMap<(Position, Direction), u64>>();
 
@@ -134,7 +133,7 @@ fn get_best_path_count(cells: HashMap<(Position, Direction), u64>, goal: Positio
             .iter()
             .filter(|c| c.0 .0 == pos && c.0 .1 == dir)
             .map(|c| *c.1)
-            .min()
+            .next()
             .unwrap_or(u64::MAX);
         if cell_score == 0 {
             // well, we've reached a 0 cell. Most likely the start
@@ -149,12 +148,7 @@ fn get_best_path_count(cells: HashMap<(Position, Direction), u64>, goal: Positio
             });
     }
 
-    let mut result: HashSet<Position> = HashSet::new();
-    visited.iter().for_each(|v| {
-        result.insert(v.0);
-    });
-
-    result.len() as u64
+    visited.iter().map(|v| v.0).unique().count() as u64
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
