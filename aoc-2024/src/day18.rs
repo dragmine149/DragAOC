@@ -122,7 +122,7 @@ fn pathfinding(grid: &mut Grid<Cell>, size: Position) {
         cell.visited = true;
 
         // find neighbours and repeat
-        let positions = pos.get_neighbours(&Position(size.0 - 1, size.1 - 1), false);
+        let positions = pos.get_neighbours(&Position(size.0, size.1), false);
         for posit in positions {
             heap.push(Reverse((posit, score + 1)));
         }
@@ -135,6 +135,7 @@ fn process_part1(input: &str, size: Position, byte_count: usize) -> u64 {
     pathfinding(&mut grid, size);
     // grid.debug_score();
     // return the end cell location as the score
+    // grid.debug_score();
     grid.get_cell(&Position(size.0 - 1, size.1 - 1)).score as u64
 }
 
@@ -179,7 +180,7 @@ fn get_path(grid: &mut Grid<Cell>, size: Position) -> Vec<Position> {
     // start at the end and work to the front
     let mut score = grid.get_cell(&pos).score;
     while score != 0 {
-        let options = pos.get_neighbours(&end_cell, false);
+        let options = pos.get_neighbours(&size, false);
         for option in options {
             let cell = grid.get_cell(&option);
             // println!("{:?} opt: {:?}", pos, option);
