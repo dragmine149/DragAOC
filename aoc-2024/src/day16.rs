@@ -89,16 +89,15 @@ fn get_directions_from_score<'a>(
     position: &'a Position,
     score: u64,
 ) -> impl IntoIterator<Item = (Position, Direction, u64)> + 'a {
-    Direction::all(false)
-        .into_iter()
-        .flat_map(|dir| {
-            let p = position.next_pos(&dir.inverse());
-            cells
-                .iter()
-                .filter(|c| c.0 .0 == p)
-                .map(|c| (c.0 .0, c.0 .1, *c.1))
-                .collect_vec()
-        })
+    let p1 = position.next_pos(&Direction::North);
+    let p2 = position.next_pos(&Direction::East);
+    let p3 = position.next_pos(&Direction::South);
+    let p4 = position.next_pos(&Direction::West);
+    let possible_cells = [p1, p2, p3, p4];
+    cells
+        .iter()
+        .filter(move |c| possible_cells.contains(&c.0 .0))
+        .map(|c| (c.0 .0, c.0 .1, *c.1))
         .filter(move |(_pos, _dir, dir_score)| {
             (dir_score.forward_score() == score.forward_score()
                 || dir_score.forward_score() == score.forward_score() - 1)
