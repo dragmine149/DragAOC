@@ -170,6 +170,32 @@ fn shop<F: Fn(&Item, &Item, &Item, &Item) -> u16>(result: F) -> u16 {
         .expect("Failed to get min of weapons")
 }
 
+fn shop_biased<F: Fn(&Item, &Item, &Item, &Item) -> u16>(result: F) -> u16 {
+    WEAPONS
+        .iter()
+        .map(|weapon| {
+            ARMORS
+                .iter()
+                .map(|armor| {
+                    RINGS
+                        .iter()
+                        .map(|ring| {
+                            RINGS
+                                .iter()
+                                .map(|ring2| result(weapon, armor, ring, ring2))
+                                .max()
+                                .expect("Failed to get min of ring 2")
+                        })
+                        .max()
+                        .expect("Failed to get min of ring 1")
+                })
+                .max()
+                .expect("Failed to get min of armors")
+        })
+        .max()
+        .expect("Failed to get min of weapons")
+}
+
 #[aoc(day21, part1)]
 fn part1(input: &Item) -> u16 {
     shop(|weapon, armor, ring, ring2| {
@@ -196,10 +222,31 @@ fn part1(input: &Item) -> u16 {
     })
 }
 
-// #[aoc(day21, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+#[aoc(day21, part2)]
+fn part2(input: &Item) -> u16 {
+    shop_biased(|weapon, armor, ring, ring2| {
+        if ring2 == ring {
+            return 0;
+        }
+
+        let self_status = Item {
+            cost: 100,
+            damage: weapon.damage + armor.damage + ring.damage + ring2.damage,
+            armor: weapon.armor + armor.armor + ring.armor + ring2.armor,
+        };
+        let result = fight(&self_status, input);
+        if result {
+            0
+        } else {
+            let cost = weapon.cost + armor.cost + ring.cost + ring2.cost;
+            // println!(
+            //     "Result of fighting with {:?}: {:?} ({:?}, {:?}, {:?}, {:?})",
+            //     self_status, cost, weapon, armor, ring, ring2
+            // );
+            cost
+        }
+    })
+}
 
 #[cfg(test)]
 mod tests {
@@ -223,9 +270,4 @@ mod tests {
             true
         );
     }
-
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
 }

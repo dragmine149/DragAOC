@@ -129,3 +129,14 @@ heqaabcc - Correct
 ### Part 1
 193 - Too Low
 518 - Correct
+
+
+## Day 21
+### Part 1
+- 111 - Too Low (but someone elses)
+- 131 - Too High
+- 121 - Correct
+
+### Part 2
+- 356 - Too High
+- 201 - Correct
