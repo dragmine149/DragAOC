@@ -1,0 +1,62 @@
+module Day1Part2z_NoMem (clk, rst);
+  parameter UUID = 0;
+  parameter NAME = "";
+  input wire clk;
+  input wire rst;
+
+
+  TC_Register # (.UUID(64'd4178573859148191576 ^ UUID), .BIT_WIDTH(64'd64)) Register64_0 (.clk(clk), .rst(rst), .load(wire_10), .save(wire_21), .in(wire_8), .out(wire_13));
+  TC_Add # (.UUID(64'd359763711881990385 ^ UUID), .BIT_WIDTH(64'd64)) Add64_1 (.in0({{56{1'b0}}, wire_15 }), .in1(wire_13), .ci(1'd0), .out(wire_8), .co());
+  TC_Register # (.UUID(64'd2413979704567083807 ^ UUID), .BIT_WIDTH(64'd64)) Register64_2 (.clk(clk), .rst(rst), .load(wire_18), .save(wire_24), .in(wire_12), .out(wire_5));
+  TC_Constant # (.UUID(64'd2793433701128027946 ^ UUID), .BIT_WIDTH(64'd64), .value(64'hFFFFFFFFFFFFFFFF)) Constant64_3 (.out(wire_7));
+  TC_Constant # (.UUID(64'd1184275376460161862 ^ UUID), .BIT_WIDTH(64'd1), .value(1'd1)) On_4 (.out(wire_18));
+  TC_Not # (.UUID(64'd4603214268349776896 ^ UUID), .BIT_WIDTH(64'd1)) Not_5 (.in(wire_3), .out(wire_24));
+  TC_Mux # (.UUID(64'd3836885967411031723 ^ UUID), .BIT_WIDTH(64'd64)) Mux64_6 (.sel(wire_3), .in0(wire_7), .in1(wire_13), .out(wire_6));
+  TC_FileLoader # (.UUID(64'd2193553924715941358 ^ UUID), .DEFAULT_FILE_NAME("day1")) FileLoader_7 (.clk(clk), .rst(rst), .en(wire_2), .address(wire_6), .out(wire_12));
+  TC_Switch # (.UUID(64'd4006497041254316547 ^ UUID), .BIT_WIDTH(64'd64)) Switch64_8 (.en(wire_11), .in(wire_0), .out(wire_1));
+  TC_LessU # (.UUID(64'd2412733997253528222 ^ UUID), .BIT_WIDTH(64'd64)) LessU64_9 (.in0(wire_13), .in1(wire_5), .out(wire_11));
+  TC_Register # (.UUID(64'd1998148612828582261 ^ UUID), .BIT_WIDTH(64'd64)) Register64_10 (.clk(clk), .rst(rst), .load(wire_4), .save(wire_4), .in(wire_23), .out(wire_14));
+  TC_Add # (.UUID(64'd3023020307212303517 ^ UUID), .BIT_WIDTH(64'd64)) Add64_11 (.in0(wire_17), .in1(wire_14), .ci(1'd0), .out(wire_23), .co());
+  TC_Constant # (.UUID(64'd1388399570672712544 ^ UUID), .BIT_WIDTH(64'd1), .value(1'd1)) On_12 (.out(wire_4));
+  TC_FileLoader # (.UUID(64'd1289831107320614410 ^ UUID), .DEFAULT_FILE_NAME("day1_test_1")) FileLoader_13 (.clk(clk), .rst(rst), .en(1'd0), .address(64'd0), .out());
+  TC_Halt # (.UUID(64'd805079572016111755 ^ UUID), .HALT_MESSAGE("Program finished!")) Halt_14 (.clk(clk), .rst(rst), .en(wire_25));
+  TC_Not # (.UUID(64'd644109204850458689 ^ UUID), .BIT_WIDTH(64'd1)) Not_15 (.in(wire_20), .out(wire_22));
+  TC_DelayLine # (.UUID(64'd492914079510521503 ^ UUID), .BIT_WIDTH(64'd1)) DelayLine1_16 (.clk(clk), .rst(rst), .in(wire_22), .out(wire_2));
+  TC_Constant # (.UUID(64'd3489601239707499640 ^ UUID), .BIT_WIDTH(64'd1), .value(1'd1)) On_17 (.out(wire_10));
+  BytesToNumbers # (.UUID(64'd4206582659042050133 ^ UUID)) BytesToNumbers_18 (.clk(clk), .rst(rst), .Carry(64'd0), .\Input_(64b) (wire_12), .Offset(wire_15), .\Output_(8b) (wire_0));
+  _64zmany # (.UUID(64'd3133133748172620224 ^ UUID)) _64zmany_19 (.clk(clk), .rst(rst), .Input(wire_5), .Output(wire_3));
+  D3rm2z_loop # (.UUID(64'd3114400491708135752 ^ UUID)) D3rm2z_loop_20 (.clk(clk), .rst(rst), .Input(wire_1), .Result(wire_17), .In_Progress(wire_20));
+  TC_Switch # (.UUID(64'd173650253684307660 ^ UUID), .BIT_WIDTH(64'd1)) Switch1_21 (.en(wire_2), .in(wire_3), .out(wire_21));
+  TC_Not # (.UUID(64'd4392348013896506317 ^ UUID), .BIT_WIDTH(64'd1)) Not_22 (.in(wire_11), .out(wire_19));
+  TC_Not # (.UUID(64'd1860178398953032207 ^ UUID), .BIT_WIDTH(64'd1)) Not_23 (.in(wire_20), .out(wire_16));
+  TC_And3 # (.UUID(64'd3853017849796460720 ^ UUID), .BIT_WIDTH(64'd1)) And3_24 (.in0(wire_19), .in1(wire_9), .in2(wire_16), .out(wire_25));
+  TC_DelayLine # (.UUID(64'd1474220418350956374 ^ UUID), .BIT_WIDTH(64'd1)) DelayLine1_25 (.clk(clk), .rst(rst), .in(wire_2), .out(wire_9));
+
+  wire [63:0] wire_0;
+  wire [63:0] wire_1;
+  wire [0:0] wire_2;
+  wire [0:0] wire_3;
+  wire [0:0] wire_4;
+  wire [63:0] wire_5;
+  wire [63:0] wire_6;
+  wire [63:0] wire_7;
+  wire [63:0] wire_8;
+  wire [0:0] wire_9;
+  wire [0:0] wire_10;
+  wire [0:0] wire_11;
+  wire [63:0] wire_12;
+  wire [63:0] wire_13;
+  wire [63:0] wire_14;
+  wire [7:0] wire_15;
+  wire [0:0] wire_16;
+  wire [63:0] wire_17;
+  wire [0:0] wire_18;
+  wire [0:0] wire_19;
+  wire [0:0] wire_20;
+  wire [0:0] wire_21;
+  wire [0:0] wire_22;
+  wire [63:0] wire_23;
+  wire [0:0] wire_24;
+  wire [0:0] wire_25;
+
+endmodule
