@@ -233,7 +233,7 @@
   <img src=".aoc_tiles/tiles/2021/10.png" width="161px">
 </a>
 <h1 align="center">
-  2019 - 2 ⭐ - Rust
+  2019 - 2 ⭐ - Rust/Verilog
 </h1>
 <a href="2019/d1/src/main.rs">
   <img src=".aoc_tiles/tiles/2019/01.png" width="161px">
