@@ -17,7 +17,7 @@
 ## Scores
 <!-- AOC TILES BEGIN -->
 <h1 align="center">
-  Advent of Code - 161/500 ⭐
+  Advent of Code - 163/500 ⭐
 </h1>
 <h1 align="center">
   2024 - 50 ⭐ - Rust
@@ -233,10 +233,13 @@
   <img src=".aoc_tiles/tiles/2021/10.png" width="161px">
 </a>
 <h1 align="center">
-  2019 - 2 ⭐ - Verilog/Rust
+  2019 - 4 ⭐ - Verilog
 </h1>
 <a href="2019/d1/src/main.rs">
   <img src=".aoc_tiles/tiles/2019/01.png" width="161px">
+</a>
+<a href="2019/TuringComplete/Day2/Part1/Day2Part1z_Attempt2.v">
+  <img src=".aoc_tiles/tiles/2019/02.png" width="161px">
 </a>
 <h1 align="center">
   2015 - 37 ⭐ - Rust
