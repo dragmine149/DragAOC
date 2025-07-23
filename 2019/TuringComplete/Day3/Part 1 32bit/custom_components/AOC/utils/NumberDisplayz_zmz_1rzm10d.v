@@ -1,0 +1,68 @@
+module NumberDisplayz_zmz_1rzm10d (clk, rst, Input);
+  parameter UUID = 0;
+  parameter NAME = "";
+  input wire clk;
+  input wire rst;
+
+  input  wire [31:0] Input;
+
+  TC_Mux # (.UUID(64'd4307395555250466759 ^ UUID), .BIT_WIDTH(64'd32)) Mux32_0 (.sel(wire_14), .in0(wire_5), .in1(wire_13), .out(wire_20));
+  TC_Neg # (.UUID(64'd4531497134050064253 ^ UUID), .BIT_WIDTH(64'd32)) Neg32_1 (.in(wire_5), .out(wire_13));
+  TC_IndexerBit # (.UUID(64'd975391627407207290 ^ UUID), .INDEX(64'd31)) IndexerBit_2 (.in({{32{1'b0}}, wire_5 }), .out(wire_14));
+  TC_Mul # (.UUID(64'd1201960249790359696 ^ UUID), .BIT_WIDTH(64'd32)) DivMod32_3 (.in0(wire_20), .in1({{24{1'b0}}, wire_15 }), .out0(wire_8), .out1(wire_17));
+  TC_Constant # (.UUID(64'd1238108831212129201 ^ UUID), .BIT_WIDTH(64'd8), .value(8'hA)) Constant8_4 (.out(wire_15));
+  TC_Mul # (.UUID(64'd4315517599602291568 ^ UUID), .BIT_WIDTH(64'd32)) DivMod32_5 (.in0(wire_8), .in1({{24{1'b0}}, wire_4 }), .out0(wire_28), .out1(wire_16));
+  TC_Constant # (.UUID(64'd2621941487704456948 ^ UUID), .BIT_WIDTH(64'd8), .value(8'hA)) Constant8_6 (.out(wire_4));
+  TC_Mul # (.UUID(64'd2695865431211050026 ^ UUID), .BIT_WIDTH(64'd32)) DivMod32_7 (.in0(wire_28), .in1({{24{1'b0}}, wire_21 }), .out0(wire_10), .out1(wire_11));
+  TC_Constant # (.UUID(64'd152983896878477761 ^ UUID), .BIT_WIDTH(64'd8), .value(8'hA)) Constant8_8 (.out(wire_21));
+  TC_Mul # (.UUID(64'd817195486641964827 ^ UUID), .BIT_WIDTH(64'd32)) DivMod32_9 (.in0(wire_10), .in1({{24{1'b0}}, wire_30 }), .out0(wire_19), .out1(wire_9));
+  TC_Constant # (.UUID(64'd1942449975457100408 ^ UUID), .BIT_WIDTH(64'd8), .value(8'hA)) Constant8_10 (.out(wire_30));
+  TC_Mul # (.UUID(64'd406106509070742070 ^ UUID), .BIT_WIDTH(64'd32)) DivMod32_11 (.in0(wire_19), .in1({{24{1'b0}}, wire_32 }), .out0(wire_27), .out1(wire_1));
+  TC_Constant # (.UUID(64'd3599845831689558951 ^ UUID), .BIT_WIDTH(64'd8), .value(8'hA)) Constant8_12 (.out(wire_32));
+  TC_Mul # (.UUID(64'd2628966051464286082 ^ UUID), .BIT_WIDTH(64'd32)) DivMod32_13 (.in0(wire_27), .in1({{24{1'b0}}, wire_0 }), .out0(wire_26), .out1(wire_24));
+  TC_Constant # (.UUID(64'd1550122376114235894 ^ UUID), .BIT_WIDTH(64'd8), .value(8'hA)) Constant8_14 (.out(wire_0));
+  TC_Mul # (.UUID(64'd239112804946827556 ^ UUID), .BIT_WIDTH(64'd32)) DivMod32_15 (.in0(wire_26), .in1({{24{1'b0}}, wire_23 }), .out0(wire_18), .out1(wire_3));
+  TC_Constant # (.UUID(64'd47947447194083010 ^ UUID), .BIT_WIDTH(64'd8), .value(8'hA)) Constant8_16 (.out(wire_23));
+  TC_Mul # (.UUID(64'd762903447660001913 ^ UUID), .BIT_WIDTH(64'd32)) DivMod32_17 (.in0(wire_18), .in1({{24{1'b0}}, wire_12 }), .out0(wire_22), .out1(wire_2));
+  TC_Constant # (.UUID(64'd3196289484926213387 ^ UUID), .BIT_WIDTH(64'd8), .value(8'hA)) Constant8_18 (.out(wire_12));
+  TC_Mul # (.UUID(64'd2118872558673635080 ^ UUID), .BIT_WIDTH(64'd32)) DivMod32_19 (.in0(wire_22), .in1({{24{1'b0}}, wire_29 }), .out0(wire_25), .out1(wire_6));
+  TC_Constant # (.UUID(64'd4362227464887400361 ^ UUID), .BIT_WIDTH(64'd8), .value(8'hA)) Constant8_20 (.out(wire_29));
+  TC_Mul # (.UUID(64'd4198854670356510157 ^ UUID), .BIT_WIDTH(64'd32)) DivMod32_21 (.in0(wire_25), .in1({{24{1'b0}}, wire_31 }), .out0(), .out1(wire_7));
+  TC_Constant # (.UUID(64'd4279047874121732746 ^ UUID), .BIT_WIDTH(64'd8), .value(8'hA)) Constant8_22 (.out(wire_31));
+
+  wire [7:0] wire_0;
+  wire [31:0] wire_1;
+  wire [31:0] wire_2;
+  wire [31:0] wire_3;
+  wire [7:0] wire_4;
+  wire [31:0] wire_5;
+  assign wire_5 = Input;
+  wire [31:0] wire_6;
+  wire [31:0] wire_7;
+  wire [31:0] wire_8;
+  wire [31:0] wire_9;
+  wire [31:0] wire_10;
+  wire [31:0] wire_11;
+  wire [7:0] wire_12;
+  wire [31:0] wire_13;
+  wire [0:0] wire_14;
+  wire [7:0] wire_15;
+  wire [31:0] wire_16;
+  wire [31:0] wire_17;
+  wire [31:0] wire_18;
+  wire [31:0] wire_19;
+  wire [31:0] wire_20;
+  wire [7:0] wire_21;
+  wire [31:0] wire_22;
+  wire [7:0] wire_23;
+  wire [31:0] wire_24;
+  wire [31:0] wire_25;
+  wire [31:0] wire_26;
+  wire [31:0] wire_27;
+  wire [31:0] wire_28;
+  wire [7:0] wire_29;
+  wire [7:0] wire_30;
+  wire [7:0] wire_31;
+  wire [7:0] wire_32;
+
+endmodule

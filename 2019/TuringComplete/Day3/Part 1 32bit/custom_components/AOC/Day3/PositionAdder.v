@@ -1,0 +1,60 @@
+module PositionAdder (clk, rst, Current_Position, Move, overflow, New_Position);
+  parameter UUID = 0;
+  parameter NAME = "";
+  input wire clk;
+  input wire rst;
+
+  input  wire [63:0] Current_Position;
+  input  wire [63:0] Move;
+  output  wire [0:0] overflow;
+  output  wire [63:0] New_Position;
+
+  TC_Splitter32 # (.UUID(64'd287900970185834825 ^ UUID)) Splitter32_0 (.in(wire_20[31:0]), .out0(wire_5), .out1(wire_17), .out2(), .out3(wire_22));
+  TC_Maker16 # (.UUID(64'd1837204997355556545 ^ UUID)) Maker16_1 (.in0(wire_5), .in1(wire_17), .out(wire_4));
+  TC_Not # (.UUID(64'd148311876398120302 ^ UUID), .BIT_WIDTH(64'd1)) Not_2 (.in(wire_0), .out(wire_19));
+  TC_Mux # (.UUID(64'd1904539628882249997 ^ UUID), .BIT_WIDTH(64'd32)) Mux32_3 (.sel(wire_0), .in0(wire_1), .in1(wire_2), .out(wire_6));
+  TC_Mux # (.UUID(64'd3987035570126343417 ^ UUID), .BIT_WIDTH(64'd32)) Mux32_4 (.sel(wire_0), .in0(wire_8), .in1(wire_1), .out(wire_3));
+  TC_Mux # (.UUID(64'd1170650377248266766 ^ UUID), .BIT_WIDTH(64'd32)) Mux32_5 (.sel(wire_19), .in0(wire_8), .in1(wire_2), .out(wire_24));
+  TC_Mux # (.UUID(64'd4466187636920037741 ^ UUID), .BIT_WIDTH(64'd32)) Mux32_6 (.sel(wire_16), .in0({{16{1'b0}}, wire_4 }), .in1(wire_23), .out(wire_9));
+  TC_Neg # (.UUID(64'd4103225047095231745 ^ UUID), .BIT_WIDTH(64'd32)) Neg32_7 (.in({{16{1'b0}}, wire_4 }), .out(wire_23));
+  TC_Add # (.UUID(64'd2698243632866516947 ^ UUID), .BIT_WIDTH(64'd32)) Add32_8 (.in0(wire_6), .in1(wire_9), .ci(1'd0), .out(wire_8), .co(wire_18));
+  _8b2bz_decoder # (.UUID(64'd2436238808295506734 ^ UUID)) _8b2bz_decoder_9 (.clk(clk), .rst(rst), .Input(wire_22), .Output_1(wire_11), .Output_2(), .Output_3(wire_12), .Output_4(wire_15));
+  mOR # (.UUID(64'd2062896824381519425 ^ UUID)) mOR_10 (.clk(clk), .rst(rst), .Input_1(wire_11), .Input_2(wire_12), .Output(wire_0));
+  mOR # (.UUID(64'd1954474802598141907 ^ UUID)) mOR_11 (.clk(clk), .rst(rst), .Input_1(wire_12), .Input_2(wire_15), .Output(wire_16));
+  _64bz_toz_32b # (.UUID(64'd1989776917117211051 ^ UUID)) _64bz_toz_32b_12 (.clk(clk), .rst(rst), .Input(wire_7), .Output_1(wire_2), .Output_2(wire_1));
+  _32bz_toz_64b # (.UUID(64'd3392271759835555695 ^ UUID)) _32bz_toz_64b_13 (.clk(clk), .rst(rst), .Input_1(wire_24), .Input_2(wire_3), .Output(wire_13));
+  gte # (.UUID(64'd1602308021593627864 ^ UUID)) gte_14 (.clk(clk), .rst(rst), .Input_1(32'd0), .Input_2(wire_6), .Output(wire_21));
+  gte # (.UUID(64'd1348000064077328865 ^ UUID)) gte_15 (.clk(clk), .rst(rst), .Input_1(32'd0), .Input_2(wire_9), .Output(wire_14));
+  TC_And3 # (.UUID(64'd3663506113728811031 ^ UUID), .BIT_WIDTH(64'd1)) And3_16 (.in0(wire_18), .in1(wire_14), .in2(wire_21), .out(wire_10));
+
+  wire [0:0] wire_0;
+  wire [31:0] wire_1;
+  wire [31:0] wire_2;
+  wire [31:0] wire_3;
+  wire [15:0] wire_4;
+  wire [7:0] wire_5;
+  wire [31:0] wire_6;
+  wire [63:0] wire_7;
+  assign wire_7 = Current_Position;
+  wire [31:0] wire_8;
+  wire [31:0] wire_9;
+  wire [0:0] wire_10;
+  assign overflow = wire_10;
+  wire [0:0] wire_11;
+  wire [0:0] wire_12;
+  wire [63:0] wire_13;
+  assign New_Position = wire_13;
+  wire [0:0] wire_14;
+  wire [0:0] wire_15;
+  wire [0:0] wire_16;
+  wire [7:0] wire_17;
+  wire [0:0] wire_18;
+  wire [0:0] wire_19;
+  wire [63:0] wire_20;
+  assign wire_20 = Move;
+  wire [0:0] wire_21;
+  wire [7:0] wire_22;
+  wire [31:0] wire_23;
+  wire [31:0] wire_24;
+
+endmodule

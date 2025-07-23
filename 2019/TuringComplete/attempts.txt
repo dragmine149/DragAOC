@@ -9,3 +9,15 @@ Does not count as already tried in the past
 
 ### Part 2
 8018 -> Correct
+
+## Day 3
+### Part 1
+74 - Not right answer
+425 - too high
+276 - too low
+330 - n/a
+386 - correct
+
+### Part 2
+7156 - too high
+6484 - correct
