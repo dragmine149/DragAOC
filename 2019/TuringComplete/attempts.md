@@ -21,3 +21,8 @@ Does not count as already tried in the past
 ### Part 2
 7156 - too high
 6484 - correct
+
+## Day 4
+### Part 1
+1764 - Too Low (someone else)
+1767 - Correct
