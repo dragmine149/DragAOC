@@ -38,3 +38,7 @@ Does not count as already tried in the past
 
 ### Part 2
 Does not count as already tried in the past
+
+## Day 6
+### Part 1
+27019 - too low
