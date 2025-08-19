@@ -26,3 +26,8 @@ Does not count as already tried in the past
 ### Part 1
 1764 - Too Low (someone else)
 1767 - Correct
+
+### Part 2
+1517 - Too High
+975 - Too Low
+1192 - Correct

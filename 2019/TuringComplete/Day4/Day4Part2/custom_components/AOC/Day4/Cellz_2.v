@@ -1,0 +1,67 @@
+module Cellz_2 (clk, rst, Increment, Overwrite, Global_Overwrite, Previous, Output, Increment_Next);
+  parameter UUID = 0;
+  parameter NAME = "";
+  input wire clk;
+  input wire rst;
+
+  input  wire [0:0] Increment;
+  input  wire [7:0] Overwrite;
+  input  wire [0:0] Global_Overwrite;
+  input  wire [7:0] Previous;
+  output  wire [7:0] Output;
+  output  wire [0:0] Increment_Next;
+
+  TC_Switch # (.UUID(64'd49335432763724894 ^ UUID), .BIT_WIDTH(64'd8)) Switch8_0 (.en(wire_4), .in(wire_1), .out(wire_0_0));
+  TC_LessU # (.UUID(64'd2499314737091576773 ^ UUID), .BIT_WIDTH(64'd8)) LessU8_1 (.in0(wire_5), .in1(wire_1), .out(wire_9));
+  TC_Not # (.UUID(64'd4435160898015840219 ^ UUID), .BIT_WIDTH(64'd1)) Not_2 (.in(wire_2), .out(wire_14));
+  TC_DelayLine # (.UUID(64'd174225934206509417 ^ UUID), .BIT_WIDTH(64'd1)) DelayLine1_3 (.clk(clk), .rst(rst), .in(wire_3), .out(wire_11));
+  TC_Switch # (.UUID(64'd1037403255418157240 ^ UUID), .BIT_WIDTH(64'd1)) Switch1_4 (.en(wire_3), .in(wire_11), .out(wire_4_1));
+  TC_Mux # (.UUID(64'd3971226479063252743 ^ UUID), .BIT_WIDTH(64'd8)) Mux8_5 (.sel(wire_7), .in0(wire_0), .in1(wire_8), .out(wire_10));
+  TC_Constant # (.UUID(64'd4156158477184862849 ^ UUID), .BIT_WIDTH(64'd1), .value(1'd0)) Off_6 (.out());
+  TC_Switch # (.UUID(64'd3322661827820347289 ^ UUID), .BIT_WIDTH(64'd8)) Switch8_7 (.en(wire_12), .in(wire_5), .out(wire_0_1));
+  TC_Not # (.UUID(64'd3112008509285158119 ^ UUID), .BIT_WIDTH(64'd1)) Not_8 (.in(wire_4), .out(wire_15));
+  _4Bit # (.UUID(64'd1183297596405385417 ^ UUID)) _4Bit_9 (.clk(clk), .rst(rst), .Overrite_Value(wire_10), .Overrite(wire_6), .Output(wire_5));
+  _4bgte9 # (.UUID(64'd3746322222025125859 ^ UUID)) _4bgte9_10 (.clk(clk), .rst(rst), .Input(wire_5), .Output(wire_13));
+  OnOrOff # (.UUID(64'd1024934874117766360 ^ UUID)) OnOrOff_11 (.clk(clk), .rst(rst), .Input(wire_3), .Output(wire_6_0));
+  OnOrOff # (.UUID(64'd4222530321762880190 ^ UUID)) OnOrOff_12 (.clk(clk), .rst(rst), .Input(wire_9), .Output(wire_4_0));
+  OnOrOff # (.UUID(64'd2936696676063898150 ^ UUID)) OnOrOff_13 (.clk(clk), .rst(rst), .Input(wire_14), .Output(wire_6_3));
+  OnOrOff # (.UUID(64'd908875806458571666 ^ UUID)) OnOrOff_14 (.clk(clk), .rst(rst), .Input(wire_4), .Output(wire_6_1));
+  OnOrOff # (.UUID(64'd3591582489492066469 ^ UUID)) OnOrOff_15 (.clk(clk), .rst(rst), .Input(wire_7), .Output(wire_6_2));
+  mand # (.UUID(64'd133732660234955244 ^ UUID)) mand_16 (.clk(clk), .rst(rst), .Input_1(wire_15), .Input_2(wire_14), .Output(wire_12));
+  mand # (.UUID(64'd4438192410060361779 ^ UUID)) mand_17 (.clk(clk), .rst(rst), .Input_1(wire_13), .Input_2(wire_2), .Output(wire_3));
+
+  wire [7:0] wire_0;
+  wire [7:0] wire_0_0;
+  wire [7:0] wire_0_1;
+  assign wire_0 = wire_0_0|wire_0_1;
+  wire [7:0] wire_1;
+  assign wire_1 = Previous;
+  wire [0:0] wire_2;
+  assign wire_2 = Increment;
+  wire [0:0] wire_3;
+  assign Increment_Next = wire_3;
+  wire [0:0] wire_4;
+  wire [0:0] wire_4_0;
+  wire [0:0] wire_4_1;
+  assign wire_4 = wire_4_0|wire_4_1;
+  wire [7:0] wire_5;
+  assign Output = wire_5;
+  wire [0:0] wire_6;
+  wire [0:0] wire_6_0;
+  wire [0:0] wire_6_1;
+  wire [0:0] wire_6_2;
+  wire [0:0] wire_6_3;
+  assign wire_6 = wire_6_0|wire_6_1|wire_6_2|wire_6_3;
+  wire [0:0] wire_7;
+  assign wire_7 = Global_Overwrite;
+  wire [7:0] wire_8;
+  assign wire_8 = Overwrite;
+  wire [0:0] wire_9;
+  wire [7:0] wire_10;
+  wire [0:0] wire_11;
+  wire [0:0] wire_12;
+  wire [0:0] wire_13;
+  wire [0:0] wire_14;
+  wire [0:0] wire_15;
+
+endmodule
