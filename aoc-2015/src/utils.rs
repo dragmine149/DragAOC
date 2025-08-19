@@ -1,6 +1,6 @@
 use core::fmt;
 use itertools::Itertools;
-use std::fmt::Write;
+use std::{fmt::Write, ops::Range};
 
 /**
 Stores a position in a 2D array with the format of (X, Y)
@@ -70,18 +70,29 @@ impl Position {
         Self(0, 0)
     }
 
+    pub fn from_id(id: &usize, max_size: &usize) -> Self {
+        Position(id % max_size, id / max_size)
+    }
+    pub fn to_id(self, max_size: usize) -> usize {
+        self.1 * max_size + self.0
+    }
+
     pub const MAX: Self = Self(usize::MAX, usize::MAX);
 
     /// get all our neighbours. (In all Directions)
-    pub fn get_neighbours(&self, grid_size: &Position) -> Vec<Position> {
-        self.get_valid_directions(grid_size)
+    pub fn get_neighbours(&self, grid_size: &Position, include_diagonal: bool) -> Vec<Position> {
+        self.get_valid_directions(grid_size, include_diagonal)
             .iter()
             .map(|v| self.next_pos(v))
             .collect_vec()
     }
 
     /// get the valid directions we can move, if any.
-    pub fn get_valid_directions(&self, grid_size: &Position) -> Vec<Direction> {
+    pub fn get_valid_directions(
+        &self,
+        grid_size: &Position,
+        include_diagonal: bool,
+    ) -> Vec<Direction> {
         let mut valid: Vec<Direction> = vec![];
         if self.0 >= 1 {
             valid.push(Direction::West);
@@ -95,24 +106,30 @@ impl Position {
         if self.1 + 1 < grid_size.1 {
             valid.push(Direction::South);
         }
-        if self.0 >= 1 && self.1 + 1 < grid_size.1 {
-            valid.push(Direction::SouthWest);
-        }
-        if self.0 + 1 < grid_size.0 && self.1 + 1 < grid_size.1 {
-            valid.push(Direction::SouthEast);
-        }
-        if self.0 + 1 < grid_size.0 && self.1 >= 1 {
-            valid.push(Direction::NorthEast);
-        }
-        if self.0 >= 1 && self.1 >= 1 {
-            valid.push(Direction::NorthWest);
+        if include_diagonal {
+            if self.0 >= 1 && self.1 + 1 < grid_size.1 {
+                valid.push(Direction::SouthWest);
+            }
+            if self.0 + 1 < grid_size.0 && self.1 + 1 < grid_size.1 {
+                valid.push(Direction::SouthEast);
+            }
+            if self.0 + 1 < grid_size.0 && self.1 >= 1 {
+                valid.push(Direction::NorthEast);
+            }
+            if self.0 >= 1 && self.1 >= 1 {
+                valid.push(Direction::NorthWest);
+            }
         }
         valid
     }
 
     /// A combination of get_neighbours and get_valid_directions
-    pub fn get_valid(&self, grid_size: &Position) -> Vec<(Direction, Position)> {
-        self.get_valid_directions(grid_size)
+    pub fn get_valid(
+        &self,
+        grid_size: &Position,
+        include_diagonal: bool,
+    ) -> Vec<(Direction, Position)> {
+        self.get_valid_directions(grid_size, include_diagonal)
             .iter()
             .map(|v| (*v, self.next_pos(v)))
             .collect_vec()
@@ -140,8 +157,12 @@ impl Position {
         // generate all points within a max_distance * 2 + 1 area
         ((self.0 as isize - max_isize)..=(self.0 as isize + max_isize))
             .flat_map(move |x_dist| {
-                ((self.1 as isize - max_isize)..=(self.1 as isize + max_isize))
-                    .map(move |y_dist| Position(x_dist as usize, y_dist as usize))
+                ((self.1 as isize - max_isize)..=(self.1 as isize + max_isize)).map(move |y_dist| {
+                    Position(
+                        (x_dist as usize).clamp(0, grid_size.0),
+                        (y_dist as usize).clamp(0, grid_size.1),
+                    )
+                })
             })
             .map(|position| (position, self.manhattan_distance(&position)))
             // filter out those not in the area
@@ -165,7 +186,7 @@ impl Position {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash)]
 pub enum Direction {
     North,
     East,
@@ -274,6 +295,28 @@ impl Direction {
             }
         }
     }
+
+    pub fn all(diagonal: bool) -> Vec<Direction> {
+        if !diagonal {
+            vec![
+                Direction::North,
+                Direction::East,
+                Direction::South,
+                Direction::West,
+            ]
+        } else {
+            vec![
+                Direction::North,
+                Direction::NorthEast,
+                Direction::East,
+                Direction::SouthEast,
+                Direction::South,
+                Direction::SouthWest,
+                Direction::West,
+                Direction::NorthWest,
+            ]
+        }
+    }
 }
 
 pub struct Grid<T>(pub Vec<Vec<T>>);
@@ -338,14 +381,12 @@ impl<T: std::clone::Clone> Grid<T> {
     /// create a grid from a string. Useful for loading from files.
     ///
     /// [translation] is a user-provided method to take the char and translate it into whatever the grid needs to be.
-    pub fn from_str<F: Fn(char) -> T>(s: &str, default_arg: T, translation: F) -> Self {
-        let mut grid = Self::new(
-            &Position::from(s.lines().nth(0).unwrap().len()),
-            default_arg,
-        );
+    pub fn from_str<F: Fn(&char) -> T>(s: &str, default_arg: T, translation: F) -> Self {
+        let size = s.lines().count().max(s.lines().nth(0).unwrap().len());
+        let mut grid = Self::new(&Position::from(size), default_arg);
         s.lines().enumerate().for_each(|(y, line)| {
             line.chars().enumerate().for_each(|(x, char)| {
-                grid.set_cell(&Position(x, y), translation(char));
+                grid.set_cell(&Position(x, y), translation(&char));
             });
         });
         grid
@@ -403,12 +444,27 @@ impl<T: std::clone::Clone> Grid<T> {
         self[pos.1][pos.0].to_owned()
     }
 
+    pub fn get_cell_refrence(&self, pos: &Position) -> &T {
+        &self[pos.1][pos.0]
+    }
+
     /// returns the size of the grid
     pub fn get_size(&self) -> Position {
         Position(
             self.first().expect("Failed to get first row").len(),
             self.len(),
         )
+    }
+
+    pub fn find_cell<P: FnMut(&T) -> bool>(&self, predicate: P) -> Option<T> {
+        self.iter_unmut_cells().into_iter().find(predicate)
+    }
+
+    pub fn cell_position<P: FnMut(T) -> bool>(&self, predicate: P) -> Option<Position> {
+        self.iter_unmut_cells()
+            .into_iter()
+            .position(predicate)
+            .map(|v| Position::from_id(&v, &self.get_size().1))
     }
 
     /// loop over all unmutable cell values
@@ -423,4 +479,153 @@ impl<T: std::clone::Clone> Grid<T> {
         let size = self.get_size();
         (0..size.1).flat_map(move |y| (0..size.0).map(move |x| Position(x, y)))
     }
+}
+
+/// Contains a list and default value. Designed to be used to wrap things around
+pub struct Incrementer<T> {
+    list: Vec<T>,
+    default: T,
+}
+
+#[allow(dead_code)]
+impl<T: std::clone::Clone + std::cmp::PartialEq> Incrementer<T> {
+    /// Create a new wrapper of len x
+    pub fn new(default_value: T, length: usize) -> Self {
+        Self {
+            list: vec![default_value.clone(); length],
+            default: default_value,
+        }
+    }
+
+    /// Wrap the wrapper around
+    /// [next] is a function that takes in the current and gives the next. If the returned result is the same as the default value, then the next one moves along
+    /// Returns how many values got updated
+    pub fn wrap<F: Fn(&T) -> T>(&mut self, next: F) -> usize {
+        let mut index = self.len() - 1;
+        loop {
+            let v = next(&self[index]);
+            self[index] = v;
+
+            if index == 0 && self.default == self[index] {
+                // reached end
+                break self.len() - index + 1;
+            }
+
+            if self[index] != self.default {
+                // no need to as we didn't loop this time
+                break self.len() - index;
+            }
+            if index == 0 {
+                // prevents from going into negatives
+                break self.len() - index;
+            }
+            index -= 1;
+        }
+    }
+
+    /// Same as [wrap] but starts at a specific index instead
+    pub fn big_wrap<F: Fn(&T) -> T>(&mut self, next: F, mut index: usize) -> usize {
+        for i in index..self.len() - 1 {
+            self[i] = self.default.clone();
+        }
+
+        loop {
+            let v = next(&self[index]);
+            self[index] = v;
+
+            if index == 0 && self.default == self[index] {
+                break self.len() - index;
+            }
+
+            if self[index] != self.default {
+                // no need to as we didn't loop this time
+                break self.len() - index;
+            }
+            if index == 0 {
+                // prevents from going into negatives
+                break self.len() - index + 1;
+            }
+            index -= 1;
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.list.len()
+    }
+}
+
+impl<T> std::ops::Index<usize> for Incrementer<T> {
+    type Output = T;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.list[index]
+    }
+}
+
+impl<T> std::ops::Index<Range<usize>> for Incrementer<T> {
+    type Output = [T];
+
+    fn index(&self, index: Range<usize>) -> &Self::Output {
+        &self.list[index]
+    }
+}
+
+impl<T> std::ops::IndexMut<usize> for Incrementer<T> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.list[index]
+    }
+}
+
+impl<T: std::fmt::Debug> std::fmt::Debug for Incrementer<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.list)
+    }
+}
+
+#[allow(dead_code)]
+pub trait Length {
+    // 340,282,366,920,938,463,463,374,607,431,768,211,455
+    fn number_length(&self) -> u8;
+}
+
+impl Length for u8 {
+    fn number_length(&self) -> u8 {
+        10_u64.pow(((self + 1) as f64).log10().ceil() as u32) as u8
+    }
+}
+
+impl Length for u16 {
+    fn number_length(&self) -> u8 {
+        10_u64.pow(((self + 1) as f64).log10().ceil() as u32) as u8
+    }
+}
+
+impl Length for u32 {
+    fn number_length(&self) -> u8 {
+        10_u64.pow(((self + 1) as f64).log10().ceil() as u32) as u8
+    }
+}
+
+impl Length for u64 {
+    fn number_length(&self) -> u8 {
+        10_u64.pow(((self + 1) as f64).log10().ceil() as u32) as u8
+    }
+}
+
+impl Length for u128 {
+    fn number_length(&self) -> u8 {
+        10_u64.pow(((self + 1) as f64).log10().ceil() as u32) as u8
+    }
+}
+
+impl Length for usize {
+    fn number_length(&self) -> u8 {
+        10_u64.pow(((self + 1) as f64).log10().ceil() as u32) as u8
+    }
+}
+
+#[allow(dead_code)]
+pub fn print_and_return<T: std::fmt::Debug>(v: T) -> T {
+    println!("{:?}", v);
+    v
 }

@@ -14,7 +14,7 @@ fn parse(input: &str) -> Grid<u8> {
 impl Grid<u8> {
     fn flip_check(&self, position: &Position) -> bool {
         // println!("{:?}", position);
-        let neighbours = position.get_neighbours(&self.get_size());
+        let neighbours = position.get_neighbours(&self.get_size(), false);
         // println!("{:?}", position.get_valid_directions(&self.get_size()));
         // println!("{:?}", neighbours);
         let neighbour_count = neighbours

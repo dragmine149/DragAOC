@@ -76,6 +76,7 @@ impl Secret {
             // these sequences where `-9 <= sum <= 9` is false will never happen.
             if (-9..=9).contains(&sum1) && (-9..=9).contains(&sum2) && (-9..=9).contains(&sum3) {
                 sequences.push(sequence);
+                // break;
             }
         }
         sequences
@@ -83,6 +84,26 @@ impl Secret {
 
     // get the price after a sequence
     fn get_sequence_price(&self, sequence: (i8, i8, i8, i8)) -> usize {
+        // let mut iter = self.price_dif.iter();
+        // while iter.len() > 0 {
+        //     let pos = iter.position(|&i| i == sequence.0);
+        //     // println!("{:?}", pos);
+        //     if pos.is_none() || iter.len() < 3 {
+        //         return usize::MAX;
+        //     }
+        //     if *iter.next().unwrap() != sequence.1 {
+        //         continue;
+        //     }
+        //     if *iter.next().unwrap() != sequence.2 {
+        //         continue;
+        //     }
+        //     if *iter.next().unwrap() != sequence.3 {
+        //         continue;
+        //     }
+
+        //     return pos.unwrap() + 3;
+        // }
+
         for index in 0..self.price_dif.len() {
             // for (index, _) in self.price_dif.iter().enumerate() {
             if index < 4 || index + 5 > self.price_dif.len() {
@@ -126,7 +147,7 @@ fn part1(input: &[Secret]) -> u128 {
     secrets
         .par_iter_mut()
         .for_each(|secret| secret.evolve_x(2000));
-    secrets.par_iter().map(|secret| secret.number).sum::<u128>()
+    secrets.iter().map(|secret| secret.number).sum::<u128>()
 }
 
 #[aoc(day22, part2)]
@@ -136,6 +157,7 @@ fn part2(input: &[Secret]) -> u128 {
         .par_iter_mut()
         .for_each(|secret| secret.evolve_x(2000));
 
+    println!("a");
     // hashmap
     let mut unique = HashMap::new();
     let a = secrets
@@ -144,6 +166,7 @@ fn part2(input: &[Secret]) -> u128 {
         .flatten()
         .collect::<Vec<(i8, i8, i8, i8)>>();
 
+    println!("b");
     // translate all possible sequences into hashmap format.
     for sequence in a {
         let count = unique.get(&sequence);
@@ -154,6 +177,7 @@ fn part2(input: &[Secret]) -> u128 {
         unique.insert(sequence, count.unwrap() + 1);
     }
 
+    println!("c");
     // process all monkeys and sequences
     unique
         .par_iter()
@@ -161,8 +185,7 @@ fn part2(input: &[Secret]) -> u128 {
         .filter(|seq| *seq.1 > 2)
         .map(|seq| {
             secrets
-                .to_vec()
-                .par_iter()
+                .iter()
                 .map(|monkey| {
                     let price = monkey.get_sequence_price(*seq.0);
                     if price == usize::MAX {
@@ -175,6 +198,7 @@ fn part2(input: &[Secret]) -> u128 {
         })
         .max()
         .expect("Failed to get max value of sequences")
+    // + 1
 }
 
 #[cfg(test)]
