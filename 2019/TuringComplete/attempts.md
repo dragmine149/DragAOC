@@ -31,3 +31,10 @@ Does not count as already tried in the past
 1517 - Too High
 975 - Too Low
 1192 - Correct
+
+## Day 5
+### Part 1
+Does not count as already tried in the past
+
+### Part 2
+Does not count as already tried in the past
