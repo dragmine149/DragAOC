@@ -48,26 +48,19 @@ fn part2(input: &[i64]) -> i64 {
     let mut pos = 50;
     let mut zero_count = 0;
     input.iter().for_each(|dir| {
-        println!("----");
-        println!("Pos: {:?}. Zero: {:?}. dir: {:?}", pos, zero_count, dir);
-        let m = dir % 100;
-        let d = if *dir < 0 { dir / 100 } else { dir / 100 };
-
-        println!("d: {:?}", d);
-        zero_count += d;
-        pos += m;
-        if pos == 0 {
-            zero_count += 1;
+        for _ in 0..*dir {
+            pos += 1;
+            if pos == 100 {
+                pos = 0;
+                zero_count += 1;
+            }
         }
-        if pos < 0 {
-            println!("<0 {:?}", pos);
-            pos = 100 + pos;
-            zero_count += 1;
-        }
-        if pos > 100 {
-            println!(">100 {:?}", pos);
-            pos = pos - 100;
-            zero_count += 1;
+        for _ in *dir..0 {
+            pos -= 1;
+            if pos == -1 {
+                pos = 99;
+                zero_count += 1;
+            }
         }
     });
     zero_count
