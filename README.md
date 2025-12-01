@@ -5,6 +5,9 @@ All files related to advent of code projects.
 
 <https://adventofcode.com/about>
 
+## Score notice
+Due to AOC removing global leaderboards and being 12 days, the tiles are currently broken for the time being. Please see folder and commit history for 2025 onwards
+
 ## Scores
 <!-- AOC TILES BEGIN -->
 <h1 align="center">
