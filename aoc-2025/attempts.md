@@ -11,3 +11,5 @@
 - 6165: Incorrect
 - 6777: Incorrect
 - 6740: Incorrect
+- 2166: Incorrect
+- 6770: Correct
