@@ -1,4 +1,4 @@
-use std::ops::AddAssign;
+use std::{fs::DirBuilder, ops::AddAssign};
 
 use aoc_runner_derive::{aoc, aoc_generator};
 
@@ -48,30 +48,25 @@ fn part2(input: &[i64]) -> i64 {
     let mut pos = 50;
     let mut zero_count = 0;
     input.iter().for_each(|dir| {
-        println!("Pos: {:?}. Zero: {:?}", pos, zero_count);
-        let was_zero = pos == 0;
-        let pre_zero = zero_count;
-        pos += dir;
+        println!("----");
+        println!("Pos: {:?}. Zero: {:?}. dir: {:?}", pos, zero_count, dir);
+        let m = dir % 100;
+        let d = if *dir < 0 { dir / 100 } else { dir / 100 };
 
-        // loop w/ div
+        println!("d: {:?}", d);
+        zero_count += d;
+        pos += m;
+        if pos == 0 {
+            zero_count += 1;
+        }
         if pos < 0 {
-            // println!("Pos: {:?}", pos);
-            zero_count += (100 + (pos * -1)) / 100;
-            if was_zero {
-                zero_count -= 1;
-            }
-
-            pos = 100 + (pos % 100);
+            println!("<0 {:?}", pos);
+            pos = 100 + pos;
+            zero_count += 1;
         }
-        if pos >= 100 {
-            zero_count += pos / 100;
-            if was_zero {
-                zero_count -= 1;
-            }
-
-            pos = pos % 100;
-        }
-        if pos == 0 && zero_count == pre_zero {
+        if pos > 100 {
+            println!(">100 {:?}", pos);
+            pos = pos - 100;
             zero_count += 1;
         }
     });
@@ -118,5 +113,13 @@ L82"
             )),
             6
         );
+    }
+
+    #[test]
+    fn divmod_test() {
+        assert_eq!(-18 / 100, 0);
+        assert_eq!(-18 % 100, -18);
+        assert_eq!(18 / 100, 0);
+        assert_eq!(18 % 100, 18);
     }
 }
