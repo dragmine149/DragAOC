@@ -16,3 +16,5 @@ input
 .aoc_tiles/*
 !.aoc_tiles/tiles/
 **/output.txt
+
+.temp.txt
