@@ -13,3 +13,7 @@
 - 6740: Incorrect
 - 2166: Incorrect
 - 6770: Correct
+
+## Day 2
+### Part 1
+- 35367539282: Correct
