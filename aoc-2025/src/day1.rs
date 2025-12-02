@@ -31,7 +31,7 @@ fn part1(input: &[i64]) -> u64 {
             pos = 100 + (pos % 100);
         }
         if pos >= 100 {
-            pos = pos % 100;
+            pos %= 100;
         }
         // add to 0.
         if pos == 0 {

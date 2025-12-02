@@ -3,6 +3,7 @@ use itertools::Itertools;
 
 #[derive(Debug)]
 pub struct Range(u64, u64);
+
 impl Range {
     pub fn new(start: u64, end: u64) -> Self {
         Self(start, end)
@@ -21,7 +22,7 @@ impl Range {
             let half = id / pow;
             let num = half * pow + half;
             // println!("Calculated: {:?}", num);
-            if id == num && get_num_size(num) % 2 == 0 {
+            if id == num && get_num_size(num).is_multiple_of(2) {
                 invalid.push(id);
             }
         }
@@ -30,6 +31,10 @@ impl Range {
         invalid
     }
 
+    #[allow(
+        dead_code,
+        reason = "This can be used by changing 1 line of code in part1"
+    )]
     pub fn find_invalid_str(&self) -> Vec<u64> {
         let mut invalid = vec![];
         for id in self.0..self.1 + 1 {
@@ -64,7 +69,7 @@ impl Range {
                 // }
 
                 let mut guess = repeat;
-                for x in (0..i).step_by(repeat_len as usize) {
+                for _ in (0..i).step_by(repeat_len as usize) {
                     // println!(
                     //     "Guess: {:?}, repeat: {:?}, x: {:?}, pow2: {:?}",
                     //     guess, repeat, x, pow2
@@ -86,21 +91,6 @@ impl Range {
         }
 
         println!("{:?} has invalid of {:?}", self, invalid);
-        invalid
-    }
-
-    pub fn find_invalid_extended_str(&self) -> Vec<u64> {
-        let mut invalid = vec![];
-        for id in self.0..self.1 + 1 {
-            let num = id.to_string();
-            let length = num.len();
-            for len in 1..length + 1 {
-                if num[0..len].repeat(length / len) == num {
-                    invalid.push(id);
-                }
-            }
-        }
-
         invalid
     }
 }
@@ -127,10 +117,7 @@ pub fn get_num_size(num: u64) -> u32 {
 
 #[aoc_generator(day2)]
 fn parse(input: &str) -> Vec<Range> {
-    input
-        .split(",")
-        .map(|s| Range::from(s))
-        .collect::<Vec<Range>>()
+    input.split(",").map(Range::from).collect::<Vec<Range>>()
 }
 
 #[aoc(day2, part1)]
@@ -146,10 +133,6 @@ fn part2(input: &[Range]) -> u64 {
         .flat_map(|r| r.find_invalid_extended())
         .unique()
         .sum()
-    // input
-    //     .iter()
-    //     .flat_map(|r| r.find_invalid_extended_str())
-    //     .sum()
 }
 
 #[cfg(test)]
