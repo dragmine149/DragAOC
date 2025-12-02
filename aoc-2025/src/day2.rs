@@ -31,10 +31,6 @@ impl Range {
         invalid
     }
 
-    #[allow(
-        dead_code,
-        reason = "This can be used by changing 1 line of code in part1"
-    )]
     pub fn find_invalid_str(&self) -> Vec<u64> {
         let mut invalid = vec![];
         for id in self.0..self.1 + 1 {
@@ -90,7 +86,7 @@ impl Range {
             }
         }
 
-        println!("{:?} has invalid of {:?}", self, invalid);
+        // println!("{:?} has invalid of {:?}", self, invalid);
         invalid
     }
 }
@@ -123,7 +119,11 @@ fn parse(input: &str) -> Vec<Range> {
 #[aoc(day2, part1)]
 fn part1(input: &[Range]) -> u64 {
     input.iter().flat_map(|r| r.find_invalid()).sum()
-    // input.iter().flat_map(|r| r.find_invalid_str()).sum()
+}
+
+#[aoc(day2, part1, string)]
+fn part1_string(input: &[Range]) -> u64 {
+    input.iter().flat_map(|r| r.find_invalid_str()).sum()
 }
 
 #[aoc(day2, part2)]
