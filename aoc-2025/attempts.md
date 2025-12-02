@@ -17,3 +17,6 @@
 ## Day 2
 ### Part 1
 - 35367539282: Correct
+
+### Part 2
+- 45814076275: Too High

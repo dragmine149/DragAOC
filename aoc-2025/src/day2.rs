@@ -49,30 +49,38 @@ impl Range {
         let mut invalid = vec![];
         for id in self.0..self.1 + 1 {
             let size = get_num_size(id);
-            println!(
-                "id: {:?}, size: {:?}. range: {:?}",
-                id,
-                size,
-                ((size / 2)..size).rev()
-            );
-            for len in ((size / 2)..size).rev() {
-                let pow = 10_u64.pow(len);
+            for i in (size / 2)..size {
+                let pow = 10_u64.pow(i);
                 let repeat = id / pow;
+                let repeat_len = get_num_size(repeat);
+                let pow2 = 10_u64.pow(repeat_len);
+                // println!(
+                //     "Id: {:?}, Pow: {:?}, Repeat: {:?}. Repeat len: {:?}. Pow2: {:?}",
+                //     id, pow, repeat, repeat_len, pow2
+                // );
+                // if repeat_len == 1 {
+                //     continue;
+                // }
 
                 let mut guess = repeat;
-                for x in 0..len {
-                    println!("guess: {:?}, repeat: {:?}, pow: {:?}", guess, repeat, pow,);
-                    guess *= pow;
+                for x in (0..i).step_by(repeat_len as usize) {
+                    // println!(
+                    //     "Guess: {:?}, repeat: {:?}, x: {:?}, pow2: {:?}",
+                    //     guess, repeat, x, pow2
+                    // );
+                    guess *= pow2;
                     guess += repeat;
                 }
-                println!("Guess: {:?}. Id: {:?}", guess, id);
                 if guess == id {
-                    invalid.push(id);
+                    // println!("eee");
+                    if !invalid.contains(&guess) {
+                        invalid.push(guess);
+                    }
                 }
             }
         }
 
-        println!("{:?} has invalid of {:?}", self, invalid);
+        // println!("{:?} has invalid of {:?}", self, invalid);
         invalid
     }
 
