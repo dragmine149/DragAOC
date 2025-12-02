@@ -44,6 +44,52 @@ impl Range {
         }
         invalid
     }
+
+    pub fn find_invalid_extended(&self) -> Vec<u64> {
+        let mut invalid = vec![];
+        for id in self.0..self.1 + 1 {
+            let size = get_num_size(id);
+            println!(
+                "id: {:?}, size: {:?}. range: {:?}",
+                id,
+                size,
+                ((size / 2)..size).rev()
+            );
+            for len in ((size / 2)..size).rev() {
+                let pow = 10_u64.pow(len);
+                let repeat = id / pow;
+
+                let mut guess = repeat;
+                for x in 0..len {
+                    println!("guess: {:?}, repeat: {:?}, pow: {:?}", guess, repeat, pow,);
+                    guess *= pow;
+                    guess += repeat;
+                }
+                println!("Guess: {:?}. Id: {:?}", guess, id);
+                if guess == id {
+                    invalid.push(id);
+                }
+            }
+        }
+
+        println!("{:?} has invalid of {:?}", self, invalid);
+        invalid
+    }
+
+    pub fn find_invalid_extended_str(&self) -> Vec<u64> {
+        let mut invalid = vec![];
+        for id in self.0..self.1 + 1 {
+            let num = id.to_string();
+            let length = num.len();
+            for len in 1..length + 1 {
+                if num[0..len].repeat(length / len) == num {
+                    invalid.push(id);
+                }
+            }
+        }
+
+        invalid
+    }
 }
 impl From<&str> for Range {
     fn from(value: &str) -> Self {
@@ -81,8 +127,12 @@ fn part1(input: &[Range]) -> u64 {
 }
 
 #[aoc(day2, part2)]
-fn part2(input: &[Range]) -> String {
-    todo!()
+fn part2(input: &[Range]) -> u64 {
+    input.iter().flat_map(|r| r.find_invalid_extended()).sum()
+    // input
+    //     .iter()
+    //     .flat_map(|r| r.find_invalid_extended_str())
+    //     .sum()
 }
 
 #[cfg(test)]
@@ -99,8 +149,13 @@ mod tests {
         );
     }
 
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
+    #[test]
+    fn part2_example() {
+        assert_eq!(
+            part2(&parse(
+                "11-22,95-115,998-1012,1188511880-1188511890,222220-222224,1698522-1698528,446443-446449,38593856-38593862,565653-565659,824824821-824824827,2121212118-2121212124"
+            )),
+            4174379265
+        );
+    }
 }
