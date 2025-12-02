@@ -5,14 +5,17 @@ All files related to advent of code projects.
 
 <https://adventofcode.com/about>
 
-## Score notice
-Due to AOC removing global leaderboards and being 12 days, the tiles are currently broken for the time being. Please see folder and commit history for 2025 onwards
-
 ## Scores
 <!-- AOC TILES BEGIN -->
 <h1 align="center">
-  Advent of Code - 167/500 ⭐
+  Advent of Code - 169/504 ⭐
 </h1>
+<h1 align="center">
+  2025 - 2 ⭐ - Rust
+</h1>
+<a href="aoc-2025/src/day1.rs">
+  <img src=".aoc_tiles/tiles/2025/01.png" width="161px">
+</a>
 <h1 align="center">
   2024 - 50 ⭐ - Rust
 </h1>
@@ -301,7 +304,7 @@ Due to AOC removing global leaderboards and being 12 days, the tiles are current
 <a href="aoc-2015/src/day19.rs">
   <img src=".aoc_tiles/tiles/2015/19.png" width="161px">
 </a>
-<a href="None">
+<a href="aoc-2015/src/day20.rs">
   <img src=".aoc_tiles/tiles/2015/20.png" width="161px">
 </a>
 <a href="aoc-2015/src/day21.rs">
