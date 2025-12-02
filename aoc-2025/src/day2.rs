@@ -1,4 +1,5 @@
 use aoc_runner_derive::{aoc, aoc_generator};
+use itertools::Itertools;
 
 #[derive(Debug)]
 pub struct Range(u64, u64);
@@ -71,16 +72,20 @@ impl Range {
                     guess *= pow2;
                     guess += repeat;
                 }
+                if guess == repeat {
+                    continue;
+                }
                 if guess == id {
                     // println!("eee");
-                    if !invalid.contains(&guess) {
-                        invalid.push(guess);
-                    }
+                    // if !invalid.contains(&guess) {
+                    invalid.push(guess);
+                    break;
+                    // }
                 }
             }
         }
 
-        // println!("{:?} has invalid of {:?}", self, invalid);
+        println!("{:?} has invalid of {:?}", self, invalid);
         invalid
     }
 
@@ -136,7 +141,11 @@ fn part1(input: &[Range]) -> u64 {
 
 #[aoc(day2, part2)]
 fn part2(input: &[Range]) -> u64 {
-    input.iter().flat_map(|r| r.find_invalid_extended()).sum()
+    input
+        .iter()
+        .flat_map(|r| r.find_invalid_extended())
+        .unique()
+        .sum()
     // input
     //     .iter()
     //     .flat_map(|r| r.find_invalid_extended_str())
