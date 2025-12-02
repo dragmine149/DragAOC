@@ -135,6 +135,14 @@ fn part2(input: &[Range]) -> u64 {
         .sum()
 }
 
+#[aoc(day2, part2, part3)]
+fn part3(input: &[Range]) -> u64 {
+    Range::new(1, 4294967296)
+        .find_invalid_extended()
+        .iter()
+        .sum()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
