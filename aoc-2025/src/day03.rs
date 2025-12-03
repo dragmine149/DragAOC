@@ -37,28 +37,57 @@ impl BatterBank {
         // let mut max = 0;
         for x in 0..self.0.len() {
             println!("{:?}", batteries);
-
-            let battery_cell = if x > self.0.len() - jolt_size {
-                println!("x is near end ({:?})", x);
-                // println!("{:?}", self.0.len() - jolt_size);
-                // self.0.len() - x
-                // x
-            } else {
-                println!("x is next");
-                batteries.iter().position(|x| *x == 0).unwrap()
-            };
-            println!("cell : {:?}", battery_cell);
-
             let value = self.0.get(x).unwrap();
-            println!("{:?}", value);
-            if value > batteries.get(battery_cell).unwrap_or(&0_u8) {
-                println!("Overwriting {:?} with {:?}", battery_cell, value);
-                batteries[battery_cell] = *value;
-            }
-            // if *value == 9 {
-            //     max = battery_cell;
+            // if let Some(pos) = next_empty {
+            //     batteries[pos] = *value;
             // }
+            println!("value: {:?}", value);
+            let max_left = self.0.len() - jolt_size;
+            println!("{:?} {:?}", max_left, x);
+            if x < max_left {
+                for pos in 0..(x + 1) {
+                    println!("{:?} '{:?}'", pos, batteries[pos]);
+                    if *value > batteries[pos] {
+                        batteries[pos] = *value;
+                        for cell in (pos + 1)..jolt_size {
+                            batteries[cell] = 0;
+                        }
+                        break;
+                    }
+                }
+            } else {
+                let next_empty = batteries.iter().position(|x| *x == 0);
+
+                if self.0.len() - x > jolt_size - next_empty.unwrap() {
+                    continue;
+                }
+
+                if let Some(pos) = next_empty {
+                    batteries[pos] = *value;
+                } else {
+                    break;
+                }
+            }
         }
+
+        // for x in next_empty.unwrap()..batteries.len() {
+        //     println!(
+        //         "{:?}/{:?}/{:?}/{:?}/{:?}/{:?}",
+        //         batteries.len(),
+        //         next_empty.unwrap(),
+        //         x,
+        //         batteries,
+        //         (batteries.len() - next_empty.unwrap()),
+        //         self.0.get(self.0.len() - x)
+        //     );
+        //     // let pos = batteries.len() - next_empty.unwrap() - x;
+        //     batteries[x] = *self.0.get(self.0.len() - x - 1).unwrap();
+        // }
+        // for x in 0..self.0.len() - (batteries.len() - next_empty.unwrap()) {
+        //     let value = *self.0.get(x).unwrap();
+        //     let pos = (batteries.len() - next_empty.unwrap()) - x;
+        //     batteries[pos] = value;
+        // }
 
         println!("{:?} -> {:?}", self, batteries);
         batteries.iter().fold(0, |acc, x| acc * 10 + (*x as u64))
