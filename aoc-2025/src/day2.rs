@@ -54,7 +54,8 @@ impl Range {
             for i in (size / 2)..size {
                 let pow = 10_u64.pow(i);
                 let repeat = id / pow;
-                let repeat_len = get_num_size(repeat);
+                // let repeat_len = get_num_size(repeat);
+                let repeat_len = size - i;
                 let pow2 = 10_u64.pow(repeat_len);
                 // println!(
                 //     "Id: {:?}, Pow: {:?}, Repeat: {:?}. Repeat len: {:?}. Pow2: {:?}",
@@ -136,7 +137,7 @@ fn part2(input: &[Range]) -> u64 {
 }
 
 #[aoc(day2, part2, part3)]
-fn part3(input: &[Range]) -> u64 {
+fn part3(_input: &[Range]) -> u64 {
     Range::new(1, 4294967296)
         .find_invalid_extended()
         .iter()
