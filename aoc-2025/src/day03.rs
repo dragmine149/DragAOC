@@ -28,6 +28,41 @@ impl BatterBank {
         // println!("{:?} -> {:?}", self, ten * 10 + one);
         ten * 10 + one
     }
+
+    fn multi_jolt(&self, jolt_size: usize) -> u64 {
+        let mut batteries = Vec::with_capacity(jolt_size);
+        for _ in 0..jolt_size {
+            batteries.push(0);
+        }
+        // let mut max = 0;
+        for x in 0..self.0.len() {
+            println!("{:?}", batteries);
+
+            let battery_cell = if x > self.0.len() - jolt_size {
+                println!("x is near end ({:?})", x);
+                // println!("{:?}", self.0.len() - jolt_size);
+                // self.0.len() - x
+                // x
+            } else {
+                println!("x is next");
+                batteries.iter().position(|x| *x == 0).unwrap()
+            };
+            println!("cell : {:?}", battery_cell);
+
+            let value = self.0.get(x).unwrap();
+            println!("{:?}", value);
+            if value > batteries.get(battery_cell).unwrap_or(&0_u8) {
+                println!("Overwriting {:?} with {:?}", battery_cell, value);
+                batteries[battery_cell] = *value;
+            }
+            // if *value == 9 {
+            //     max = battery_cell;
+            // }
+        }
+
+        println!("{:?} -> {:?}", self, batteries);
+        batteries.iter().fold(0, |acc, x| acc * 10 + (*x as u64))
+    }
 }
 
 #[aoc_generator(day3)]
@@ -50,8 +85,8 @@ fn part1(input: &[BatterBank]) -> u64 {
 }
 
 #[aoc(day3, part2)]
-fn part2(input: &[BatterBank]) -> String {
-    todo!()
+fn part2(input: &[BatterBank]) -> u64 {
+    input.iter().map(|bank| bank.multi_jolt(12)).sum()
 }
 
 #[cfg(test)]
@@ -72,8 +107,17 @@ mod tests {
         );
     }
 
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
+    #[test]
+    fn part2_example() {
+        assert_eq!(
+            part2(&parse(
+                "987654321111111
+811111111111119
+234234234234278
+818181911112111
+"
+            )),
+            3121910778619
+        );
+    }
 }
