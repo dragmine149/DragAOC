@@ -23,3 +23,6 @@
 - 45814076230: Correct
 
 ## Day 3
+### Part 1
+- 17188: Too Low
+- 17403: Correct
