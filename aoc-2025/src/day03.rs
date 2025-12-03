@@ -34,60 +34,21 @@ impl BatterBank {
         for _ in 0..jolt_size {
             batteries.push(0);
         }
-        // let mut max = 0;
+
         for x in 0..self.0.len() {
-            println!("{:?}", batteries);
-            let value = self.0.get(x).unwrap();
-            // if let Some(pos) = next_empty {
-            //     batteries[pos] = *value;
-            // }
-            println!("value: {:?}", value);
-            let max_left = self.0.len() - jolt_size;
-            println!("{:?} {:?}", max_left, x);
-            if x < max_left {
-                for pos in 0..(x + 1) {
-                    println!("{:?} '{:?}'", pos, batteries[pos]);
-                    if *value > batteries[pos] {
-                        batteries[pos] = *value;
-                        for cell in (pos + 1)..jolt_size {
-                            batteries[cell] = 0;
-                        }
-                        break;
+            let value = *self.0.get(x).unwrap();
+            // let end = self.0.len() - jolt_size - batteries.iter().position(|x| *x == 0).unwrap();
+            // println!("{:?}", end);
+            for cell in 0..batteries.len() {
+                if value > *batteries.get(cell).unwrap() {
+                    batteries[cell] = value;
+                    for pos in (cell + 1)..batteries.len() {
+                        batteries[pos] = 0;
                     }
-                }
-            } else {
-                let next_empty = batteries.iter().position(|x| *x == 0);
-
-                if self.0.len() - x > jolt_size - next_empty.unwrap() {
-                    continue;
-                }
-
-                if let Some(pos) = next_empty {
-                    batteries[pos] = *value;
-                } else {
                     break;
                 }
             }
         }
-
-        // for x in next_empty.unwrap()..batteries.len() {
-        //     println!(
-        //         "{:?}/{:?}/{:?}/{:?}/{:?}/{:?}",
-        //         batteries.len(),
-        //         next_empty.unwrap(),
-        //         x,
-        //         batteries,
-        //         (batteries.len() - next_empty.unwrap()),
-        //         self.0.get(self.0.len() - x)
-        //     );
-        //     // let pos = batteries.len() - next_empty.unwrap() - x;
-        //     batteries[x] = *self.0.get(self.0.len() - x - 1).unwrap();
-        // }
-        // for x in 0..self.0.len() - (batteries.len() - next_empty.unwrap()) {
-        //     let value = *self.0.get(x).unwrap();
-        //     let pos = (batteries.len() - next_empty.unwrap()) - x;
-        //     batteries[pos] = value;
-        // }
 
         println!("{:?} -> {:?}", self, batteries);
         batteries.iter().fold(0, |acc, x| acc * 10 + (*x as u64))
