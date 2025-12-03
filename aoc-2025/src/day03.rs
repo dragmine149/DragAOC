@@ -37,9 +37,10 @@ impl BatterBank {
 
         for x in 0..self.0.len() {
             let value = *self.0.get(x).unwrap();
-            // let end = self.0.len() - jolt_size - batteries.iter().position(|x| *x == 0).unwrap();
-            // println!("{:?}", end);
-            for cell in 0..batteries.len() {
+            let end = self.0.len() - jolt_size;
+            let start = if x > end { x - end } else { 0 };
+            // println!("{:?}", start);
+            for cell in start..batteries.len() {
                 if value > *batteries.get(cell).unwrap() {
                     batteries[cell] = value;
                     for pos in (cell + 1)..batteries.len() {

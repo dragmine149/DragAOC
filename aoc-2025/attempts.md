@@ -26,3 +26,6 @@
 ### Part 1
 - 17188: Too Low
 - 17403: Correct
+
+### Part 2
+- 173416889848394: Correct
