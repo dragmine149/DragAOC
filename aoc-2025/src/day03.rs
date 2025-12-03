@@ -1,3 +1,5 @@
+use std::iter::repeat_n;
+
 use aoc_runner_derive::{aoc, aoc_generator};
 
 #[derive(Debug)]
@@ -31,27 +33,25 @@ impl BatterBank {
 
     fn multi_jolt(&self, jolt_size: usize) -> u64 {
         let mut batteries = Vec::with_capacity(jolt_size);
-        for _ in 0..jolt_size {
-            batteries.push(0);
-        }
+        batteries.extend(repeat_n(0, jolt_size));
 
         for x in 0..self.0.len() {
             let value = *self.0.get(x).unwrap();
             let end = self.0.len() - jolt_size;
-            let start = if x > end { x - end } else { 0 };
+            let start = x.saturating_sub(end);
             // println!("{:?}", start);
             for cell in start..batteries.len() {
                 if value > *batteries.get(cell).unwrap() {
                     batteries[cell] = value;
-                    for pos in (cell + 1)..batteries.len() {
-                        batteries[pos] = 0;
+                    for item in batteries.iter_mut().skip(cell + 1) {
+                        *item = 0;
                     }
                     break;
                 }
             }
         }
 
-        println!("{:?} -> {:?}", self, batteries);
+        // println!("{:?} -> {:?}", self, batteries);
         batteries.iter().fold(0, |acc, x| acc * 10 + (*x as u64))
     }
 }
@@ -73,6 +73,11 @@ fn parse(input: &str) -> Vec<BatterBank> {
 #[aoc(day3, part1)]
 fn part1(input: &[BatterBank]) -> u64 {
     input.iter().map(|bank| bank.get_largest() as u64).sum()
+}
+
+#[aoc(day3, part1, But_2)]
+fn part1_but2(input: &[BatterBank]) -> u64 {
+    input.iter().map(|bank| bank.multi_jolt(2) as u64).sum()
 }
 
 #[aoc(day3, part2)]
