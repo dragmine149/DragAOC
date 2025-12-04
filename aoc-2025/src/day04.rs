@@ -10,7 +10,6 @@ pub struct Grid(pub Vec<Vec<Cell>>);
 pub enum Cell {
     Paper,
     Empty,
-    Access,
 }
 pub enum Direction {
     North,
@@ -25,10 +24,10 @@ pub enum Direction {
 
 impl Grid {
     pub fn get_cell(&self, pos: Position) -> Option<Cell> {
-        if let Some(row) = self.0.get(pos.1) {
-            if let Some(cell) = row.get(pos.0) {
-                return Some(*cell);
-            }
+        if let Some(row) = self.0.get(pos.1)
+            && let Some(cell) = row.get(pos.0)
+        {
+            return Some(*cell);
         }
         None
     }
@@ -38,16 +37,16 @@ impl Grid {
     }
 
     pub fn get_access_positions(&self) -> Vec<Position> {
-        let grid_size = Position(self.0.len(), self.0.get(0).unwrap().len());
+        let grid_size = Position(self.0.len(), self.0.first().unwrap().len());
         self.0
             .iter()
             .enumerate()
-            .map(|line| {
+            .flat_map(|line| {
                 line.1
                     .iter()
                     .enumerate()
                     .filter(|space| *space.1 == Cell::Paper)
-                    .map(|space| {
+                    .filter_map(|space| {
                         let pos = Position(space.0, line.0);
 
                         let paper = pos
@@ -58,7 +57,6 @@ impl Grid {
                                     Some(cell) => match cell {
                                         Cell::Empty => 0,
                                         Cell::Paper => 1,
-                                        Cell::Access => panic!("how?"),
                                     },
                                     None => 0,
                                 },
@@ -67,11 +65,8 @@ impl Grid {
                             .sum::<u64>();
                         if paper < 4 { Some(pos) } else { None }
                     })
-                    .filter(|s| s.is_some())
-                    .map(|s| s.unwrap())
                     .collect::<Vec<Position>>()
             })
-            .flatten()
             .collect()
     }
 }
@@ -107,7 +102,6 @@ impl std::fmt::Debug for Cell {
         match self {
             Cell::Paper => write!(f, "@"),
             Cell::Empty => write!(f, "."),
-            Cell::Access => write!(f, "x"),
         }
     }
 }
@@ -226,70 +220,8 @@ fn parse(input: &str) -> Grid {
 }
 
 #[aoc(day4, part1)]
-fn part1(input: &Grid) -> u64 {
-    let grid_size = Position(input.0.len(), input.0.get(0).unwrap().len());
-    // println!("{:?}", input);
-
-    // let debug_pos = Position(4, 1);
-
-    let mut paper_access: Vec<Position> = vec![];
-    let score = input
-        .0
-        .iter()
-        .enumerate()
-        .map(|line| {
-            line.1
-                .iter()
-                .enumerate()
-                .filter(|space| *space.1 == Cell::Paper)
-                .map(|space| {
-                    let pos = Position(space.0, line.0);
-                    // let mut debug = false;
-                    // if pos == debug_pos {
-                    //     println!("{:?}", pos.adjacent_eight(grid_size));
-                    //     debug = true;
-                    // }
-
-                    // println!("{:?} {:?}", space, pos);
-                    let paper = pos
-                        .adjacent_eight(grid_size)
-                        .iter()
-                        .map(|c| match c {
-                            Some(pos) => {
-                                // if debug {
-                                //     println!("{:?}, {:?}", c, input.get_cell(*pos));
-                                // }
-                                match input.get_cell(*pos) {
-                                    Some(cell) => match cell {
-                                        Cell::Empty => 0,
-                                        Cell::Paper => 1,
-                                        Cell::Access => panic!("how?"),
-                                    },
-                                    None => 0,
-                                }
-                            }
-                            None => 0,
-                        })
-                        .sum::<u64>();
-                    if paper < 4 {
-                        paper_access.push(pos.clone());
-                        1
-                    } else {
-                        0
-                    }
-                })
-                .sum::<u64>()
-        })
-        .sum();
-
-    // let mut debug_grid = input.clone();
-    // paper_access
-    //     .iter()
-    //     .for_each(|p| debug_grid.0[p.1][p.0] = Cell::Access);
-    // // debug_grid.0[debug_pos.1][debug_pos.0] = Cell::Empty;
-    // println!("{:?}", debug_grid);
-
-    score
+fn part1(input: &Grid) -> usize {
+    input.get_access_positions().len()
 }
 
 #[aoc(day4, part2)]
@@ -297,7 +229,7 @@ fn part2(input: &Grid) -> usize {
     let mut grid = input.clone();
     let mut total_clear = 0;
     let mut to_clear = grid.get_access_positions();
-    while to_clear.len() > 0 {
+    while !to_clear.is_empty() {
         total_clear += to_clear.len();
         while let Some(pos) = to_clear.pop() {
             grid.clear_cell(pos);

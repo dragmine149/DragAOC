@@ -77,7 +77,7 @@ fn part1(input: &[BatterBank]) -> u64 {
 
 #[aoc(day3, part1, But_2)]
 fn part1_but2(input: &[BatterBank]) -> u64 {
-    input.iter().map(|bank| bank.multi_jolt(2) as u64).sum()
+    input.iter().map(|bank| bank.multi_jolt(2)).sum()
 }
 
 #[aoc(day3, part2)]
