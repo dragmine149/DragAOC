@@ -32,6 +32,48 @@ impl Grid {
         }
         None
     }
+
+    pub fn clear_cell(&mut self, pos: Position) {
+        self.0[pos.1][pos.0] = Cell::Empty;
+    }
+
+    pub fn get_access_positions(&self) -> Vec<Position> {
+        let grid_size = Position(self.0.len(), self.0.get(0).unwrap().len());
+        self.0
+            .iter()
+            .enumerate()
+            .map(|line| {
+                line.1
+                    .iter()
+                    .enumerate()
+                    .filter(|space| *space.1 == Cell::Paper)
+                    .map(|space| {
+                        let pos = Position(space.0, line.0);
+
+                        let paper = pos
+                            .adjacent_eight(grid_size)
+                            .iter()
+                            .map(|c| match c {
+                                Some(pos) => match self.get_cell(*pos) {
+                                    Some(cell) => match cell {
+                                        Cell::Empty => 0,
+                                        Cell::Paper => 1,
+                                        Cell::Access => panic!("how?"),
+                                    },
+                                    None => 0,
+                                },
+                                None => 0,
+                            })
+                            .sum::<u64>();
+                        if paper < 4 { Some(pos) } else { None }
+                    })
+                    .filter(|s| s.is_some())
+                    .map(|s| s.unwrap())
+                    .collect::<Vec<Position>>()
+            })
+            .flatten()
+            .collect()
+    }
 }
 
 impl std::fmt::Debug for Grid {
@@ -251,8 +293,19 @@ fn part1(input: &Grid) -> u64 {
 }
 
 #[aoc(day4, part2)]
-fn part2(input: &Grid) -> u64 {
-    todo!()
+fn part2(input: &Grid) -> usize {
+    let mut grid = input.clone();
+    let mut total_clear = 0;
+    let mut to_clear = grid.get_access_positions();
+    while to_clear.len() > 0 {
+        total_clear += to_clear.len();
+        while let Some(pos) = to_clear.pop() {
+            grid.clear_cell(pos);
+        }
+        to_clear = grid.get_access_positions();
+    }
+
+    total_clear
 }
 
 #[cfg(test)]
@@ -279,8 +332,23 @@ mod tests {
         );
     }
 
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
+    #[test]
+    fn part2_example() {
+        assert_eq!(
+            part2(&parse(
+                "..@@.@@@@.
+@@@.@.@.@@
+@@@@@.@.@@
+@.@@@@..@.
+@@.@@@@.@@
+.@@@@@@@.@
+.@.@.@.@@@
+@.@@@.@@@@
+.@@@@@@@@.
+@.@.@@@.@.
+"
+            )),
+            43
+        );
+    }
 }
