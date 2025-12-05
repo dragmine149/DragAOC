@@ -36,3 +36,7 @@
 
 ### Part 2
 - 8317: Correct
+
+## Day 5
+### Part 1
+- 598: Correct
