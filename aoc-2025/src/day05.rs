@@ -54,13 +54,7 @@ fn part1(input: &(Vec<FreshRange>, Vec<usize>)) -> usize {
     input
         .1
         .iter()
-        .map(|ingredient| {
-            if input.0.iter().any(|range| range.contains(ingredient)) {
-                1
-            } else {
-                0
-            }
-        })
+        .map(|ingredient| input.0.iter().any(|range| range.contains(ingredient)) as usize)
         .sum()
 }
 
