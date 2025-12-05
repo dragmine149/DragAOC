@@ -40,3 +40,8 @@
 ## Day 5
 ### Part 1
 - 598: Correct
+
+### Part 2
+- 376126439950515: Too High
+- 372718792674544: Too High
+- 360341832208407: Correct
