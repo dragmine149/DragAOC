@@ -13,42 +13,9 @@ impl FreshRange {
     }
 }
 
-#[aoc_generator(day5, part1)]
-fn parse(input: &str) -> (Vec<FreshRange>, Vec<usize>) {
-    let mut data = input.split("\n\n");
-    let ranges = data
-        .next()
-        .expect("Should be ranges")
-        .lines()
-        .map(|line| {
-            let mut ld = line.split("-");
-            let start = ld
-                .next()
-                .expect("Should be a num")
-                .parse::<usize>()
-                .expect("Should be parsable");
-            let end = ld
-                .next()
-                .expect("Should be a num")
-                .parse::<usize>()
-                .expect("Should be parsable");
-            FreshRange(start, end)
-        })
-        .collect::<Vec<FreshRange>>();
-    let available = data
-        .next()
-        .expect("Should be numbers")
-        .lines()
-        .map(|line| line.parse::<usize>().expect("Should be parsable"))
-        .collect::<Vec<usize>>();
-    (ranges, available)
-}
-
-#[aoc_generator(day5, part2)]
-fn parse2(input: &str) -> Vec<FreshRange> {
+fn parse_ranges<'a>(input: impl Iterator<Item = &'a str>) -> Vec<FreshRange> {
     input
-        .lines()
-        .take_while(|l| !l.is_empty())
+        .take_while(|line| !line.is_empty())
         .map(|line| {
             let mut ld = line.split("-");
             let start = ld
@@ -64,6 +31,22 @@ fn parse2(input: &str) -> Vec<FreshRange> {
             FreshRange(start, end)
         })
         .collect::<Vec<FreshRange>>()
+}
+
+#[aoc_generator(day5, part1)]
+fn parse(input: &str) -> (Vec<FreshRange>, Vec<usize>) {
+    let mut iter = input.lines();
+    let ranges = parse_ranges(&mut iter);
+    iter.next();
+    let available = iter
+        .map(|line| line.parse::<usize>().expect("Should be parsable"))
+        .collect::<Vec<usize>>();
+    (ranges, available)
+}
+
+#[aoc_generator(day5, part2)]
+fn parse2(input: &str) -> Vec<FreshRange> {
+    parse_ranges(input.lines())
 }
 
 #[aoc(day5, part1)]
@@ -118,7 +101,7 @@ fn part2(input: &[FreshRange]) -> usize {
     }
 
     // ranges.sort();
-    println!("{:#?}", ranges);
+    // println!("{:#?}", ranges);
     // println!("WARNING +1 output");
     ranges
         .iter()
