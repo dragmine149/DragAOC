@@ -117,11 +117,6 @@ fn parse_p2(input: &str) -> Vec<Calculation> {
             .map(|num| num.len())
             .max()
             .expect("No max length?");
-        calc.raw_numbers.iter_mut().for_each(|num| {
-            while num.len() != length {
-                num.push(' ');
-            }
-        });
 
         for pos in (0..length).rev() {
             // print!(
@@ -134,7 +129,7 @@ fn parse_p2(input: &str) -> Vec<Calculation> {
             let nums = calc
                 .raw_numbers
                 .iter()
-                .map(|num| num.get(pos..pos + 1).expect("Should be pos").to_string())
+                .map(|num| num.get(pos..pos + 1).unwrap_or_default().to_string())
                 .join("");
             calc.numbers.push(
                 nums.replace(" ", "")
