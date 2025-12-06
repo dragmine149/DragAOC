@@ -26,20 +26,22 @@ pub struct Calculation {
 }
 
 impl Calculation {
-    pub fn calculate_p1(&self) -> usize {
+    pub fn calculate(&self) -> usize {
         match self.operation {
-            Operation::Addition => self.numbers.iter().fold(0, |acc, x| acc + x),
-            Operation::Multiplication => self.numbers.iter().fold(1, |acc, x| acc * x),
+            Operation::Addition => self.numbers.iter().sum(),
+            Operation::Multiplication => self.numbers.iter().product(),
         }
     }
 }
 
-#[aoc_generator(day6, part1)]
-fn parse_p1(input: &str) -> Vec<Calculation> {
+fn basic_parse<CF>(input: &str, mut func: CF) -> Vec<Calculation>
+where
+    CF: FnMut(&mut Calculation, &str, usize, usize),
+{
     let mut calculations = vec![];
     let mut size_count = 0_usize;
     let mut previous_char: char = char::default();
-    // For now, we are just going to ignore the weird spacing. However i fell like its going to come back to bite me.
+
     input.lines().last().unwrap().chars().for_each(|char| {
         if char.is_ascii_punctuation() {
             if previous_char != char::default() {
@@ -54,10 +56,7 @@ fn parse_p1(input: &str) -> Vec<Calculation> {
             previous_char = char;
             return;
         }
-        if char.is_whitespace() {
-            size_count += 1;
-            return;
-        }
+        size_count += 1;
     });
     calculations.push(Calculation {
         numbers: vec![],
@@ -79,73 +78,37 @@ fn parse_p1(input: &str) -> Vec<Calculation> {
                 } else {
                     calc.size
                 };
-                calc.numbers.push(
-                    line[pos..pos + size]
-                        .replace(" ", "")
-                        .parse::<usize>()
-                        .expect(&format!(
-                            "Failed to parse number between {:?} and {:?} ({:#?})",
-                            pos,
-                            pos + size,
-                            line[pos..pos + size].to_string()
-                        )),
-                );
+                func(calc, line, pos, size);
                 pos += size + 1;
             });
         });
-
     calculations
+}
+
+#[aoc_generator(day6, part1)]
+fn parse_p1(input: &str) -> Vec<Calculation> {
+    basic_parse(input, |calc, line, pos, size| {
+        calc.numbers.push(
+            line[pos..pos + size]
+                .replace(" ", "")
+                .parse::<usize>()
+                .unwrap_or_else(|_| {
+                    panic!(
+                        "Failed to parse number between {:?} and {:?} ({:#?})",
+                        pos,
+                        pos + size,
+                        line[pos..pos + size].to_string()
+                    )
+                }),
+        );
+    })
 }
 
 #[aoc_generator(day6, part2)]
 fn parse_p2(input: &str) -> Vec<Calculation> {
-    let mut calculations = vec![];
-    let mut size_count = 0_usize;
-    let mut previous_char: char = char::default();
-    // For now, we are just going to ignore the weird spacing. However i fell like its going to come back to bite me.
-    input.lines().last().unwrap().chars().for_each(|char| {
-        if char.is_ascii_punctuation() {
-            if previous_char != char::default() {
-                calculations.push(Calculation {
-                    numbers: vec![],
-                    raw_numbers: vec![],
-                    operation: Operation::from(previous_char),
-                    size: size_count - 1,
-                });
-            }
-            size_count = 1;
-            previous_char = char;
-            return;
-        }
-        if char.is_whitespace() {
-            size_count += 1;
-            return;
-        }
+    let mut calculations = basic_parse(input, |calc, line, pos, size| {
+        calc.raw_numbers.push(line[pos..pos + size].to_string());
     });
-    calculations.push(Calculation {
-        numbers: vec![],
-        raw_numbers: vec![],
-        operation: Operation::from(previous_char),
-        size: size_count,
-    });
-
-    input
-        .lines()
-        .enumerate()
-        .take_while(|(count, _)| *count != input.lines().count() - 1)
-        .for_each(|(_, line)| {
-            // println!("{:?}", line);
-            let mut pos = 0;
-            calculations.iter_mut().for_each(|calc| {
-                let size = if calc.size == 1 {
-                    line.len() - pos
-                } else {
-                    calc.size
-                };
-                calc.raw_numbers.push(line[pos..pos + size].to_string());
-                pos += size + 1;
-            });
-        });
 
     calculations.iter_mut().for_each(|calc| {
         let length = calc
@@ -159,6 +122,7 @@ fn parse_p2(input: &str) -> Vec<Calculation> {
                 num.push(' ');
             }
         });
+
         for pos in (0..length).rev() {
             // print!(
             //     "{:?}",
@@ -175,7 +139,7 @@ fn parse_p2(input: &str) -> Vec<Calculation> {
             calc.numbers.push(
                 nums.replace(" ", "")
                     .parse::<usize>()
-                    .expect(&format!("Should be a num ({:?})", nums)),
+                    .unwrap_or_else(|_| panic!("Should be a num ({:?})", nums)),
             );
         }
     });
@@ -187,12 +151,12 @@ fn parse_p2(input: &str) -> Vec<Calculation> {
 #[aoc(day6, part1)]
 fn part1(input: &[Calculation]) -> usize {
     // println!("{:#?}", input);
-    input.iter().map(|c| c.calculate_p1()).sum()
+    input.iter().map(|c| c.calculate()).sum()
 }
 
 #[aoc(day6, part2)]
 fn part2(input: &[Calculation]) -> usize {
-    input.iter().map(|c| c.calculate_p1()).sum()
+    input.iter().map(|c| c.calculate()).sum()
 }
 
 #[cfg(test)]
