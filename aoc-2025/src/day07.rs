@@ -1,6 +1,6 @@
 use std::{
     cmp::Ordering,
-    collections::{BinaryHeap, HashMap, HashSet},
+    collections::{BinaryHeap, HashMap},
     fmt::{Debug, Display},
 };
 
@@ -110,7 +110,7 @@ fn part1(input: &(Array2<Cell>, usize)) -> usize {
 
     while let Some(pos) = search.pop() {
         let cell = array.get(pos.to_slice());
-        if cell == None {
+        if cell.is_none() {
             // ignore dead out of bounds cells
             continue;
         }
@@ -131,8 +131,6 @@ fn part1(input: &(Array2<Cell>, usize)) -> usize {
                 array[right] = Cell::Visited;
                 search.push(Position(left.0 + 1, left.1));
                 search.push(Position(right.0 + 1, right.1));
-                if array.get(left) == Some(&Cell::Empty) {}
-                if array.get(right) == Some(&Cell::Empty) {}
             }
             Cell::Visited => continue,
             Cell::Start => panic!("How is there another start cell? ({:?})", pos),
@@ -150,7 +148,7 @@ fn search_timeline(
     pos: &Position,
     cache: &mut HashMap<Position, usize>,
 ) -> usize {
-    if let Some(timelines) = cache.get(&pos) {
+    if let Some(timelines) = cache.get(pos) {
         return *timelines;
     }
 
@@ -183,9 +181,10 @@ fn part2(input: &(Array2<Cell>, usize)) -> usize {
     // println!("{:#?}", input);
     let array = input.0.to_owned();
     let mut cache = HashMap::new();
-    let result = search_timeline(&array, &Position(1, input.1), &mut cache);
-    println!("{:#?}", cache);
-    result
+    // let result = search_timeline(&array, &Position(1, input.1), &mut cache);
+    // println!("{:#?}", cache);
+    // result
+    search_timeline(&array, &Position(1, input.1), &mut cache)
 }
 
 #[cfg(test)]
