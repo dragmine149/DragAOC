@@ -1,6 +1,6 @@
 use std::{
     cmp::Ordering,
-    collections::BinaryHeap,
+    collections::{BinaryHeap, HashMap, HashSet},
     fmt::{Debug, Display},
 };
 
@@ -16,10 +16,8 @@ pub enum Cell {
     Visited,
     Start,
 }
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Position(usize, usize);
-#[derive(Debug, PartialEq, Eq)]
-pub struct TimedPosition(Position, usize);
 
 impl From<char> for Cell {
     fn from(value: char) -> Self {
@@ -77,27 +75,6 @@ impl PartialOrd for Position {
 impl Position {
     fn to_slice(&self) -> (usize, usize) {
         (self.0, self.1)
-    }
-}
-impl Ord for TimedPosition {
-    fn cmp(&self, other: &Self) -> Ordering {
-        if self.1 > other.1 {
-            return Ordering::Less;
-        }
-        if self.1 < other.1 {
-            return Ordering::Greater;
-        }
-        self.0.cmp(&other.0)
-    }
-}
-impl PartialOrd for TimedPosition {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-impl TimedPosition {
-    fn to_slice(&self) -> (usize, usize) {
-        self.0.to_slice()
     }
 }
 
@@ -168,57 +145,47 @@ fn part1(input: &(Array2<Cell>, usize)) -> usize {
     count
 }
 
+fn search_timeline(
+    grid: &Array2<Cell>,
+    pos: &Position,
+    cache: &mut HashMap<Position, usize>,
+) -> usize {
+    if let Some(timelines) = cache.get(&pos) {
+        return *timelines;
+    }
+
+    if let Some(cell) = grid.get(pos.to_slice()) {
+        match cell {
+            Cell::Empty => {
+                return search_timeline(grid, &Position(pos.0 + 1, pos.1), cache);
+            }
+            Cell::Split => {
+                let left = Position(pos.0, pos.1 - 1);
+                let right = Position(pos.0, pos.1 + 1);
+
+                let left_branch = search_timeline(grid, &left, cache);
+                let right_branch = search_timeline(grid, &right, cache);
+
+                cache.insert(left, left_branch);
+                cache.insert(right, right_branch);
+
+                return left_branch + right_branch;
+            }
+            Cell::Visited => panic!("We should not be marking cells"),
+            Cell::Start => panic!("Start should not be here..."),
+        }
+    }
+    1
+}
+
 #[aoc(day7, part2)]
 fn part2(input: &(Array2<Cell>, usize)) -> usize {
     // println!("{:#?}", input);
-    let mut array = input.0.to_owned();
-    // (row, col)
-    let mut search = BinaryHeap::new();
-    search.push(TimedPosition(Position(1_usize, input.1), 0));
-    let mut count = 0;
-    let mut splits = 0;
-
-    while let Some(pos) = search.pop() {
-        // if pos.0.0 == 16 {
-        //     continue;
-        // }
-
-        // end of timeline.
-        let cell = array.get(pos.to_slice());
-        if cell == None {
-            // ignore dead out of bounds cells
-            count += 1;
-            continue;
-        }
-
-        match cell.unwrap() {
-            Cell::Empty => {
-                search.push(TimedPosition(Position(pos.0.0 + 1, pos.0.1), pos.1));
-            }
-            Cell::Split => {
-                let left = (pos.0.0, pos.0.1 - 1);
-                let right = (pos.0.0, pos.0.1 + 1);
-
-                splits += 1;
-                // println!("Split total: {:?}", count);
-                search.push(TimedPosition(Position(left.0 + 1, left.1), pos.1));
-                search.push(TimedPosition(
-                    Position(right.0 + 1, right.1),
-                    pos.1 + splits,
-                ));
-            }
-            Cell::Visited => continue,
-            Cell::Start => panic!("How is there another start cell? ({:?})", pos),
-        }
-
-        // let s = array[pos.0.to_slice()].clone();
-        // array[pos.0.to_slice()] = Cell::Visited;
-        // println!("{:?}", array);
-        // println!("{:?}", search);
-        // array[pos.0.to_slice()] = s;
-    }
-
-    count
+    let array = input.0.to_owned();
+    let mut cache = HashMap::new();
+    let result = search_timeline(&array, &Position(1, input.1), &mut cache);
+    println!("{:#?}", cache);
+    result
 }
 
 #[cfg(test)]
