@@ -18,6 +18,8 @@ pub enum Cell {
 }
 #[derive(Debug, PartialEq, Eq)]
 pub struct Position(usize, usize);
+#[derive(Debug, PartialEq, Eq)]
+pub struct TimedPosition(Position, usize);
 
 impl From<char> for Cell {
     fn from(value: char) -> Self {
@@ -64,7 +66,7 @@ impl Ord for Position {
         if self.1 < other.1 {
             return Ordering::Greater;
         }
-        return Ordering::Equal;
+        Ordering::Equal
     }
 }
 impl PartialOrd for Position {
@@ -75,6 +77,27 @@ impl PartialOrd for Position {
 impl Position {
     fn to_slice(&self) -> (usize, usize) {
         (self.0, self.1)
+    }
+}
+impl Ord for TimedPosition {
+    fn cmp(&self, other: &Self) -> Ordering {
+        if self.1 > other.1 {
+            return Ordering::Less;
+        }
+        if self.1 < other.1 {
+            return Ordering::Greater;
+        }
+        self.0.cmp(&other.0)
+    }
+}
+impl PartialOrd for TimedPosition {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl TimedPosition {
+    fn to_slice(&self) -> (usize, usize) {
+        self.0.to_slice()
     }
 }
 
@@ -145,10 +168,58 @@ fn part1(input: &(Array2<Cell>, usize)) -> usize {
     count
 }
 
-// #[aoc(day7, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+#[aoc(day7, part2)]
+fn part2(input: &(Array2<Cell>, usize)) -> usize {
+    // println!("{:#?}", input);
+    let mut array = input.0.to_owned();
+    // (row, col)
+    let mut search = BinaryHeap::new();
+    search.push(TimedPosition(Position(1_usize, input.1), 0));
+    let mut count = 0;
+    let mut splits = 0;
+
+    while let Some(pos) = search.pop() {
+        // if pos.0.0 == 16 {
+        //     continue;
+        // }
+
+        // end of timeline.
+        let cell = array.get(pos.to_slice());
+        if cell == None {
+            // ignore dead out of bounds cells
+            count += 1;
+            continue;
+        }
+
+        match cell.unwrap() {
+            Cell::Empty => {
+                search.push(TimedPosition(Position(pos.0.0 + 1, pos.0.1), pos.1));
+            }
+            Cell::Split => {
+                let left = (pos.0.0, pos.0.1 - 1);
+                let right = (pos.0.0, pos.0.1 + 1);
+
+                splits += 1;
+                // println!("Split total: {:?}", count);
+                search.push(TimedPosition(Position(left.0 + 1, left.1), pos.1));
+                search.push(TimedPosition(
+                    Position(right.0 + 1, right.1),
+                    pos.1 + splits,
+                ));
+            }
+            Cell::Visited => continue,
+            Cell::Start => panic!("How is there another start cell? ({:?})", pos),
+        }
+
+        // let s = array[pos.0.to_slice()].clone();
+        // array[pos.0.to_slice()] = Cell::Visited;
+        // println!("{:?}", array);
+        // println!("{:?}", search);
+        // array[pos.0.to_slice()] = s;
+    }
+
+    count
+}
 
 #[cfg(test)]
 mod tests {
@@ -177,8 +248,8 @@ mod tests {
         assert_eq!(part1(&parse(EXAMPLE_1)), 21);
     }
 
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
+    #[test]
+    fn part2_example() {
+        assert_eq!(part2(&parse(EXAMPLE_1)), 40);
+    }
 }
