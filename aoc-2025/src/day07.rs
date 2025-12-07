@@ -124,9 +124,10 @@ fn part1(input: &(Array2<Cell>, usize)) -> usize {
                 let left = (pos.0, pos.1 - 1);
                 let right = (pos.0, pos.1 + 1);
 
-                count += (array.get(left) == Some(&Cell::Empty)
-                    || array.get(right) == Some(&Cell::Empty)) as usize;
-                // println!("Split total: {:?}", count);
+                // count += (array.get(left) == Some(&Cell::Empty)
+                //     || array.get(right) == Some(&Cell::Empty)) as usize;
+                count += 1;
+                // // println!("Split total: {:?}", count);
                 array[left] = Cell::Visited;
                 array[right] = Cell::Visited;
                 search.push(Position(left.0 + 1, left.1));
