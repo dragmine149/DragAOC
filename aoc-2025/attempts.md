@@ -62,3 +62,4 @@
 
 ## Day 8
 ### Part 1
+- 6156: Too Low
