@@ -1,5 +1,3 @@
-use std::usize;
-
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 
@@ -27,7 +25,7 @@ impl Ord for PointDistance {
 }
 impl PartialOrd for PointDistance {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(&other))
+        Some(self.cmp(other))
     }
 }
 impl PartialEq for PointDistance {
@@ -62,7 +60,7 @@ impl PointDistance {
 fn get_shortest_distances(nodes: &[Point]) -> Vec<PointDistance> {
     nodes
         .iter()
-        .map(|n| {
+        .flat_map(|n| {
             nodes
                 .iter()
                 .map(|n2| PointDistance(*n, *n2, n.distance(n2)))
@@ -70,7 +68,6 @@ fn get_shortest_distances(nodes: &[Point]) -> Vec<PointDistance> {
                 .filter(|d| d.2 > 0)
                 .collect_vec()
         })
-        .flatten()
         .unique_by(|d| d.2)
         .collect_vec()
 }
@@ -171,7 +168,7 @@ fn parse(input: &str) -> Vec<Point> {
                 line.split(",")
                     .map(|p| {
                         p.parse::<isize>()
-                            .expect(&format!("Failed to parse to usize ({:?})", p))
+                            .unwrap_or_else(|_| panic!("Failed to parse to usize ({:?})", p))
                     })
                     .collect_tuple::<(isize, isize, isize)>()
                     .expect("3 numbers in a tuble"),
