@@ -5,8 +5,8 @@ use itertools::Itertools;
 pub struct Point(isize, isize, isize);
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Network(Vec<Point>);
-#[derive(Debug)]
-pub struct PointDistance(Point, f64);
+#[derive(Debug, Clone)]
+pub struct PointDistance(Point, Point, f64);
 
 impl From<(isize, isize, isize)> for Point {
     fn from(value: (isize, isize, isize)) -> Self {
@@ -18,15 +18,9 @@ impl From<Point> for Network {
         Self(vec![value])
     }
 }
-impl Point {
-    fn distance(&self, other: &Self) -> f64 {
-        (((self.0 - other.0).pow(2) + (self.1 - other.1).pow(2) + (self.2 - other.2).pow(2)) as f64)
-            .sqrt()
-    }
-}
 impl Ord for PointDistance {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.1.total_cmp(&other.1)
+        self.2.total_cmp(&other.2)
     }
 }
 impl PartialOrd for PointDistance {
@@ -40,6 +34,41 @@ impl PartialEq for PointDistance {
     }
 }
 impl Eq for PointDistance {}
+
+impl Point {
+    fn distance(&self, other: &Self) -> f64 {
+        (((self.0 - other.0).pow(2) + (self.1 - other.1).pow(2) + (self.2 - other.2).pow(2)) as f64)
+            .sqrt()
+    }
+}
+impl Network {
+    fn has_points(&self, points: &[Point]) -> bool {
+        points.iter().any(|p| self.0.contains(p))
+    }
+}
+
+fn get_shortest_distances(nodes: &[Point]) -> Vec<PointDistance> {
+    let distances = nodes
+        .iter()
+        .map(|n| {
+            nodes
+                .iter()
+                .map(|n2| PointDistance(*n, *n2, n.distance(n2)))
+                .inspect(|d| println!("{:?}", d))
+                .filter(|d| d.2 > 0.0)
+                .min()
+                .expect(&format!("Miniminum distance not found ({:?})", n))
+        })
+        .collect_vec();
+    // let mut result: Vec<PointDistance> = vec![];
+    // distances.iter().for_each(|d| {
+    //     if !result.iter().any(|r| r.2 == d.2) {
+    //         result.push(d.clone());
+    //     }
+    // });
+    // result
+    distances
+}
 
 #[aoc_generator(day8)]
 fn parse(input: &str) -> Vec<Point> {
@@ -59,42 +88,86 @@ fn parse(input: &str) -> Vec<Point> {
         .collect_vec()
 }
 
-#[aoc(day8, part1)]
-fn part1(input: &[Point]) -> usize {
+fn calculate_part1(input: &[Point], mut connections: usize) -> usize {
+    let mut distances = get_shortest_distances(input);
+    distances.sort();
+    println!("[");
+    distances.iter().for_each(|d| println!("    {:?},", d));
+    println!("]");
+    println!();
     let mut networks: Vec<Network> = vec![];
-    let mut connections_left = 10_usize;
-    input.iter().for_each(|node| {
-        // no point scanning the distances if we can't connect.
-        if connections_left == 0 {
-            return;
+    for dist in distances {
+        if connections == 0 {
+            break;
         }
 
-        let closest = input
-            .iter()
-            .map(|p| PointDistance(*p, node.distance(p)))
-            .filter(|d| d.1 > 0.0)
-            .min()
-            .expect("Failed to find closest");
-        println!("closest to {:?} = {:?}", node, closest);
         let existing = networks
             .iter_mut()
-            .filter(|net| net.0.contains(node) || net.0.contains(&closest.0))
+            .filter(|net| net.has_points(&[dist.0, dist.1]))
             .next();
         if let Some(net) = existing {
-            if !net.0.contains(node) {
-                net.0.push(*node);
-            } else if !net.0.contains(&closest.0) {
-                net.0.push(closest.0);
+            if !net.0.contains(&dist.0) {
+                net.0.push(dist.0);
+                println!("p1/added {:?} to {:?}", dist.0, net);
+                connections -= 1;
+                continue;
+            } else if !net.0.contains(&dist.1) {
+                net.0.push(dist.1);
+                println!("p2/added {:?} to {:?}", dist.1, net);
+                connections -= 1;
+                continue;
             }
-        } else {
-            networks.push(Network(vec![*node, closest.0]));
+            println!(
+                "Network already contains all points {:?} -> {:?}",
+                dist, net
+            );
+            continue;
         }
-        connections_left -= 1;
-    });
+        println!("New network with {:?}", vec![dist.0, dist.1]);
+        networks.push(Network(vec![dist.0, dist.1]));
+        connections -= 1;
+    }
+    networks.sort_by(|a, b| b.0.len().cmp(&a.0.len()));
     println!("{:#?}", networks);
 
-    networks.sort();
-    networks[0].0.len() * networks[1].0.len() * networks[2].0.len()
+    // input.iter().for_each(|node| {
+    //     // no point scanning the distances if we can't connect.
+    //     if connections_left == 0 {
+    //         return;
+    //     }
+
+    //     let closest = input
+    //         .iter()
+    //         .map(|p| PointDistance(*p, node.distance(p)))
+    //         .filter(|d| d.1 > 0.0)
+    //         .min()
+    //         .expect("Failed to find closest");
+    //     println!("closest to {:?} = {:?}", node, closest);
+    //     let existing = networks
+    //         .iter_mut()
+    //         .filter(|net| net.0.contains(node) || net.0.contains(&closest.0))
+    //         .next();
+    //     if let Some(net) = existing {
+    //         if !net.0.contains(node) {
+    //             net.0.push(*node);
+    //         } else if !net.0.contains(&closest.0) {
+    //             net.0.push(closest.0);
+    //         }
+    //     } else {
+    //         networks.push(Network(vec![*node, closest.0]));
+    //     }
+    //     connections_left -= 1;
+    // });
+    // println!("{:#?}", networks);
+
+    0
+    // networks.sort();
+    // networks[0].0.len() * networks[1].0.len() * networks[2].0.len()
+}
+
+#[aoc(day8, part1)]
+fn part1(input: &[Point]) -> usize {
+    calculate_part1(input, 1000)
 }
 
 // #[aoc(day8, part2)]
@@ -130,7 +203,7 @@ mod tests {
 
     #[test]
     fn part1_example() {
-        assert_eq!(part1(&parse(EXAMPLE_1)), 40);
+        assert_eq!(calculate_part1(&parse(EXAMPLE_1), 10), 40);
     }
 
     // #[test]
