@@ -142,8 +142,8 @@ fn calculate_part1(input: &[Point], mut connections: usize) -> usize {
     networks.sort_by(|a, b| b.0.len().cmp(&a.0.len()));
     println!("{:#?}", networks);
     // 0
-    networks[0].len() * networks[1].len() * networks[2].len() + 1
-    // networks[0].len() * networks[1].len() * networks[2].len()
+    // networks[0].len() * networks[1].len() * networks[2].len() + 1
+    networks[0].len() * networks[1].len() * networks[2].len()
 }
 
 #[aoc_generator(day8)]
