@@ -1,11 +1,13 @@
+use std::usize;
+
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub struct Point(isize, isize, isize);
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct Network(Vec<Point>);
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct PointDistance(Point, Point, usize);
 
 impl From<(isize, isize, isize)> for Point {
@@ -73,7 +75,7 @@ fn get_shortest_distances(nodes: &[Point]) -> Vec<PointDistance> {
         .collect_vec()
 }
 
-fn calculate_part1(input: &[Point], mut connections: usize) -> usize {
+fn calculate(input: &[Point], mut connections: usize) -> (Vec<Network>, PointDistance) {
     // connections -= 1;
 
     let mut distances = get_shortest_distances(input);
@@ -83,13 +85,17 @@ fn calculate_part1(input: &[Point], mut connections: usize) -> usize {
     // println!("]");
     // println!();
     let mut networks: Vec<Network> = vec![];
+    let mut last = PointDistance::default();
     for dist in distances {
         if connections == 0 {
             break;
         }
+        // if last.2 > 0 && networks.len() == 1 {
+        //     break;
+        // }
 
-        println!();
-        println!("Connection count: {:?}", connections);
+        // println!();
+        // println!("Connection count: {:?}", connections);
         // println!(
         //     "{:#?}",
         //     networks
@@ -106,33 +112,37 @@ fn calculate_part1(input: &[Point], mut connections: usize) -> usize {
 
         if let Some(net) = existing {
             if let Some(mer) = iter.next() {
-                println!("Merged {:?} with {:?} ({:?})", net, mer, dist);
+                // println!("Merged {:?} with {:?} ({:?})", net, mer, dist);
                 net.merge(mer);
                 connections -= 1;
+                last = dist;
                 continue;
             }
 
             if !net.0.contains(&dist.0) {
                 net.0.push(dist.0);
-                println!("p1/added {:?} ({:?}) to {:?}", dist.0, dist, net);
+                // println!("p1/added {:?} ({:?}) to {:?}", dist.0, dist, net);
                 connections -= 1;
+                last = dist;
                 continue;
             } else if !net.0.contains(&dist.1) {
                 net.0.push(dist.1);
-                println!("p2/added {:?} ({:?}) to {:?}", dist.1, dist, net);
+                // println!("p2/added {:?} ({:?}) to {:?}", dist.1, dist, net);
                 connections -= 1;
+                last = dist;
                 continue;
             }
-            println!(
-                "Network already contains all points {:?} -> {:?}",
-                dist, net
-            );
+            // println!(
+            //     "Network already contains all points {:?} -> {:?}",
+            //     dist, net
+            // );
             connections -= 1;
             continue;
         }
-        println!("New network with {:?}", dist);
+        // println!("New network with {:?}", dist);
         networks.push(Network(vec![dist.0, dist.1]));
         connections -= 1;
+        last = dist;
     }
     networks = networks
         .iter()
@@ -140,10 +150,16 @@ fn calculate_part1(input: &[Point], mut connections: usize) -> usize {
         .map(|net| net.to_owned())
         .collect_vec();
     networks.sort_by(|a, b| b.0.len().cmp(&a.0.len()));
-    println!("{:#?}", networks);
+    // println!("{:#?}", networks);
     // 0
     // networks[0].len() * networks[1].len() * networks[2].len() + 1
-    networks[0].len() * networks[1].len() * networks[2].len()
+    // networks[0].len() * networks[1].len() * networks[2].len()
+    (networks, last)
+}
+
+fn calculate_part1(input: &[Point], connections: usize) -> usize {
+    let result = calculate(input, connections);
+    result.0[0].len() * result.0[1].len() * result.0[2].len()
 }
 
 #[aoc_generator(day8)]
@@ -169,10 +185,11 @@ fn part1(input: &[Point]) -> usize {
     calculate_part1(input, 1000)
 }
 
-// #[aoc(day8, part2)]
-// fn part2(input: &[Point]) -> String {
-//     todo!()
-// }
+#[aoc(day8, part2)]
+fn part2(input: &[Point]) -> usize {
+    let last = calculate(input, 10000).1;
+    (last.0.0 * last.1.0) as usize
+}
 
 #[cfg(test)]
 mod tests {
@@ -205,8 +222,8 @@ mod tests {
         assert_eq!(calculate_part1(&parse(EXAMPLE_1), 10), 40);
     }
 
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
+    #[test]
+    fn part2_example() {
+        assert_eq!(part2(&parse(EXAMPLE_1)), 25272);
+    }
 }
