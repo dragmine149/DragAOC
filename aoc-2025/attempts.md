@@ -72,3 +72,6 @@
 ## Day 9
 ### Part 1
 - 4750297200: Correct
+
+### Part 2
+- 4750297200: Too High
