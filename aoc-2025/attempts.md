@@ -65,4 +65,10 @@
 - 6156: Too Low
 - 133575: Too High
 - 133574: Correct
+
+### Part 2
 - 2435100380: Correct
+
+## Day 9
+### Part 1
+- 4750297200: Correct
