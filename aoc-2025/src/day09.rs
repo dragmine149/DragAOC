@@ -90,81 +90,105 @@ fn line_crosses_line(
     line2_start: &Positions,
     line2_end: &Positions,
 ) -> bool {
+    if line1_start == line2_start && line2_start == line2_end {
+        return true;
+    }
+
     // if it ain't horizontal, it's vertical. Thats just how this works
     let line1_horizontal = line1_start.same_row(&line1_end);
     let line2_horizontal = line2_start.same_row(&line2_end);
-    // They can't cross if they are the same horizontal or vertical
-    if line1_horizontal && line2_horizontal {
-        return false;
-    }
-    if !line1_horizontal && !line2_horizontal {
-        return false;
-    }
     println!(
         "l1s {:?}, l1e {:?}, l1h {:?}, l2s {:?}, l2e {:?}, l2h {:?}",
         line1_start, line1_end, line1_horizontal, line2_start, line2_end, line2_horizontal
     );
+    // They can't cross if they are the same horizontal or vertical
+    if line1_horizontal && line2_horizontal {
+        let line1_minmax = min_max(line1_start.1, line1_end.1);
+        let line2_minmax = min_max(line2_start.1, line2_end.1);
+        println!(
+            "Horizontal l1 {:?}, l2 {:?}",
+            (line2_minmax.0 >= line1_minmax.0 && line2_minmax.1 <= line1_minmax.1),
+            (line1_minmax.0 >= line2_minmax.0 && line1_minmax.1 <= line2_minmax.1)
+        );
+        // l2 engolfed by l1
+        return (line2_minmax.0 >= line1_minmax.0 && line2_minmax.1 <= line1_minmax.1) ||
+        // l1 englofed by l2
+        (line1_minmax.0 >= line2_minmax.0 && line1_minmax.1 <= line2_minmax.1);
+    }
+    if !line1_horizontal && !line2_horizontal {
+        let line1_minmax = min_max(line1_start.1, line1_end.1);
+        let line2_minmax = min_max(line2_start.1, line2_end.1);
+        println!(
+            "vertical l1 {:?}, l2 {:?}",
+            (line2_minmax.0 >= line1_minmax.0 && line2_minmax.1 <= line1_minmax.1),
+            (line1_minmax.0 >= line2_minmax.0 && line1_minmax.1 <= line2_minmax.1)
+        );
+        // l2 engolfed by l1
+        return (line2_minmax.0 >= line1_minmax.0 && line2_minmax.1 <= line1_minmax.1) ||
+		    // l1 englofed by l2
+		    (line1_minmax.0 >= line2_minmax.0 && line1_minmax.1 <= line2_minmax.1);
+    }
     if line1_horizontal {
         let line1_col_minmax = min_max(line1_start.1, line1_end.1);
         let line2_row_minmax = min_max(line2_start.0, line2_end.0);
 
         println!(
-            "l1s < l2rm {:?} ({:?} < {:?})",
-            line1_start.0 < line2_row_minmax.0,
+            "l1s <= l2rm {:?} ({:?} <= {:?})",
+            line1_start.0 <= line2_row_minmax.0,
             line1_start.0,
             line2_row_minmax.0
         );
         println!(
-            "l1s > l2rm {:?} ({:?} > {:?})",
-            line1_start.0 > line2_row_minmax.1,
+            "l1s >= l2rm {:?} ({:?} >= {:?})",
+            line1_start.0 >= line2_row_minmax.1,
             line1_start.0,
             line2_row_minmax.1
         );
         println!(
-            "l1s < l2rm {:?} ({:?} < {:?})",
-            line2_start.1 < line1_col_minmax.0,
+            "l1s <= l2rm {:?} ({:?} <= {:?})",
+            line2_start.1 <= line1_col_minmax.0,
             line2_start.0,
             line1_col_minmax.0
         );
         println!(
-            "l1s > l2rm {:?} ({:?} > {:?})",
-            line2_start.1 > line1_col_minmax.1,
+            "l1s >= l2rm {:?} ({:?} >= {:?})",
+            line2_start.1 >= line1_col_minmax.1,
             line2_start.0,
             line1_col_minmax.1
         );
-        return (line1_start.0 < line2_row_minmax.0 && line1_start.0 > line2_row_minmax.1)
-            && (line2_start.1 < line1_col_minmax.0 && line2_start.1 > line1_col_minmax.1);
+        return (line1_start.0 <= line2_row_minmax.0 && line1_start.0 >= line2_row_minmax.1)
+            && (line2_start.1 <= line1_col_minmax.0 && line2_start.1 >= line1_col_minmax.1);
     }
 
     let line1_row_minmax = min_max(line1_start.0, line1_end.0);
     let line2_col_minmax = min_max(line2_start.1, line2_end.1);
 
     println!(
-        "l1s < l2rm {:?} ({:?} < {:?})",
-        line1_start.1 < line2_col_minmax.0,
+        "l1s <= l2rm {:?} ({:?} <= {:?})",
+        line1_start.1 <= line2_col_minmax.0,
         line1_start.0,
         line2_col_minmax.0
     );
     println!(
-        "l1s > l2rm {:?} ({:?} > {:?})",
-        line1_start.1 > line2_col_minmax.1,
+        "l1s >= l2rm {:?} ({:?} >= {:?})",
+        line1_start.1 >= line2_col_minmax.1,
         line1_start.0,
         line2_col_minmax.1
     );
     println!(
-        "l1s < l2rm {:?} ({:?} < {:?})",
-        line2_start.0 < line1_row_minmax.0,
+        "l1s <= l2rm {:?} ({:?} <= {:?})",
+        line2_start.0 <= line1_row_minmax.0,
         line2_start.0,
         line1_row_minmax.0
     );
     println!(
-        "l1s > l2rm {:?} ({:?} > {:?})",
-        line2_start.0 > line1_row_minmax.1,
+        "l1s >= l2rm {:?} ({:?} >= {:?})",
+        line2_start.0 >= line1_row_minmax.1,
         line2_start.0,
         line1_row_minmax.0
     );
-    return (line1_start.1 < line2_col_minmax.0 && line1_start.1 > line2_col_minmax.1)
-        && (line2_start.0 < line1_row_minmax.0 && line2_start.0 > line1_row_minmax.1);
+    return (line1_start.1 <= line2_col_minmax.0 && line1_start.1 >= line2_col_minmax.1)
+        && (line2_start.0 <= line1_row_minmax.0 && line2_start.0 >= line1_row_minmax.1);
 }
 
 #[aoc_generator(day9)]
@@ -199,11 +223,11 @@ fn part2(input: &[Positions]) -> isize {
                 .filter(|pos2| pos.0 != pos2.0 && pos.1 != pos2.1)
                 .map(|pos2| {
                     println!("{:?} to {:?}", pos, pos2);
-                    println!(
-                        "{:?}, {:?}",
-                        pos.get_corners(pos2),
-                        pos.corners_shrunk(pos2)
-                    );
+                    // println!(
+                    //     "{:?}, {:?}",
+                    //     pos.get_corners(pos2),
+                    //     pos.corners_shrunk(pos2)
+                    // );
                     let corners = pos.corners_shrunk(pos2);
                     let mut iter = corners.iter().peekable();
                     while let Some(corner) = iter.next() {
