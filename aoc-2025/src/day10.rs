@@ -12,12 +12,6 @@ pub struct Machine {
     joltage: Vec<usize>,
 }
 
-#[derive(Debug, Default)]
-pub struct CacheStatus {
-    hits: usize,
-    refs: usize,
-}
-
 /// Does xor to flip lights on/off
 fn flip_lights(lights: u16, details: u16) -> u16 {
     lights ^ details
@@ -29,14 +23,11 @@ fn turn_all_off(
     last_action: u16,
     depth: u8,
     cache: &mut HashMap<u16, usize>,
-    cache_status: &mut CacheStatus,
 ) -> usize {
     if depth > 7 {
         return u32::MAX as usize;
     }
-    cache_status.refs += 1;
     if let Some(score) = cache.get(&lights) {
-        cache_status.hits += 1;
         return *score;
     }
 
@@ -55,7 +46,7 @@ fn turn_all_off(
         .filter(|button| **button != last_action)
         .map(|button| {
             let lights = flip_lights(lights, *button);
-            turn_all_off(lights, buttons, *button, depth + 1, cache, cache_status) + 1
+            turn_all_off(lights, buttons, *button, depth + 1, cache) + 1
         })
         .min()
         .unwrap();
@@ -182,19 +173,8 @@ fn part1(input: &[Machine]) -> usize {
         .par_iter()
         .map(|i| {
             let mut cache = HashMap::<u16, usize>::new();
-            let mut cache_status = CacheStatus::default();
-            let res = turn_all_off(
-                i.light_diagram,
-                &i.button_wirings,
-                0,
-                0,
-                &mut cache,
-                &mut cache_status,
-            );
-            println!(
-                "{:?} -> {:?} (hits: {:?}, refs: {:?})",
-                i, res, cache_status.hits, cache_status.refs
-            );
+            let res = turn_all_off(i.light_diagram, &i.button_wirings, 0, 0, &mut cache);
+            println!("{:?} -> {:?}", i, res);
             res
         })
         .sum()
