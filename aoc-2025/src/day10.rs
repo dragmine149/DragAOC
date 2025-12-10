@@ -1,6 +1,5 @@
-use std::usize;
-
 use aoc_runner_derive::{aoc, aoc_generator};
+use itertools::Itertools;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use regex::Regex;
 
@@ -36,6 +35,45 @@ fn turn_all_off(lights: u16, buttons: &[u16], last_action: u16, depth: u8) -> us
         .map(|button| {
             let lights = flip_lights(lights, *button);
             turn_all_off(lights, buttons, *button, depth + 1) + 1
+        })
+        .min()
+        .unwrap()
+}
+
+fn above_limit(current: &[usize], goal: &[usize]) -> bool {
+    current
+        .iter()
+        .enumerate()
+        .any(|(pos, value)| *value > goal[pos])
+}
+
+fn byte_to_pos(bytes: &u16) -> Vec<u16> {
+    let mut positions: Vec<u16> = vec![];
+    for n in 0..15 {
+        if bytes >> n & 1 == 1 {
+            positions.push(n);
+        }
+    }
+    positions
+}
+
+fn joltage_levels(current: Vec<usize>, goal: &[usize], buttons: &[Vec<u16>]) -> usize {
+    println!("current: {:?}, goal: {:?}", current, goal);
+    if current == goal {
+        return 1;
+    }
+    if above_limit(&current, goal) {
+        return u32::MAX as usize;
+    }
+
+    buttons
+        .iter()
+        .map(|button| {
+            let mut levels = current.clone();
+            println!("{:?}", button);
+            button.iter().for_each(|but| levels[*but as usize] += 1);
+            println!("{:?}", levels);
+            joltage_levels(levels, goal, buttons)
         })
         .min()
         .unwrap()
@@ -123,10 +161,23 @@ fn part1(input: &[Machine]) -> usize {
         .sum()
 }
 
-// #[aoc(day10, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+#[aoc(day10, part2)]
+fn part2(input: &[Machine]) -> usize {
+    input
+        // .par_iter()
+        .iter()
+        .map(|i| {
+            let jolts = i
+                .button_wirings
+                .iter()
+                .map(|byte| byte_to_pos(byte))
+                .collect_vec();
+            let res = joltage_levels(vec![0; i.joltage.len()], &i.joltage, &jolts);
+            println!("{:?} -> {:?}", i, res);
+            res
+        })
+        .sum()
+}
 
 #[cfg(test)]
 mod tests {
@@ -142,8 +193,8 @@ mod tests {
         assert_eq!(part1(&parse(EXAMPLE_1)), 7);
     }
 
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
+    #[test]
+    fn part2_example() {
+        assert_eq!(part2(&parse(EXAMPLE_1)), 33);
+    }
 }
