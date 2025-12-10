@@ -60,7 +60,39 @@ fn byte_to_pos(bytes: &u16) -> Vec<u16> {
     positions
 }
 
-fn joltage_levels(values: Vec<u16>, buttons_multi: Vec<u16>, goal: Vec<u16>, buttons: &[Vec<u16>]) {
+fn joltage_levels(
+    values: &[u16],
+    buttons_multi: Vec<u16>,
+    goal: &[u16],
+    buttons: &[Vec<u16>],
+    worst: &u16,
+) -> usize {
+    println!("{:?}", buttons_multi);
+    let res = values
+        .iter()
+        .enumerate()
+        .map(|(p, v)| v * buttons_multi[p])
+        .collect::<Vec<u16>>();
+    if res == goal {
+        return 0;
+    }
+
+    buttons
+        .iter()
+        .map(|button| {
+            let mut multi = buttons_multi.clone();
+            button.iter().for_each(|item| {
+                let item = *item as usize;
+                multi[item] += 1;
+            });
+            if multi.iter().any(|v| v > worst) {
+                return u32::MAX as usize;
+            }
+
+            joltage_levels(values, multi, goal, buttons, worst)
+        })
+        .min()
+        .unwrap()
 }
 
 #[aoc_generator(day10)]
@@ -143,31 +175,32 @@ fn part1(input: &[Machine]) -> usize {
 
 #[aoc(day10, part2)]
 fn part2(input: &[Machine]) -> usize {
-    // input
-    //     // .par_iter()
-    //     .iter()
-    //     .map(|i| {
-    //         let buttons = i
-    //             .button_wirings
-    //             .iter()
-    //             .map(|byte| byte_to_pos(byte))
-    //             .collect_vec();
-    //         // println!("{:?}, {:?}", i.button_wirings, buttons);
-    //         let mut cache = HashMap::<u128, usize>::new();
-    //         // let worst = i.joltage.iter().sum::<u16>();
-    //         let mut worst = 0;
-    //         for n in 0..10 {
-    //             worst += i.joltage >> 9 * n & 0b1_1111_1111;
-    //         }
-    //         // worst = 3;
-    //         // buttons.iter().for_each(|btn| println!("{:128b}", btn));
-    //         // println!();
-    //         let res = joltage_levels(0, i.joltage, &buttons, &mut cache, worst, 0);
-    //         println!("{:?} -> {:?}", i, res);
-    //         res
-    //     })
-    //     .sum()
-    0
+    input
+        // .par_iter()
+        .iter()
+        .map(|i| {
+            let buttons = i
+                .button_wirings
+                .iter()
+                .map(|byte| byte_to_pos(byte))
+                .collect_vec();
+            println!("{:?}", i.joltage);
+            // println!("{:?}, {:?}", i.button_wirings, buttons);
+            let mut cache = HashMap::<u128, usize>::new();
+            // buttons.iter().for_each(|btn| println!("{:128b}", btn));
+            // println!();
+
+            let res = joltage_levels(
+                &vec![0; i.joltage.len()],
+                vec![0; i.joltage.len()],
+                &i.joltage,
+                &buttons,
+                &(i.joltage.iter().max().unwrap() / 2),
+            );
+            println!("{:?} -> {:?}", i, res);
+            res
+        })
+        .sum()
 }
 
 #[cfg(test)]
