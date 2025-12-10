@@ -85,20 +85,20 @@ fn joltage_levels(
     cache: &mut HashMap<u128, usize>,
     worst: u128,
     depth: u128,
-    pathing: Vec<usize>,
+    // pathing: Vec<usize>,
 ) -> usize {
-    println!("{:64b} {:?}", current, pathing);
+    // println!("{:64b} {:?}", current, pathing);
     // println!("current: {:40b}, goal: {:40b}", current, goal);
     if depth >= worst {
-        println!("Depth limit");
+        // println!("Depth limit");
         return u32::MAX as usize;
     }
     if current == goal {
-        println!("GOAL!");
+        // println!("GOAL!");
         return 0;
     }
     if let Some(score) = cache.get(&current) {
-        println!("Cache hite");
+        // println!("Cache hite");
         return *score;
     }
     if above_limit(&current, &goal) {
@@ -107,22 +107,21 @@ fn joltage_levels(
         // if depth == 6 {
         //     println!();
         // }
-        println!("{:64b} limit hit", goal);
+        // println!("{:64b} limit hit", goal);
         return (u16::MAX as usize) + (u16::MAX as usize);
     }
 
     let res = buttons
         .iter()
-        .enumerate()
-        .map(|(pos, button)| {
+        .map(|button| {
             // if depth <= 2 {
             //     println!("{:}", depth);
             // }
-            let mut path = pathing.clone();
-            path.push(pos);
+            // let mut path = pathing.clone();
+            // path.push(pos);
 
-            println!("{:64b}", current);
-            println!("{:64b}", button);
+            // println!("{:64b}", current);
+            // println!("{:64b}", button);
             let res = joltage_levels(
                 current + button,
                 goal,
@@ -130,7 +129,7 @@ fn joltage_levels(
                 cache,
                 worst,
                 depth + 1,
-                path,
+                // path,
             ) + 1;
             if depth <= 2 {
                 // println!(
@@ -241,7 +240,7 @@ fn part2(input: &[Machine]) -> usize {
                 .iter()
                 .map(|byte| byte_to_pos(byte))
                 .collect_vec();
-            println!("{:?}, {:?}", i.button_wirings, buttons);
+            // println!("{:?}, {:?}", i.button_wirings, buttons);
             let mut cache = HashMap::<u128, usize>::new();
             // let worst = i.joltage.iter().sum::<u16>();
             let mut worst = 0;
@@ -249,9 +248,9 @@ fn part2(input: &[Machine]) -> usize {
                 worst += i.joltage >> 9 * n & 0b1_1111_1111;
             }
             // worst = 3;
-            buttons.iter().for_each(|btn| println!("{:128b}", btn));
-            println!();
-            let res = joltage_levels(0, i.joltage, &buttons, &mut cache, worst, 0, vec![]);
+            // buttons.iter().for_each(|btn| println!("{:128b}", btn));
+            // println!();
+            let res = joltage_levels(0, i.joltage, &buttons, &mut cache, worst, 0);
             println!("{:?} -> {:?}", i, res);
             res
         })
