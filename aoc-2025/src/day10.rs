@@ -85,28 +85,61 @@ fn joltage_levels(
     cache: &mut HashMap<u128, usize>,
     worst: u128,
     depth: u128,
+    pathing: Vec<usize>,
 ) -> usize {
-    // println!("current: {:?}, goal: {:?}", current, goal);
+    println!("{:64b} {:?}", current, pathing);
+    // println!("current: {:40b}, goal: {:40b}", current, goal);
     if depth >= worst {
         println!("Depth limit");
         return u32::MAX as usize;
     }
     if current == goal {
+        println!("GOAL!");
         return 0;
+    }
+    if let Some(score) = cache.get(&current) {
+        println!("Cache hite");
+        return *score;
     }
     if above_limit(&current, &goal) {
         // println!("{:128b} ({:})", current, current);
         // println!("{:128b} ({:})", goal, goal);
-        // println!();
-        return u32::MAX as usize;
-    }
-    if let Some(score) = cache.get(&current) {
-        return *score;
+        // if depth == 6 {
+        //     println!();
+        // }
+        println!("{:64b} limit hit", goal);
+        return (u16::MAX as usize) + (u16::MAX as usize);
     }
 
     let res = buttons
         .iter()
-        .map(|button| joltage_levels(current + button, goal, buttons, cache, worst, depth + 1) + 1)
+        .enumerate()
+        .map(|(pos, button)| {
+            // if depth <= 2 {
+            //     println!("{:}", depth);
+            // }
+            let mut path = pathing.clone();
+            path.push(pos);
+
+            println!("{:64b}", current);
+            println!("{:64b}", button);
+            let res = joltage_levels(
+                current + button,
+                goal,
+                buttons,
+                cache,
+                worst,
+                depth + 1,
+                path,
+            ) + 1;
+            if depth <= 2 {
+                // println!(
+                //     "depth: {:?}. current:{:64b}. button: {:64b}. res: {:?}",
+                //     depth, current, button, res
+                // );
+            }
+            res
+        })
         .min()
         .unwrap();
     cache.insert(current, res);
@@ -140,16 +173,17 @@ fn parse(input: &str) -> Vec<Machine> {
                 });
 
             let mut jolts = 0_u128;
-            captures
+            let values = captures
                 .get(3)
                 .expect("Failed to get jolt capture")
                 .as_str()
                 .split(",")
                 .map(|n| n.parse::<u128>().expect("Failed to parse number"))
-                .for_each(|num| {
-                    jolts <<= 9;
-                    jolts += num;
-                });
+                .collect::<Vec<u128>>();
+            values.iter().rev().for_each(|num| {
+                jolts <<= 9;
+                jolts += num;
+            });
             // .collect::<Vec<u16>>();
 
             let captures2 = regex2.captures_iter(captures.get(2).unwrap().as_str());
@@ -207,15 +241,17 @@ fn part2(input: &[Machine]) -> usize {
                 .iter()
                 .map(|byte| byte_to_pos(byte))
                 .collect_vec();
+            println!("{:?}, {:?}", i.button_wirings, buttons);
             let mut cache = HashMap::<u128, usize>::new();
             // let worst = i.joltage.iter().sum::<u16>();
             let mut worst = 0;
             for n in 0..10 {
                 worst += i.joltage >> 9 * n & 0b1_1111_1111;
             }
-            // buttons.iter().for_each(|btn| println!("{:128b}", btn));
-            // println!();
-            let res = joltage_levels(0, i.joltage, &buttons, &mut cache, worst, 0);
+            // worst = 3;
+            buttons.iter().for_each(|btn| println!("{:128b}", btn));
+            println!();
+            let res = joltage_levels(0, i.joltage, &buttons, &mut cache, worst, 0, vec![]);
             println!("{:?} -> {:?}", i, res);
             res
         })
@@ -261,5 +297,16 @@ mod tests {
         // println!("{:#0b}", num);
         assert_eq!(num & 0b1111_0000_0000_0000_u16, 0b1000_0000_0000_0000_u16);
         assert!(num & 0b1111_0000_0000_0000_u16 > 0b0111_0000_0000_0000_u16);
+    }
+
+    #[test]
+    fn limit_hit() {
+        assert_eq!(
+            above_limit(
+                &0b0000_000000101_000000101_000000110_000000110_000000101_u128,
+                &0b1010_000001011_000001011_000000101_000001010_000000101_u128
+            ),
+            true
+        );
     }
 }
