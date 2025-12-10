@@ -1,55 +1,41 @@
 use std::usize;
 
 use aoc_runner_derive::{aoc, aoc_generator};
-use itertools::Itertools;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use regex::Regex;
 
 #[derive(Debug)]
 pub struct Machine {
-    light_diagram: Vec<bool>,
-    button_wirings: Vec<Vec<u8>>,
+    light_diagram: u16,
+    button_wirings: Vec<u16>,
     joltage: Vec<usize>,
 }
 
-fn flip_lights(lights: &[bool], details: &[u8]) -> Vec<bool> {
-    let mut lights = lights.to_owned();
-    details
-        .iter()
-        .for_each(|detail| lights[*detail as usize] = !lights[*detail as usize]);
-    lights
-}
-fn lights_off(lights: &[bool]) -> bool {
-    !lights.iter().any(|l| *l)
-}
-fn lights_on(lights: &[bool]) -> Vec<u8> {
-    lights
-        .iter()
-        .enumerate()
-        .filter(|light| *light.1)
-        .map(|light| light.0 as u8)
-        .collect_vec()
+/// Does xor to flip lights on/off
+fn flip_lights(lights: u16, details: u16) -> u16 {
+    lights ^ details
 }
 
-fn turn_all_off(lights: &[bool], buttons: &[Vec<u8>], last_action: &[u8], depth: u8) -> usize {
-    if depth > 10 {
+fn turn_all_off(lights: u16, buttons: &[u16], last_action: u16, depth: u8) -> usize {
+    if depth > 7 {
         return u32::MAX as usize;
     }
     // println!("{:?} {:?}", lights, last_action);
     // if they are all off, we have reached the bottom anyway.
-    if lights_off(&lights) {
+    // If they are all off, number should be 0.
+    if lights == 0 {
         return 0;
     }
     // when we just have one flip left.
-    if buttons.contains(&lights_on(&lights)) {
+    if buttons.contains(&lights) {
         return 1;
     }
     buttons
         .iter()
-        .filter(|button| *button != last_action)
+        .filter(|button| **button != last_action)
         .map(|button| {
-            let lights = flip_lights(&lights, button);
-            turn_all_off(&lights, buttons, button, depth + 1) + 1
+            let lights = flip_lights(lights, *button);
+            turn_all_off(lights, buttons, *button, depth + 1) + 1
         })
         .min()
         .unwrap()
@@ -67,17 +53,20 @@ fn parse(input: &str) -> Vec<Machine> {
         .map(|line| {
             let captures = regex.captures(line).expect("Failed to do regex");
             // println!("{:?}", captures);
-            let lights = captures
+            let mut lights = 0b0;
+            captures
                 .get(1)
                 .expect("Failed to get first capture")
                 .as_str()
                 .chars()
-                .map(|char| match char {
-                    '.' => false,
-                    '#' => true,
+                .enumerate()
+                .for_each(|(pos, char)| match char {
+                    // '.' => lights &= ,
+                    '.' => return,
+                    '#' => lights |= 2_u16.pow(pos as u32),
                     _ => panic!("Invalid character in line {:?}", char),
-                })
-                .collect::<Vec<bool>>();
+                });
+
             let jolts = captures
                 .get(3)
                 .expect("Failed to get jolt capture")
@@ -92,6 +81,7 @@ fn parse(input: &str) -> Vec<Machine> {
             let wirings = captures2
                 .map(|capture| {
                     // println!("{:?}", capture);
+                    let mut wirings = 0b0;
                     capture
                         .iter()
                         .skip(1)
@@ -101,9 +91,10 @@ fn parse(input: &str) -> Vec<Machine> {
                         .as_str()
                         .split(",")
                         .map(|n| n.parse::<u8>().expect("Failed to parse to u8"))
-                        .collect::<Vec<u8>>()
+                        .for_each(|p| wirings |= 2_u16.pow(p as u32));
+                    wirings
                 })
-                .collect::<Vec<Vec<u8>>>();
+                .collect::<Vec<u16>>();
 
             Machine {
                 light_diagram: lights,
@@ -116,7 +107,7 @@ fn parse(input: &str) -> Vec<Machine> {
 
 #[aoc(day10, part1)]
 fn part1(input: &[Machine]) -> usize {
-    input.iter().for_each(|i| println!("{:?}", i));
+    // input.iter().for_each(|i| println!("{:?}", i));
     // println!(
     //     "input[0]: {:?}",
     //     turn_all_off(&input[0].light_diagram, &input[0].button_wirings, &[], 0)
@@ -124,7 +115,11 @@ fn part1(input: &[Machine]) -> usize {
     // 0
     input
         .par_iter()
-        .map(|i| turn_all_off(&i.light_diagram, &i.button_wirings, &[], 0))
+        .map(|i| {
+            let res = turn_all_off(i.light_diagram, &i.button_wirings, 0, 0);
+            println!("{:?} -> {:?}", i, res);
+            res
+        })
         .sum()
 }
 
