@@ -76,3 +76,6 @@
 ### Part 2
 - 4750297200: Too High
 - 1568657670: Too Low
+
+## Day 10
+### Part 1
