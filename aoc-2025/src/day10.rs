@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
@@ -10,15 +12,34 @@ pub struct Machine {
     joltage: Vec<usize>,
 }
 
+#[derive(Debug, Default)]
+pub struct CacheStatus {
+    hits: usize,
+    refs: usize,
+}
+
 /// Does xor to flip lights on/off
 fn flip_lights(lights: u16, details: u16) -> u16 {
     lights ^ details
 }
 
-fn turn_all_off(lights: u16, buttons: &[u16], last_action: u16, depth: u8) -> usize {
+fn turn_all_off(
+    lights: u16,
+    buttons: &[u16],
+    last_action: u16,
+    depth: u8,
+    cache: &mut HashMap<u16, usize>,
+    cache_status: &mut CacheStatus,
+) -> usize {
     if depth > 7 {
         return u32::MAX as usize;
     }
+    cache_status.refs += 1;
+    if let Some(score) = cache.get(&lights) {
+        cache_status.hits += 1;
+        return *score;
+    }
+
     // println!("{:?} {:?}", lights, last_action);
     // if they are all off, we have reached the bottom anyway.
     // If they are all off, number should be 0.
@@ -29,15 +50,21 @@ fn turn_all_off(lights: u16, buttons: &[u16], last_action: u16, depth: u8) -> us
     if buttons.contains(&lights) {
         return 1;
     }
-    buttons
+    let res = buttons
         .iter()
         .filter(|button| **button != last_action)
         .map(|button| {
             let lights = flip_lights(lights, *button);
-            turn_all_off(lights, buttons, *button, depth + 1) + 1
+            turn_all_off(lights, buttons, *button, depth + 1, cache, cache_status) + 1
         })
         .min()
-        .unwrap()
+        .unwrap();
+
+    // only cache valid results
+    if res < u32::MAX as usize {
+        cache.insert(lights, res);
+    }
+    res
 }
 
 fn above_limit(current: &[usize], goal: &[usize]) -> bool {
@@ -154,8 +181,20 @@ fn part1(input: &[Machine]) -> usize {
     input
         .par_iter()
         .map(|i| {
-            let res = turn_all_off(i.light_diagram, &i.button_wirings, 0, 0);
-            println!("{:?} -> {:?}", i, res);
+            let mut cache = HashMap::<u16, usize>::new();
+            let mut cache_status = CacheStatus::default();
+            let res = turn_all_off(
+                i.light_diagram,
+                &i.button_wirings,
+                0,
+                0,
+                &mut cache,
+                &mut cache_status,
+            );
+            println!(
+                "{:?} -> {:?} (hits: {:?}, refs: {:?})",
+                i, res, cache_status.hits, cache_status.refs
+            );
             res
         })
         .sum()
