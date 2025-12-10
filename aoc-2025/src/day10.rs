@@ -1,4 +1,8 @@
+use std::usize;
+
 use aoc_runner_derive::{aoc, aoc_generator};
+use itertools::Itertools;
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use regex::Regex;
 
 #[derive(Debug)]
@@ -6,6 +10,49 @@ pub struct Machine {
     light_diagram: Vec<bool>,
     button_wirings: Vec<Vec<u8>>,
     joltage: Vec<usize>,
+}
+
+fn flip_lights(lights: &[bool], details: &[u8]) -> Vec<bool> {
+    let mut lights = lights.to_owned();
+    details
+        .iter()
+        .for_each(|detail| lights[*detail as usize] = !lights[*detail as usize]);
+    lights
+}
+fn lights_off(lights: &[bool]) -> bool {
+    !lights.iter().any(|l| *l)
+}
+fn lights_on(lights: &[bool]) -> Vec<u8> {
+    lights
+        .iter()
+        .enumerate()
+        .filter(|light| *light.1)
+        .map(|light| light.0 as u8)
+        .collect_vec()
+}
+
+fn turn_all_off(lights: &[bool], buttons: &[Vec<u8>], last_action: &[u8], depth: u8) -> usize {
+    if depth > 10 {
+        return u32::MAX as usize;
+    }
+    // println!("{:?} {:?}", lights, last_action);
+    // if they are all off, we have reached the bottom anyway.
+    if lights_off(&lights) {
+        return 0;
+    }
+    // when we just have one flip left.
+    if buttons.contains(&lights_on(&lights)) {
+        return 1;
+    }
+    buttons
+        .iter()
+        .filter(|button| *button != last_action)
+        .map(|button| {
+            let lights = flip_lights(&lights, button);
+            turn_all_off(&lights, buttons, button, depth + 1) + 1
+        })
+        .min()
+        .unwrap()
 }
 
 #[aoc_generator(day10)]
@@ -68,9 +115,17 @@ fn parse(input: &str) -> Vec<Machine> {
 }
 
 #[aoc(day10, part1)]
-fn part1(input: &[Machine]) -> String {
+fn part1(input: &[Machine]) -> usize {
     input.iter().for_each(|i| println!("{:?}", i));
-    todo!()
+    // println!(
+    //     "input[0]: {:?}",
+    //     turn_all_off(&input[0].light_diagram, &input[0].button_wirings, &[], 0)
+    // );
+    // 0
+    input
+        .par_iter()
+        .map(|i| turn_all_off(&i.light_diagram, &i.button_wirings, &[], 0))
+        .sum()
 }
 
 // #[aoc(day10, part2)]
@@ -89,7 +144,7 @@ mod tests {
 
     #[test]
     fn part1_example() {
-        assert_eq!(part1(&parse(EXAMPLE_1)), "<RESULT>");
+        assert_eq!(part1(&parse(EXAMPLE_1)), 7);
     }
 
     // #[test]
