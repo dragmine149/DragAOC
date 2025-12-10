@@ -9,7 +9,7 @@ use regex::Regex;
 pub struct Machine {
     light_diagram: u16,
     button_wirings: Vec<u16>,
-    joltage: Vec<usize>,
+    joltage: Vec<u16>,
 }
 
 /// Does xor to flip lights on/off
@@ -58,13 +58,6 @@ fn turn_all_off(
     res
 }
 
-fn above_limit(current: &[usize], goal: &[usize]) -> bool {
-    current
-        .iter()
-        .enumerate()
-        .any(|(pos, value)| *value > goal[pos])
-}
-
 fn byte_to_pos(bytes: &u16) -> Vec<u16> {
     let mut positions: Vec<u16> = vec![];
     for n in 0..15 {
@@ -75,26 +68,41 @@ fn byte_to_pos(bytes: &u16) -> Vec<u16> {
     positions
 }
 
-fn joltage_levels(current: Vec<usize>, goal: &[usize], buttons: &[Vec<u16>]) -> usize {
-    println!("current: {:?}, goal: {:?}", current, goal);
+fn above_limit(current: &[u16], goal: &[u16]) -> bool {
+    current
+        .iter()
+        .enumerate()
+        .any(|(pos, value)| *value > goal[pos])
+}
+
+fn joltage_levels(
+    current: Vec<u16>,
+    goal: &[u16],
+    buttons: &[Vec<u16>],
+    cache: &mut HashMap<Vec<u16>, usize>,
+) -> usize {
+    // println!("current: {:?}, goal: {:?}", current, goal);
     if current == goal {
-        return 1;
+        return 0;
     }
     if above_limit(&current, goal) {
         return u32::MAX as usize;
     }
+    if let Some(score) = cache.get(&current) {
+        return *score;
+    }
 
-    buttons
+    let res = buttons
         .iter()
         .map(|button| {
             let mut levels = current.clone();
-            println!("{:?}", button);
             button.iter().for_each(|but| levels[*but as usize] += 1);
-            println!("{:?}", levels);
-            joltage_levels(levels, goal, buttons)
+            joltage_levels(levels, goal, buttons, cache) + 1
         })
         .min()
-        .unwrap()
+        .unwrap();
+    cache.insert(current, res);
+    res
 }
 
 #[aoc_generator(day10)]
@@ -128,8 +136,8 @@ fn parse(input: &str) -> Vec<Machine> {
                 .expect("Failed to get jolt capture")
                 .as_str()
                 .split(",")
-                .map(|n| n.parse::<usize>().expect("Failed to parse number"))
-                .collect::<Vec<usize>>();
+                .map(|n| n.parse::<u16>().expect("Failed to parse number"))
+                .collect::<Vec<u16>>();
 
             let captures2 = regex2.captures_iter(captures.get(2).unwrap().as_str());
             // println!("{:?}", captures2);
@@ -163,12 +171,6 @@ fn parse(input: &str) -> Vec<Machine> {
 
 #[aoc(day10, part1)]
 fn part1(input: &[Machine]) -> usize {
-    // input.iter().for_each(|i| println!("{:?}", i));
-    // println!(
-    //     "input[0]: {:?}",
-    //     turn_all_off(&input[0].light_diagram, &input[0].button_wirings, &[], 0)
-    // );
-    // 0
     input
         .par_iter()
         .map(|i| {
@@ -184,15 +186,16 @@ fn part1(input: &[Machine]) -> usize {
 #[aoc(day10, part2)]
 fn part2(input: &[Machine]) -> usize {
     input
-        // .par_iter()
-        .iter()
+        .par_iter()
+        // .iter()
         .map(|i| {
             let jolts = i
                 .button_wirings
                 .iter()
                 .map(|byte| byte_to_pos(byte))
                 .collect_vec();
-            let res = joltage_levels(vec![0; i.joltage.len()], &i.joltage, &jolts);
+            let mut cache = HashMap::<Vec<u16>, usize>::new();
+            let res = joltage_levels(vec![0; i.joltage.len()], &i.joltage, &jolts, &mut cache);
             println!("{:?} -> {:?}", i, res);
             res
         })
