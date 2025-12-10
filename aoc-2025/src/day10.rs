@@ -172,9 +172,10 @@ fn part1(input: &[Machine]) -> usize {
     input
         .par_iter()
         .map(|i| {
+            // this is creating more overhead in some cases than it is worth, but overall it's like a 100x speedup or smth.
             let mut cache = HashMap::<u16, usize>::new();
             let res = turn_all_off(i.light_diagram, &i.button_wirings, 0, 0, &mut cache);
-            println!("{:?} -> {:?}", i, res);
+            // println!("{:?} -> {:?}", i, res);
             res
         })
         .sum()
