@@ -1,9 +1,10 @@
 # Python 3 server example
-from http.server import BaseHTTPRequestHandler, HTTPServer
-import time
-import requests
 import datetime
+import time
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from random import randint
+
+import requests
 
 hostName = "localhost"
 serverPort = 9090
@@ -27,7 +28,7 @@ class MyServer(BaseHTTPRequestHandler):
  				'session': '53616c7465645f5fac8f5b7ad5506f9c1d0fd78a3d73a64b9a2596d5d668718cc211fd9cbc541bbc64b3bef6f4fbbf6d225504de8c99f21c31daca57b25a2da6',
 			}
 			headers = {
-				'User-Agent': 'Python local server test by dan@thebanners.uk'
+				'User-Agent': 'Python local server test by dragmine149.github.io'
 			}
 			r = requests.get('https://adventofcode.com' + self.path, cookies=cookies, headers=headers)
 #			print(r.text)

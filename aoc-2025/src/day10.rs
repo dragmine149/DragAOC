@@ -12,11 +12,6 @@ pub struct Machine {
     joltage: u128,
 }
 
-/// Does xor to flip lights on/off
-fn flip_lights(lights: u16, details: u16) -> u16 {
-    lights ^ details
-}
-
 fn turn_all_off(
     lights: u16,
     buttons: &[u16],
@@ -44,10 +39,7 @@ fn turn_all_off(
     let res = buttons
         .iter()
         .filter(|button| **button != last_action)
-        .map(|button| {
-            let lights = flip_lights(lights, *button);
-            turn_all_off(lights, buttons, *button, depth + 1, cache) + 1
-        })
+        .map(|button| turn_all_off(lights ^ button, buttons, *button, depth + 1, cache) + 1)
         .min()
         .unwrap();
 
