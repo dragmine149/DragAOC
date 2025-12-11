@@ -17,7 +17,7 @@ fn parse_mappings(id: &str, mappings: &mut Vec<String>) -> u16 {
 }
 
 #[aoc_generator(day11)]
-fn parse(input: &str) -> (Vec<Device>, Vec<String>, u16, u16) {
+fn parse(input: &str) -> (Vec<Device>, Vec<String>) {
     let mut mappings: Vec<String> = vec![];
     let devices = input
         .lines()
@@ -35,13 +35,11 @@ fn parse(input: &str) -> (Vec<Device>, Vec<String>, u16, u16) {
             Device { id, outputs }
         })
         .collect::<Vec<Device>>();
-    let start = mappings.iter().position(|id| id == "you").unwrap() as u16;
-    let end = mappings.iter().position(|id| id == "out").unwrap() as u16;
-    (devices, mappings, start, end)
+    (devices, mappings)
 }
 
 fn find_path(nodes: &[Device], previous_id: u16, goal_id: u16) -> usize {
-    println!("{:?}", previous_id);
+    // println!("{:?}", previous_id);
     nodes
         .iter()
         .find(|device| device.id == previous_id)
@@ -58,16 +56,70 @@ fn find_path(nodes: &[Device], previous_id: u16, goal_id: u16) -> usize {
         .sum()
 }
 
-#[aoc(day11, part1)]
-fn part1(input: &(Vec<Device>, Vec<String>, u16, u16)) -> usize {
-    println!("{:?}", input.1);
-    find_path(&input.0, input.2, input.3)
+fn find_path_2(
+    nodes: &[Device],
+    path: Vec<u16>,
+    goal_id: u16,
+    dac: &u16,
+    fft: &u16,
+    // cache: &mut HashMap<u16, usize>,
+) -> usize {
+    let previous = path.last().unwrap();
+    println!("{:?}", previous);
+    let res = nodes
+        .iter()
+        .find(|device| device.id == *previous)
+        .unwrap()
+        .outputs
+        .iter()
+        .map(|out| {
+            // if let Some(score) = cache.get(out) {
+            //     if score == 2 {}
+            //     return *score;
+            // }
+
+            println!("{:?} {:?}", path, out);
+            if *out == goal_id {
+                println!("GOAL!");
+                if path.contains(dac) && path.contains(fft) {
+                    // cache.insert(*out, 2);
+                    // cache.insert(*previous, 1);
+                    return 1;
+                } else {
+                    // cache.insert(*out, 1);
+                    return 0;
+                }
+            }
+
+            let mut pathing = path.clone();
+            pathing.push(*out);
+            find_path_2(nodes, pathing, goal_id, dac, fft)
+        })
+        .sum();
+    // cache.insert(*previous, res);
+    res
 }
 
-// #[aoc(day11, part2)]
-// fn part2(input: &str) -> String {
-//     todo!()
-// }
+#[aoc(day11, part1)]
+fn part1(input: &(Vec<Device>, Vec<String>)) -> usize {
+    println!("{:?}", input.1);
+    let you = input.1.iter().position(|id| id == "you").unwrap() as u16;
+    let out = input.1.iter().position(|id| id == "out").unwrap() as u16;
+    find_path(&input.0, you, out)
+}
+
+#[aoc(day11, part2)]
+fn part2(input: &(Vec<Device>, Vec<String>)) -> usize {
+    println!("{:?}", input.1);
+    let svr = input.1.iter().position(|id| id == "svr").unwrap() as u16;
+    let out = input.1.iter().position(|id| id == "out").unwrap() as u16;
+    let dac = input.1.iter().position(|id| id == "dac").unwrap() as u16;
+    let fft = input.1.iter().position(|id| id == "fft").unwrap() as u16;
+    // let mut cache = HashMap::<u16, usize>::new();
+    let res = find_path_2(&input.0, vec![svr], out, &dac, &fft);
+    // println!("{:?}", cache);
+    res
+}
 
 #[cfg(test)]
 mod tests {
@@ -85,13 +137,28 @@ hhh: ccc fff iii
 iii: out
 ";
 
+    const EXAMPLE_2: &str = "svr: aaa bbb
+aaa: fft
+fft: ccc
+bbb: tty
+tty: ccc
+ccc: ddd eee
+ddd: hub
+hub: fff
+eee: dac
+dac: fff
+fff: ggg hhh
+ggg: out
+hhh: out
+";
+
     #[test]
     fn part1_example() {
         assert_eq!(part1(&parse(EXAMPLE_1)), 5);
     }
 
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
+    #[test]
+    fn part2_example() {
+        assert_eq!(part2(&parse(EXAMPLE_2)), 2);
+    }
 }
