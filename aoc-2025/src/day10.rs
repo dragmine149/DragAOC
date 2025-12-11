@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, usize};
 
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
@@ -61,38 +61,44 @@ fn byte_to_pos(bytes: &u16) -> Vec<u16> {
 }
 
 fn joltage_levels(
-    values: &[u16],
-    buttons_multi: Vec<u16>,
+    button_press: Vec<u16>,
     goal: &[u16],
     buttons: &[Vec<u16>],
     worst: &u16,
+    cache: &mut HashMap<Vec<u16>, usize>,
 ) -> usize {
-    println!("{:?}", buttons_multi);
-    let res = values
-        .iter()
-        .enumerate()
-        .map(|(p, v)| v * buttons_multi[p])
-        .collect::<Vec<u16>>();
-    if res == goal {
+    if let Some(value) = cache.get(&button_press) {
+        return *value;
+    }
+
+    // println!("{:?}", button_press);
+    let mut values = vec![0; goal.len()];
+    button_press.iter().enumerate().for_each(|(pos, btn)| {
+        // println!("{:?}, {:?}", buttons[pos], btn);
+        buttons[pos].iter().for_each(|idx| {
+            values[*idx as usize] += btn;
+        })
+    });
+    // println!("{:?}", values);
+
+    if values == goal {
         return 0;
     }
 
-    buttons
-        .iter()
-        .map(|button| {
-            let mut multi = buttons_multi.clone();
-            button.iter().for_each(|item| {
-                let item = *item as usize;
-                multi[item] += 1;
-            });
-            if multi.iter().any(|v| v > worst) {
-                return u32::MAX as usize;
-            }
+    let mut min_value = usize::MAX;
+    for n in 0..buttons.len() {
+        let mut presses = button_press.clone();
+        presses[n] += 1;
+        if presses[n] > *worst {
+            min_value = min_value.min(u32::MAX as usize);
+            continue;
+        }
 
-            joltage_levels(values, multi, goal, buttons, worst)
-        })
-        .min()
-        .unwrap()
+        min_value = min_value.min(joltage_levels(presses, goal, buttons, worst, cache) + 1);
+    }
+
+    cache.insert(button_press, min_value);
+    min_value
 }
 
 #[aoc_generator(day10)]
@@ -176,28 +182,26 @@ fn part1(input: &[Machine]) -> usize {
 #[aoc(day10, part2)]
 fn part2(input: &[Machine]) -> usize {
     input
-        // .par_iter()
-        .iter()
+        .par_iter()
+        // .iter()
         .map(|i| {
             let buttons = i
                 .button_wirings
                 .iter()
                 .map(|byte| byte_to_pos(byte))
                 .collect_vec();
-            println!("{:?}", i.joltage);
-            // println!("{:?}, {:?}", i.button_wirings, buttons);
-            let mut cache = HashMap::<u128, usize>::new();
-            // buttons.iter().for_each(|btn| println!("{:128b}", btn));
-            // println!();
+            // buttons.sort_by(|a, b| a.len().cmp(&b.len()));
+            let mut cache = HashMap::<Vec<u16>, usize>::new();
 
             let res = joltage_levels(
-                &vec![0; i.joltage.len()],
-                vec![0; i.joltage.len()],
+                vec![0; buttons.len()],
                 &i.joltage,
                 &buttons,
-                &(i.joltage.iter().max().unwrap() / 2),
+                &(i.joltage.iter().max().unwrap()),
+                &mut cache,
             );
             println!("{:?} -> {:?}", i, res);
+            // println!("{:?}", cache);
             res
         })
         .sum()
@@ -212,6 +216,9 @@ mod tests {
 [.###.#] (0,1,2,3,4) (0,3,4) (0,1,2,4,5) (1,2) {10,11,11,5,10,5}
 ";
 
+    /// @see https://www.reddit.com/r/adventofcode/comments/1pjee70/2025_day_10_part_2_another_test_case/
+    const COMMUNITY_1: &str = "[#.#####] (2,3,4,6) (2,5) (1,3,4,5,6) (1,2,5,6) (0,5,6) (0,1,2,3,4,6) (1,2,3,5,6) (1,3,4,6) (0,2,3,4,5,6) {23,42,62,53,35,62,74}";
+
     #[test]
     fn part1_example() {
         assert_eq!(part1(&parse(EXAMPLE_1)), 7);
@@ -220,5 +227,10 @@ mod tests {
     #[test]
     fn part2_example() {
         assert_eq!(part2(&parse(EXAMPLE_1)), 33);
+    }
+
+    #[test]
+    fn part2_community_1() {
+        assert_eq!(part2(&parse(COMMUNITY_1)), 74);
     }
 }
