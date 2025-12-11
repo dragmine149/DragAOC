@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 pub struct Device {
     id: u16,
@@ -58,30 +59,32 @@ fn find_path(nodes: &[Device], previous_id: u16, goal_id: u16) -> usize {
 
 fn find_path_2(
     nodes: &[Device],
-    path: Vec<u16>,
+    previous_id: u16,
     goal_id: u16,
     dac: &u16,
     fft: &u16,
+    hit_dac: bool,
+    hit_fft: bool,
     // cache: &mut HashMap<u16, usize>,
 ) -> usize {
-    let previous = path.last().unwrap();
-    println!("{:?}", previous);
+    // let previous = path.last().unwrap();
+    // println!("{:?}", previous);
     let res = nodes
         .iter()
-        .find(|device| device.id == *previous)
+        .find(|device| device.id == previous_id)
         .unwrap()
         .outputs
-        .iter()
+        .par_iter()
         .map(|out| {
             // if let Some(score) = cache.get(out) {
             //     if score == 2 {}
             //     return *score;
             // }
 
-            println!("{:?} {:?}", path, out);
+            // println!("{:?} {:?}", path, out);
             if *out == goal_id {
-                println!("GOAL!");
-                if path.contains(dac) && path.contains(fft) {
+                // println!("GOAL!");
+                if hit_dac && hit_fft {
                     // cache.insert(*out, 2);
                     // cache.insert(*previous, 1);
                     return 1;
@@ -90,10 +93,15 @@ fn find_path_2(
                     return 0;
                 }
             }
-
-            let mut pathing = path.clone();
-            pathing.push(*out);
-            find_path_2(nodes, pathing, goal_id, dac, fft)
+            find_path_2(
+                nodes,
+                *out,
+                goal_id,
+                dac,
+                fft,
+                hit_dac || out == dac,
+                hit_fft || out == fft,
+            )
         })
         .sum();
     // cache.insert(*previous, res);
@@ -116,7 +124,7 @@ fn part2(input: &(Vec<Device>, Vec<String>)) -> usize {
     let dac = input.1.iter().position(|id| id == "dac").unwrap() as u16;
     let fft = input.1.iter().position(|id| id == "fft").unwrap() as u16;
     // let mut cache = HashMap::<u16, usize>::new();
-    let res = find_path_2(&input.0, vec![svr], out, &dac, &fft);
+    let res = find_path_2(&input.0, svr, out, &dac, &fft, false, false);
     // println!("{:?}", cache);
     res
 }
