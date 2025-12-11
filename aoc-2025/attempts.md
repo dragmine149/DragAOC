@@ -84,3 +84,7 @@
 ## Day 11
 ### Part 1
 - 470: Correct
+
+### Part 2
+- 3180455524: Too Low
+- 384151614084875: Correct
