@@ -63,11 +63,39 @@ fn find_path_2(
     goal_id: u16,
     dac: &u16,
     fft: &u16,
-    cache: &mut HashMap<u16, (u32, u32)>,
-) -> (u32, u32) {
-    // println!("{:?}", previous_id);
-    let hit_dac = previous_id == *dac;
-    let hit_fft = previous_id == *fft;
+    hit_dac: bool,
+    hit_fft: bool,
+    cache: &mut HashMap<(u16, bool, bool), usize>,
+    dac_first: &mut Option<bool>,
+) -> usize {
+    println!("{:?}", previous_id);
+    // let hit_dac = previous_id == *dac;
+    // let hit_fft = previous_id == *fft;
+
+    // hopefully assumptions are correct.
+    if dac_first.is_none() {
+        if previous_id == *dac {
+            *dac_first = Some(true);
+        } else if previous_id == *fft {
+            *dac_first = Some(false);
+        }
+    }
+
+    if let Some(first) = dac_first {
+        if *first {
+            if previous_id == *fft && !hit_dac {
+                return 0;
+            }
+        } else {
+            if previous_id == *dac && !hit_fft {
+                return 0;
+            }
+        }
+    }
+
+    // if previous_id == *fft && !hit_dac {
+    //     return 0;
+    // }
 
     // let previous = path.last().unwrap();
     // println!("{:?}", previous);
@@ -78,29 +106,38 @@ fn find_path_2(
         .outputs
         .iter()
         .map(|out| {
-            if let Some(score) = cache.get(out) {
-                // println!("{:?} {:?} {:?}", out, hit_dac, hit_fft);
+            let hd = hit_dac || out == dac;
+            let hf = hit_fft || out == fft;
+            if let Some(score) = cache.get(&(*out, hd, hf)) {
+                println!("{:?} {:?} {:?} {:?}", out, hd, hf, score);
                 // if hit_dac && hit_fft {
                 // return (score.0 + hit_dac as u32, score.1 + hit_fft as u32);
-                // return *score;
+                return *score;
                 // }
             }
 
             if *out == goal_id {
-                return (0, 0);
+                panic!("end of line 1");
+                if let Some(first) = dac_first {
+                    if *first && hit_fft {
+                        return 1;
+                    } else if !*first && hit_dac {
+                        return 1;
+                    }
+                }
+                return 0;
             }
-            let res = find_path_2(nodes, *out, goal_id, dac, fft, cache);
-            println!("out: {:0>2}/{:?}", out, res);
-            if !cache.contains_key(out) {
-                cache.insert(*out, res);
-            }
+            let res = find_path_2(nodes, *out, goal_id, dac, fft, hd, hf, cache, dac_first);
+            // println!("out: {:0>2}/{:?}", out, res);
+            cache.insert((*out, hd, hf), res);
             // cache.insert(*out, (res, hit_dac || out == dac, hit_fft || out == fft));
             res
         })
-        .fold((0, 0), |acc, x| (acc.0 + x.0, acc.1 + x.1));
+        // .fold((0, 0), |acc, x| (acc.0 + x.0, acc.1 + x.1));
+        .sum();
     // cache.insert(*previous, res);
-    (res.0 + hit_dac as u32, res.1 + hit_fft as u32)
-    // res
+    // (res.0 + hit_dac as u32, res.1 + hit_fft as u32)
+    res
 }
 
 #[aoc(day11, part1)]
@@ -112,7 +149,7 @@ fn part1(input: &(Vec<Device>, Vec<String>)) -> usize {
 }
 
 #[aoc(day11, part2)]
-fn part2(input: &(Vec<Device>, Vec<String>)) -> u32 {
+fn part2(input: &(Vec<Device>, Vec<String>)) -> usize {
     println!(
         "[  0  ,   1  ,   2  ,   3  ,   4  ,   5  ,   6  ,   7  ,   8  ,   9  ,  1 0 ,  1 1 ,  1 2 ,  1 3 ]"
     );
@@ -121,12 +158,29 @@ fn part2(input: &(Vec<Device>, Vec<String>)) -> u32 {
     let out = input.1.iter().position(|id| id == "out").unwrap() as u16;
     let dac = input.1.iter().position(|id| id == "dac").unwrap() as u16;
     let fft = input.1.iter().position(|id| id == "fft").unwrap() as u16;
-    let mut cache = HashMap::<u16, (u32, u32)>::new();
-    let res = find_path_2(&input.0, svr, out, &dac, &fft, &mut cache);
+    println!(
+        "svr: {:?}, out: {:?}, dac: {:?}, fft: {:?}",
+        svr, out, dac, fft
+    );
+    let mut cache = HashMap::<(u16, bool, bool), usize>::new();
+    // https://www.reddit.com/r/adventofcode/comments/1pjsol8/2025_day_11_part_2_i_feel_betrayed/
+    let mut dac_first: Option<bool> = None;
+    let res = find_path_2(
+        &input.0,
+        svr,
+        out,
+        &dac,
+        &fft,
+        false,
+        false,
+        &mut cache,
+        &mut dac_first,
+    );
     println!("{:?}", cache);
+    println!("{:?}", dac_first);
     println!("{:?}", res);
-    // res
-    0
+    res
+    // 0
 }
 
 #[cfg(test)]
