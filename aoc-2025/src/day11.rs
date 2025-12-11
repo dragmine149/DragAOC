@@ -65,8 +65,8 @@ fn find_path_2(
     fft: &u16,
     hit_dac: bool,
     hit_fft: bool,
-    // cache: &mut HashMap<u16, usize>,
-) -> usize {
+    cache: &mut HashMap<u16, (u32, bool, bool)>,
+) -> u32 {
     // let previous = path.last().unwrap();
     // println!("{:?}", previous);
     let res = nodes
@@ -74,26 +74,26 @@ fn find_path_2(
         .find(|device| device.id == previous_id)
         .unwrap()
         .outputs
-        .par_iter()
+        .iter()
         .map(|out| {
-            // if let Some(score) = cache.get(out) {
-            //     if score == 2 {}
-            //     return *score;
-            // }
+            if let Some(score) = cache.get(out) {
+                return score.0;
+            }
 
             // println!("{:?} {:?}", path, out);
             if *out == goal_id {
+                return 1;
                 // println!("GOAL!");
-                if hit_dac && hit_fft {
-                    // cache.insert(*out, 2);
-                    // cache.insert(*previous, 1);
-                    return 1;
-                } else {
-                    // cache.insert(*out, 1);
-                    return 0;
-                }
+                // if hit_dac && hit_fft {
+                //     // cache.insert(*out, 2);
+                //     // cache.insert(*previous, 1);
+                //     return 1;
+                // } else {
+                //     // cache.insert(*out, 1);
+                //     return 0;
+                // }
             }
-            find_path_2(
+            let res = find_path_2(
                 nodes,
                 *out,
                 goal_id,
@@ -101,7 +101,10 @@ fn find_path_2(
                 fft,
                 hit_dac || out == dac,
                 hit_fft || out == fft,
-            )
+                cache,
+            );
+            cache.insert(*out, (res, hit_dac || out == dac, hit_fft || out == fft));
+            res
         })
         .sum();
     // cache.insert(*previous, res);
@@ -117,15 +120,15 @@ fn part1(input: &(Vec<Device>, Vec<String>)) -> usize {
 }
 
 #[aoc(day11, part2)]
-fn part2(input: &(Vec<Device>, Vec<String>)) -> usize {
+fn part2(input: &(Vec<Device>, Vec<String>)) -> u32 {
     println!("{:?}", input.1);
     let svr = input.1.iter().position(|id| id == "svr").unwrap() as u16;
     let out = input.1.iter().position(|id| id == "out").unwrap() as u16;
     let dac = input.1.iter().position(|id| id == "dac").unwrap() as u16;
     let fft = input.1.iter().position(|id| id == "fft").unwrap() as u16;
-    // let mut cache = HashMap::<u16, usize>::new();
-    let res = find_path_2(&input.0, svr, out, &dac, &fft, false, false);
-    // println!("{:?}", cache);
+    let mut cache = HashMap::<u16, (u32, bool, bool)>::new();
+    let res = find_path_2(&input.0, svr, out, &dac, &fft, false, false, &mut cache);
+    println!("{:?}", cache);
     res
 }
 
