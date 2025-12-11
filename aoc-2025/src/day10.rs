@@ -60,13 +60,17 @@ fn byte_to_pos(bytes: &u16) -> Vec<u16> {
     positions
 }
 
+const U9_MAX: u16 = 0b0000_0001_1111_1111;
+
 fn joltage_levels(
     button_press: Vec<u16>,
     goal: &[u16],
     buttons: &[Vec<u16>],
     worst: &u16,
-    cache: &mut HashMap<Vec<u16>, usize>,
-) -> usize {
+    cache: &mut HashMap<Vec<u16>, u16>,
+    depth: u16,
+    min: &mut u16,
+) -> u16 {
     if let Some(value) = cache.get(&button_press) {
         return *value;
     }
@@ -85,20 +89,23 @@ fn joltage_levels(
         return 0;
     }
 
-    let mut min_value = usize::MAX;
+    if depth + 1 >= *min {
+        return U9_MAX;
+    }
+
     for n in 0..buttons.len() {
         let mut presses = button_press.clone();
         presses[n] += 1;
         if presses[n] > *worst {
-            min_value = min_value.min(u32::MAX as usize);
+            *min = (*min).min(U9_MAX);
             continue;
         }
 
-        min_value = min_value.min(joltage_levels(presses, goal, buttons, worst, cache) + 1);
+        *min = (*min).min(joltage_levels(presses, goal, buttons, worst, cache, depth + 1, min) + 1);
     }
 
-    cache.insert(button_press, min_value);
-    min_value
+    cache.insert(button_press, *min);
+    *min
 }
 
 #[aoc_generator(day10)]
@@ -191,7 +198,8 @@ fn part2(input: &[Machine]) -> usize {
                 .map(|byte| byte_to_pos(byte))
                 .collect_vec();
             // buttons.sort_by(|a, b| a.len().cmp(&b.len()));
-            let mut cache = HashMap::<Vec<u16>, usize>::new();
+            let mut cache = HashMap::<Vec<u16>, u16>::new();
+            let mut min = u16::MAX;
 
             let res = joltage_levels(
                 vec![0; buttons.len()],
@@ -199,10 +207,12 @@ fn part2(input: &[Machine]) -> usize {
                 &buttons,
                 &(i.joltage.iter().max().unwrap()),
                 &mut cache,
+                0,
+                &mut min,
             );
             println!("{:?} -> {:?}", i, res);
             // println!("{:?}", cache);
-            res
+            res as usize
         })
         .sum()
 }
