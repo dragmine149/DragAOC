@@ -63,10 +63,12 @@ fn find_path_2(
     goal_id: u16,
     dac: &u16,
     fft: &u16,
-    hit_dac: bool,
-    hit_fft: bool,
-    cache: &mut HashMap<u16, (u32, bool, bool)>,
-) -> u32 {
+    cache: &mut HashMap<u16, (u32, u32)>,
+) -> (u32, u32) {
+    // println!("{:?}", previous_id);
+    let hit_dac = previous_id == *dac;
+    let hit_fft = previous_id == *fft;
+
     // let previous = path.last().unwrap();
     // println!("{:?}", previous);
     let res = nodes
@@ -77,38 +79,28 @@ fn find_path_2(
         .iter()
         .map(|out| {
             if let Some(score) = cache.get(out) {
-                return score.0;
-            }
-
-            // println!("{:?} {:?}", path, out);
-            if *out == goal_id {
-                return 1;
-                // println!("GOAL!");
+                // println!("{:?} {:?} {:?}", out, hit_dac, hit_fft);
                 // if hit_dac && hit_fft {
-                //     // cache.insert(*out, 2);
-                //     // cache.insert(*previous, 1);
-                //     return 1;
-                // } else {
-                //     // cache.insert(*out, 1);
-                //     return 0;
+                // return (score.0 + hit_dac as u32, score.1 + hit_fft as u32);
+                // return *score;
                 // }
             }
-            let res = find_path_2(
-                nodes,
-                *out,
-                goal_id,
-                dac,
-                fft,
-                hit_dac || out == dac,
-                hit_fft || out == fft,
-                cache,
-            );
-            cache.insert(*out, (res, hit_dac || out == dac, hit_fft || out == fft));
+
+            if *out == goal_id {
+                return (0, 0);
+            }
+            let res = find_path_2(nodes, *out, goal_id, dac, fft, cache);
+            println!("out: {:0>2}/{:?}", out, res);
+            if !cache.contains_key(out) {
+                cache.insert(*out, res);
+            }
+            // cache.insert(*out, (res, hit_dac || out == dac, hit_fft || out == fft));
             res
         })
-        .sum();
+        .fold((0, 0), |acc, x| (acc.0 + x.0, acc.1 + x.1));
     // cache.insert(*previous, res);
-    res
+    (res.0 + hit_dac as u32, res.1 + hit_fft as u32)
+    // res
 }
 
 #[aoc(day11, part1)]
@@ -121,15 +113,20 @@ fn part1(input: &(Vec<Device>, Vec<String>)) -> usize {
 
 #[aoc(day11, part2)]
 fn part2(input: &(Vec<Device>, Vec<String>)) -> u32 {
+    println!(
+        "[  0  ,   1  ,   2  ,   3  ,   4  ,   5  ,   6  ,   7  ,   8  ,   9  ,  1 0 ,  1 1 ,  1 2 ,  1 3 ]"
+    );
     println!("{:?}", input.1);
     let svr = input.1.iter().position(|id| id == "svr").unwrap() as u16;
     let out = input.1.iter().position(|id| id == "out").unwrap() as u16;
     let dac = input.1.iter().position(|id| id == "dac").unwrap() as u16;
     let fft = input.1.iter().position(|id| id == "fft").unwrap() as u16;
-    let mut cache = HashMap::<u16, (u32, bool, bool)>::new();
-    let res = find_path_2(&input.0, svr, out, &dac, &fft, false, false, &mut cache);
+    let mut cache = HashMap::<u16, (u32, u32)>::new();
+    let res = find_path_2(&input.0, svr, out, &dac, &fft, &mut cache);
     println!("{:?}", cache);
-    res
+    println!("{:?}", res);
+    // res
+    0
 }
 
 #[cfg(test)]
