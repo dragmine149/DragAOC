@@ -80,3 +80,6 @@
 ## Day 10
 ### Part 1
 - 375: Correct
+
+## Day 11
+### Part 1
