@@ -57,27 +57,26 @@ fn parse(input: &str) -> (Vec<Present>, Vec<(u8, u8, Vec<u8>)>) {
 #[aoc(day12, part1)]
 fn part1(input: &(Vec<Present>, Vec<(u8, u8, Vec<u8>)>)) -> usize {
     // println!("{:?}", input);
-    input
-        .1
-        .iter()
+    let mut data = input.1.clone();
+    data.sort_by(|a, b| (a.0, a.1).cmp(&(b.0, b.1)));
+
+    data.iter()
+        .unique_by(|x| (x.0, x.1))
         .map(|i| {
             let area = i.0 as u16 * i.1 as u16;
-            let min_required =
-                i.2.iter()
-                    .enumerate()
-                    .map(|(idx, want)| input.0[idx].area_sum() as u16 * *want as u16)
-                    .sum::<u16>();
-            if min_required > area {
+            let squares = i.2.iter().map(|s| *s as u16).sum::<u16>();
+            if squares * 9 >= area {
                 return 0;
             }
-            if min_required as f64 * 1.5 > area as f64 {
-                return 2;
+            if squares == area / 10 {
+                return 3;
             }
 
             println!(
-                "{:?} (min: {:?}, area: {:?})",
+                "{:?} (min: {:?}, total: {:?} area: {:?})",
                 i,
-                min_required as f64 * 1.5,
+                squares,
+                squares * 9,
                 area
             );
             1
