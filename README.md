@@ -8,10 +8,10 @@ All files related to advent of code projects.
 ## Scores
 <!-- AOC TILES BEGIN -->
 <h1 align="center">
-  Advent of Code - 187/524 ⭐
+  Advent of Code - 188/524 ⭐
 </h1>
 <h1 align="center">
-  2025 - 20 ⭐ - Rust
+  2025 - 21 ⭐ - Rust
 </h1>
 <a href="aoc-2025/src/day01.rs">
   <img src=".aoc_tiles/tiles/2025/01.png" width="161px">
@@ -45,6 +45,9 @@ All files related to advent of code projects.
 </a>
 <a href="aoc-2025/src/day11.rs">
   <img src=".aoc_tiles/tiles/2025/11.png" width="161px">
+</a>
+<a href="aoc-2025/src/day12.rs">
+  <img src=".aoc_tiles/tiles/2025/12.png" width="161px">
 </a>
 <h1 align="center">
   2024 - 50 ⭐ - Rust
