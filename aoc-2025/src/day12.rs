@@ -60,32 +60,36 @@ fn part1(input: &(Vec<Present>, Vec<(u8, u8, Vec<u8>)>)) -> usize {
     let mut data = input.1.clone();
     data.sort_by(|a, b| (a.0, a.1).cmp(&(b.0, b.1)));
 
-    data.len()
-        - data
-            .iter()
-            // .unique_by(|x| (x.0, x.1))
-            .map(|i| {
-                let area = i.0 as u16 * i.1 as u16;
-                let squares = i.2.iter().map(|s| *s as u16).sum::<u16>();
-                println!("{:?}, {:?}", squares, area);
-                if squares * 9 >= area {
-                    return 0;
-                }
-                // if squares == area / 10 {
-                //     return 3;
-                // }
+    data.iter()
+        // .unique_by(|x| (x.0, x.1))
+        .map(|i| {
+            let area = i.0 as u16 * i.1 as u16;
+            // let squares = i.2.iter().map(|s| *s as u16).sum::<u16>();
+            let squares =
+                i.2.iter()
+                    .enumerate()
+                    .map(|s| input.0[s.0].area_sum() as u16 * *s.1 as u16)
+                    // .map(|s| *s.1 as u16)
+                    .sum::<u16>();
+            println!("{:?}, {:?}", squares, area);
+            if squares >= area {
+                return 0;
+            }
+            // if squares == area / 10 {
+            //     return 3;
+            // }
 
-                println!(
-                    "{:?} (min: {:?}, total: {:?} area: {:?})",
-                    i,
-                    squares,
-                    squares * 9,
-                    area
-                );
-                1
-            })
-            .filter(|i| *i >= 1)
-            .count()
+            println!(
+                "{:?} (min: {:?}, total: {:?} area: {:?})",
+                i,
+                squares,
+                squares * 9,
+                area
+            );
+            1
+        })
+        .filter(|i| *i >= 1)
+        .count()
 }
 
 // #[aoc(day12, part2)]
