@@ -43,7 +43,7 @@ fn find_path(nodes: &[Device], previous_id: u16, goal_id: u16) -> usize {
     nodes
         .iter()
         .find(|device| device.id == previous_id)
-        .expect(&format!("Failed to find {:?}", previous_id))
+        .unwrap_or_else(|| panic!("Failed to find {:?}", previous_id))
         .outputs
         .iter()
         .map(|out| {
@@ -70,7 +70,7 @@ fn find_path_2(
     let res = nodes
         .iter()
         .find(|device| device.id == previous_id)
-        .expect(&format!("Failed to find {:?}", previous_id))
+        .unwrap_or_else(|| panic!("Failed to find {:?}", previous_id))
         .outputs
         .iter()
         .map(|out| {
@@ -87,10 +87,19 @@ fn find_path_2(
 
 #[aoc(day11, part1)]
 fn part1(input: &(Vec<Device>, Vec<String>)) -> usize {
-    println!("{:?}", input.1);
+    // println!("{:?}", input.1);
     let you = input.1.iter().position(|id| id == "you").unwrap() as u16;
     let out = input.1.iter().position(|id| id == "out").unwrap() as u16;
     find_path(&input.0, you, out)
+}
+
+#[aoc(day11, part1, cache)]
+fn part1_cache(input: &(Vec<Device>, Vec<String>)) -> usize {
+    // println!("{:?}", input.1);
+    let you = input.1.iter().position(|id| id == "you").unwrap() as u16;
+    let out = input.1.iter().position(|id| id == "out").unwrap() as u16;
+    let mut cache = HashMap::<u16, usize>::new();
+    find_path_2(&input.0, you, out, &mut cache)
 }
 
 // After struggling w/ caching: https://www.reddit.com/r/adventofcode/comments/1pjxwnc/comment/nth5r0h/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
@@ -110,46 +119,14 @@ fn part2(input: &(Vec<Device>, Vec<String>)) -> usize {
     let mut cache = HashMap::<u16, usize>::new();
     // println!("{:?}", input.0);
     let checkpoint_a = find_path_2(&devices, svr, fft, &mut cache);
-    println!("{:?}", checkpoint_a);
+    // println!("{:?}", checkpoint_a);
     cache.clear();
     let checkpoint_b = find_path_2(&devices, fft, dac, &mut cache);
-    println!("{:?}", checkpoint_b);
+    // println!("{:?}", checkpoint_b);
     cache.clear();
     let checkpoint_c = find_path_2(&devices, dac, out, &mut cache);
-    println!("{:?}", checkpoint_c);
+    // println!("{:?}", checkpoint_c);
     checkpoint_a * checkpoint_b * checkpoint_c
-
-    // println!(
-    //     "[  0  ,   1  ,   2  ,   3  ,   4  ,   5  ,   6  ,   7  ,   8  ,   9  ,  1 0 ,  1 1 ,  1 2 ,  1 3 ]"
-    // );
-    // println!("{:?}", input.1);
-    // let svr = input.1.iter().position(|id| id == "svr").unwrap() as u16;
-    // let out = input.1.iter().position(|id| id == "out").unwrap() as u16;
-    // let dac = input.1.iter().position(|id| id == "dac").unwrap() as u16;
-    // let fft = input.1.iter().position(|id| id == "fft").unwrap() as u16;
-    // println!(
-    //     "svr: {:?}, out: {:?}, dac: {:?}, fft: {:?}",
-    //     svr, out, dac, fft
-    // );
-    // let mut cache = HashMap::<(u16, bool, bool), usize>::new();
-    // // https://www.reddit.com/r/adventofcode/comments/1pjsol8/2025_day_11_part_2_i_feel_betrayed/
-    // let mut dac_first: Option<bool> = None;
-    // let res = find_path_2(
-    //     &input.0,
-    //     svr,
-    //     out,
-    //     &dac,
-    //     &fft,
-    //     false,
-    //     false,
-    //     &mut cache,
-    //     &mut dac_first,
-    // );
-    // println!("{:?}", cache);
-    // println!("{:?}", dac_first);
-    // println!("{:?}", res);
-    // res
-    // 0
 }
 
 #[cfg(test)]
