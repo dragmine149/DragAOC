@@ -92,3 +92,5 @@
 ## Day 12
 ### Part 1
 - 113: Too Low
+- 417: Too Low
+- 432: Too Low
