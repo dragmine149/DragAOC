@@ -1,11 +1,13 @@
 repos:
     - repo: https://github.com/LiquidFun/aoc_tiles
-      rev: 0.6.4
+      rev: 0.7.2
       hooks:
           - id: aoc-tiles
             args:
                 - --count-as-solved-when=both
                 - --language-sorting=rs,py,js
+                - --theme=aoc
+                - --animation=snow
             # Optionally use these arguments. Auto add tiles to git adds the tiles to git,
             # possibly amends your commit by creating the tile images and updating the README.
             # Language sorting shows the preference of the order of the languages to use.
