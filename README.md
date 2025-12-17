@@ -344,3 +344,10 @@ All files related to advent of code projects.
   <img src=".aoc_tiles/tiles/2015/21.gif" width="161px">
 </a>
 <!-- AOC TILES END -->
+
+## Notice about input files
+Am i putting this right at the bottom of the file? yes.
+
+Anyway, this repo does contain my input files for **SOME** years, not all but some. This is due to my lazyness when commit files. I have tried to remove said input files, but each solution i try always ends up in having to redownload the repo. I apparently don't know enough git to get it to work.
+
+Henceforth, Those input files will be forever in this repo unless i recieve help to remove this (and this message will also go away). On another note, some of the input files aren't named conventionaly so, enjoy.
