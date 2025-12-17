@@ -1,6 +1,7 @@
-use std::{collections::HashMap, u8::MAX};
+use std::collections::HashMap;
 
 use aoc_runner_derive::{aoc, aoc_generator};
+use geo::{Area, Contains, Coord, LineString, Polygon, Rect, polygon};
 use itertools::Itertools;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -77,6 +78,22 @@ impl From<&str> for Positions {
             .parse::<isize>()
             .expect("Failed to parse to isize");
         Self(second, first)
+    }
+}
+impl From<Positions> for Coord {
+    fn from(value: Positions) -> Self {
+        Coord {
+            x: value.0 as f64,
+            y: value.1 as f64,
+        }
+    }
+}
+impl From<&Positions> for Coord {
+    fn from(value: &Positions) -> Self {
+        Coord {
+            x: value.0 as f64,
+            y: value.1 as f64,
+        }
     }
 }
 
@@ -212,51 +229,81 @@ fn part1(input: &[Positions]) -> isize {
 }
 
 #[aoc(day9, part2)]
-fn part2(input: &[Positions]) -> isize {
-    let mut cache = HashMap::<Positions, bool>::new();
-    let mut start = input[0];
-    let res = input
+fn part2(input: &[Positions]) -> usize {
+    let polygon = Polygon::new(
+        LineString::from(input.iter().map(Coord::from).collect_vec()),
+        vec![],
+    );
+
+    input
         .iter()
-        .map(|pos| {
-            input
-                .iter()
-                .filter(|pos2| pos.0 != pos2.0 && pos.1 != pos2.1)
-                .map(|pos2| {
-                    println!("{:?} to {:?}", pos, pos2);
-                    // println!(
-                    //     "{:?}, {:?}",
-                    //     pos.get_corners(pos2),
-                    //     pos.corners_shrunk(pos2)
-                    // );
-                    let corners = pos.corners_shrunk(pos2);
-                    let mut iter = corners.iter().peekable();
-                    while let Some(corner) = iter.next() {
-                        let goal = iter.peek().unwrap_or(&pos);
-                        let mut input_iter = input.iter().peekable();
-                        while let Some(start) = input_iter.next() {
-                            let end = input_iter.peek().unwrap_or(&start);
-                            if line_crosses_line(start, end, corner, goal) {
-                                return None;
-                            }
-                            // println!("no cross");
-                        }
-                    }
-                    println!("{:?} to {:?} ({:?})", pos, pos2, pos.area(pos2));
-                    Some(pos.area(pos2))
-                })
-                .filter_map(|area| area)
-                // .inspect(|c| println!("{:?}", c))
-                // .map(|corners| corners[0].area(&corners[1]))
-                // .inspect(|c| println!("{:?}", c))
-                .max()
-                .unwrap_or_default()
+        .tuple_combinations::<(_, _)>()
+        .map(|corner| Rect::new(corner.0, corner.1))
+        //     .inspect(|a| println!("{:?}", a))
+        // .inspect(|rect| {
+        //     println!(
+        //         "{:?} contains {:?} (area: {:?}, width: {:?}, height: {:?})",
+        //         rect,
+        //         polygon.contains(rect),
+        //         rect.signed_area(),
+        //         rect.width(),
+        //         rect.height()
+        //     )
+        // })
+        .map(|rect| {
+            if polygon.contains(&rect) {
+                ((rect.width() as usize) + 1) * ((rect.height() as usize) + 1)
+            } else {
+                0
+            }
         })
-        // .inspect(|c| println!("{:?}", c))
         .max()
-        // .inspect(|c| println!("{:?}", c))
-        .unwrap();
-    println!("{:?}", cache);
-    res
+        .unwrap()
+
+    // let mut cache = HashMap::<Positions, bool>::new();
+    // let mut start = input[0];
+    // let res = input
+    //     .iter()
+    //     .map(|pos| {
+    //         input
+    //             .iter()
+    //             .filter(|pos2| pos.0 != pos2.0 && pos.1 != pos2.1)
+    //             .map(|pos2| {
+    //                 println!("{:?} to {:?}", pos, pos2);
+    //                 // println!(
+    //                 //     "{:?}, {:?}",
+    //                 //     pos.get_corners(pos2),
+    //                 //     pos.corners_shrunk(pos2)
+    //                 // );
+    //                 let corners = pos.corners_shrunk(pos2);
+    //                 let mut iter = corners.iter().peekable();
+    //                 while let Some(corner) = iter.next() {
+    //                     let goal = iter.peek().unwrap_or(&pos);
+    //                     let mut input_iter = input.iter().peekable();
+    //                     while let Some(start) = input_iter.next() {
+    //                         let end = input_iter.peek().unwrap_or(&start);
+    //                         if line_crosses_line(start, end, corner, goal) {
+    //                             return None;
+    //                         }
+    //                         // println!("no cross");
+    //                     }
+    //                 }
+    //                 println!("{:?} to {:?} ({:?})", pos, pos2, pos.area(pos2));
+    //                 Some(pos.area(pos2))
+    //             })
+    //             .filter_map(|area| area)
+    //             // .inspect(|c| println!("{:?}", c))
+    //             // .map(|corners| corners[0].area(&corners[1]))
+    //             // .inspect(|c| println!("{:?}", c))
+    //             .max()
+    //             .unwrap_or_default()
+    //     })
+    //     // .inspect(|c| println!("{:?}", c))
+    //     .max()
+    //     // .inspect(|c| println!("{:?}", c))
+    //     .unwrap();
+    // println!("{:?}", cache);
+    // res
 }
 
 #[cfg(test)]
